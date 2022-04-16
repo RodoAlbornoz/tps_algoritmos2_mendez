@@ -42,6 +42,24 @@ lista_t *lista_vacia_insertar_elemento(lista_t *lista, void *elemento)
 }
 
 
+lista_t *insertar_elemento_al_final(lista_t *lista, nodo_t *nuevo_nodo, void *elemento)
+{
+	nuevo_nodo = malloc(sizeof(nodo_t));
+
+	if (nuevo_nodo == NULL) {
+		free(nuevo_nodo);
+		free(lista);
+		return NULL;
+	}
+
+	nuevo_nodo->siguiente = NULL;
+	nuevo_nodo->elemento = elemento;
+	lista->nodo_fin = nuevo_nodo;
+
+	return lista;
+}
+
+
 lista_t *lista_insertar(lista_t *lista, void *elemento)
 {
 	if (lista == NULL) {
@@ -50,25 +68,15 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 	}
 
 	if (lista->cantidad == 0) {
-		lista_vacia_insertar_elemento(lista, elemento);
-		lista->cantidad++;
-		return lista;
+		if (insertar_elemento_al_final(lista, lista->nodo_inicio, elemento) == NULL)
+			return NULL;
+	} else {
+		if (insertar_elemento_al_final(lista, lista->nodo_fin->siguiente, elemento) == NULL)
+			return NULL;
 	}
-
-	lista->nodo_fin->siguiente = malloc(sizeof(nodo_t));
-	if (lista->nodo_fin->siguiente == NULL) {
-		free(lista->nodo_fin->siguiente);
-		free(lista);
-		return NULL;
-	}
-
-	lista->nodo_fin->siguiente->siguiente = NULL;
-	lista->nodo_fin->siguiente->elemento = elemento;
-	lista->nodo_fin = lista->nodo_fin->siguiente;
 
 	lista->cantidad++;
 	return lista;
-
 }
 
 
@@ -80,11 +88,8 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 		return NULL;
 	}
 
-	if (lista->cantidad == 0) {
+	if (lista->cantidad == 0)
 		lista_vacia_insertar_elemento(lista, elemento);
-		lista->cantidad++;
-		return lista;
-	}
 	
 	if (posicion == 0) {
 		nodo_t *nodo_a_insertar = malloc(sizeof(nodo_t));
@@ -97,9 +102,6 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 		nodo_a_insertar->siguiente = lista->nodo_inicio;
 		lista->nodo_inicio = nodo_a_insertar;
 		nodo_a_insertar->elemento = elemento;
-
-		lista->cantidad++;
-		return lista;
 	}
 
 	if (posicion > lista->cantidad) {
@@ -113,9 +115,6 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 		lista->nodo_fin->siguiente->siguiente = NULL;
 		lista->nodo_fin->siguiente->elemento = elemento;
 		lista->nodo_fin = lista->nodo_fin->siguiente;
-
-		lista->cantidad++;
-		return lista;
 	}
 	
 	lista->cantidad++;
