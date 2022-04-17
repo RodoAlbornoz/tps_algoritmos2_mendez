@@ -9,6 +9,10 @@
 #define CASO_FALLIDO 0
 
 
+/*
+ * Se recibe la referencia a una lista vacia y un entero para evaluar como resultaron las pruebas
+ * Se realizan las pruebas sobre la función lista_crear
+ */
 void lista_probar_creacion(lista_t *lista, int valor_prueba) 
 {
   pa2m_nuevo_grupo("Creación de una lista");
@@ -27,7 +31,11 @@ void lista_probar_creacion(lista_t *lista, int valor_prueba)
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, un entero para evaluar como resultaron las pruebas
+ * y un entero con el elemento que se va a insertar en un nuevo nodo insertado en la lista.
+ * Se realizan las pruebas sobre la función lista_insertar
+ */
 void lista_probar_insercion_al_final(lista_t *lista, lista_t *lista_vacia, int valor_prueba, int elemento_prueba)
 {
   pa2m_nuevo_grupo("Inserción de elementos en una lista (Funcion lista_insertar)");
@@ -48,7 +56,10 @@ void lista_probar_insercion_al_final(lista_t *lista, lista_t *lista_vacia, int v
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas
+ * Se realizan las pruebas sobre la función lista_quitar
+ */
 void lista_probar_eliminacion_al_final(lista_t *lista, lista_t *lista_vacia, int valor_prueba)
 {
   pa2m_nuevo_grupo("Eliminación de elementos de la lista (Funcion lista_quitar)");
@@ -72,7 +83,11 @@ void lista_probar_eliminacion_al_final(lista_t *lista, lista_t *lista_vacia, int
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, un entero para evaluar como resultaron las pruebas
+ * y un entero con el elemento que se va a insertar en un nuevo nodo insertado en la lista.
+ * Se realizan las pruebas sobre la función lista_insertar_en_posicion
+ */
 void lista_probar_insercion_en_posicion(lista_t *lista, lista_t *lista_vacia, int valor_prueba, int elemento_prueba)
 {
   pa2m_nuevo_grupo("Inserción de elementos en una lista (Funcion lista_insertar_en_posicion)");
@@ -105,7 +120,10 @@ void lista_probar_insercion_en_posicion(lista_t *lista, lista_t *lista_vacia, in
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas
+ * Se realizan las pruebas sobre la función lista_quitar_de_posicion
+ */
 void lista_probar_eliminacion_en_posicion(lista_t *lista, lista_t *lista_vacia, int valor_prueba)
 {
   pa2m_nuevo_grupo("Eliminación de elementos de la lista (Funcion lista_quitar_de_posicion)");
@@ -131,7 +149,10 @@ void lista_probar_eliminacion_en_posicion(lista_t *lista, lista_t *lista_vacia, 
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas
+ * Se realizan las pruebas sobre la función lista_primero
+ */
 void lista_probar_obtener_primer_elemento(lista_t *lista, lista_t *lista_vacia, int valor_prueba)
 {
   pa2m_nuevo_grupo("Obtención de primer elemento de una lista");
@@ -158,7 +179,10 @@ void lista_probar_obtener_primer_elemento(lista_t *lista, lista_t *lista_vacia, 
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas 
+ * Se realizan las pruebas sobre la función lista_ultimo
+ */
 void lista_probar_obtener_ultimo_elemento(lista_t *lista, lista_t *lista_vacia, int valor_prueba)
 {
   pa2m_nuevo_grupo("Obtención de ultimo elemento de una lista");
@@ -185,7 +209,10 @@ void lista_probar_obtener_ultimo_elemento(lista_t *lista, lista_t *lista_vacia, 
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas
+ * Se realizan las pruebas sobre la función lista_vacia
+ */
 void lista_probar_vacia_o_inexistente(lista_t *lista, lista_t *lista_sin_elementos, int valor_prueba)
 {
   pa2m_nuevo_grupo("Comprobación de lista vacia o no existente");
@@ -205,7 +232,10 @@ void lista_probar_vacia_o_inexistente(lista_t *lista, lista_t *lista_sin_element
 }
 
 
-// Se recibe una lista no vacia, una vacia y un valor de prueba
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas
+ * Se realizan las pruebas sobre la función lista_tamanio
+ */
 void lista_probar_tamanio(lista_t *lista, lista_t *lista_vacia, int valor_prueba)
 {
   pa2m_nuevo_grupo("Comprobación de tamaño de una lista");
@@ -226,6 +256,10 @@ void lista_probar_tamanio(lista_t *lista, lista_t *lista_vacia, int valor_prueba
 }
 
 
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas
+ * Se realizan las pruebas sobre la función lista_elemento_en_posicion
+ */
 void lista_probar_buscar_por_posicion(lista_t *lista, lista_t *lista_vacia, int valor_prueba)
 {
   pa2m_nuevo_grupo("Buscar elementos por posicion en la lista");
@@ -261,7 +295,7 @@ void lista_probar_buscar_por_posicion(lista_t *lista, lista_t *lista_vacia, int 
 int main() {
   int valor_prueba = 0;
   int elemento_prueba_1 = 5;
-//  int elemento_prueba_2 = 9;
+  int elemento_prueba_2 = 9;
 
   lista_t *lista_prueba_1 = lista_crear();
   lista_t *lista_prueba_2 = lista_crear();
@@ -272,12 +306,11 @@ int main() {
 
   lista_probar_creacion(lista_prueba_1, valor_prueba);
 
-
-  lista_probar_insercion_al_final(lista_prueba_1, lista_vacia, valor_prueba, elemento_prueba_1); /*
+  lista_probar_insercion_al_final(lista_prueba_1, lista_vacia, valor_prueba, elemento_prueba_1);
   lista_probar_eliminacion_al_final(lista_prueba_1, lista_vacia, valor_prueba);
 
 
-  lista_probar_insercion_en_posicion(lista_prueba_2, lista_vacia, valor_prueba, elemento_prueba_2);
+//lista_probar_insercion_en_posicion(lista_prueba_2, lista_vacia, valor_prueba, elemento_prueba_2);
 //lista_probar_eliminacion_en_posicion(lista_prueba_2, lista_vacia, valor_prueba);
 
 
@@ -327,6 +360,6 @@ int main() {
   free(lista_prueba_3);
 
   free(lista_vacia);
-*/
+
   return pa2m_mostrar_reporte();
 }
