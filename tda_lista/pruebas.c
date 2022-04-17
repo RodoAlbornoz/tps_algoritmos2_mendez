@@ -295,7 +295,7 @@ void lista_probar_buscar_por_posicion(lista_t *lista, lista_t *lista_vacia, int 
 int main() {
   int valor_prueba = 0;
   int elemento_prueba_1 = 5;
-  int elemento_prueba_2 = 9;
+//  int elemento_prueba_2 = 9;
 
   lista_t *lista_prueba_1 = lista_crear();
   lista_t *lista_prueba_2 = lista_crear();
@@ -306,7 +306,7 @@ int main() {
 
   lista_probar_creacion(lista_prueba_1, valor_prueba);
 
-  lista_probar_insercion_al_final(lista_prueba_1, lista_vacia, valor_prueba, elemento_prueba_1);
+  lista_probar_insercion_al_final(lista_prueba_1, lista_vacia, valor_prueba, elemento_prueba_1); /*
   lista_probar_eliminacion_al_final(lista_prueba_1, lista_vacia, valor_prueba);
 
 
@@ -360,6 +360,6 @@ int main() {
   free(lista_prueba_3);
 
   free(lista_vacia);
-
+*/
   return pa2m_mostrar_reporte();
 }

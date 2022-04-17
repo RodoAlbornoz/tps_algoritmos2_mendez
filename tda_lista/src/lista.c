@@ -35,7 +35,7 @@ lista_t *insertar_elemento_al_final(lista_t *lista, nodo_t *nuevo_nodo, void *el
 		return NULL;
 	}
 
-	if (nuevo_nodo == NULL || elemento == NULL)
+	if (elemento == NULL)
 		return NULL;
 
 	nuevo_nodo = malloc(sizeof(nodo_t));
