@@ -28,15 +28,12 @@ lista_t *lista_crear()
  * Si ocurre un error en medio (La lista, el nuevo nodo o el elemento son NULL, o no se pudo reservar memoria), 
  * se retorna -1
  */
-int insertar_elemento_al_final(lista_t *lista, nodo_t *nuevo_nodo, void *elemento, bool lista_es_vacia)
+int lista_insertar_al_final(lista_t *lista, nodo_t *nuevo_nodo, void *elemento, bool lista_es_vacia)
 {
 	if (lista == NULL) {
 		free(lista);
 		return -1;
 	}
-
-	if (elemento == NULL)
-		return -1;
 
 	nuevo_nodo = malloc(sizeof(nodo_t));
 	if (nuevo_nodo == NULL) {
@@ -67,10 +64,10 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 
 	bool lista_es_vacia = lista_vacia(lista);
 	if (lista_es_vacia) {
-		if (insertar_elemento_al_final(lista, lista->nodo_inicio, elemento, lista_es_vacia) == -1)
+		if (lista_insertar_al_final(lista, lista->nodo_inicio, elemento, lista_es_vacia) == -1)
 			return NULL;
 	} else {
-		if (insertar_elemento_al_final(lista, lista->nodo_fin->siguiente, elemento, lista_es_vacia) == -1)
+		if (lista_insertar_al_final(lista, lista->nodo_fin->siguiente, elemento, lista_es_vacia) == -1)
 			return NULL;
 	}
 
@@ -89,10 +86,10 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 
 	bool lista_es_vacia = lista_vacia(lista);
 	if (lista_es_vacia) {
-		if (insertar_elemento_al_final(lista, lista->nodo_inicio, elemento, lista_es_vacia) == -1)
+		if (lista_insertar_al_final(lista, lista->nodo_inicio, elemento, lista_es_vacia) == -1)
 			return NULL;
 	} else if (!lista_es_vacia && posicion >= lista->cantidad) {
-		if (insertar_elemento_al_final(lista, lista->nodo_fin->siguiente, elemento, lista_es_vacia) == -1)
+		if (lista_insertar_al_final(lista, lista->nodo_fin->siguiente, elemento, lista_es_vacia) == -1)
 			return NULL;
 	} else {
 		nodo_t *nodo_a_insertar = malloc(sizeof(nodo_t));
@@ -132,6 +129,11 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
  */
 void *ultimo_elemento_eliminado(lista_t *lista)
 {
+	if (lista == NULL) {
+		free(lista);
+		return NULL;
+	}
+
 	nodo_t *nodo_aux = lista->nodo_fin;
 	lista->nodo_fin = lista->nodo_inicio;
 	while (lista->nodo_fin->siguiente != nodo_aux)
@@ -193,7 +195,7 @@ void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 		nodo_aux->siguiente = nodo_aux->siguiente->siguiente;
 		elemento_eliminado = nodo_a_eliminar->elemento;
 		nodo_a_eliminar->siguiente = NULL;
-		free(nodo_a_eliminar->siguiente);
+		free(nodo_a_eliminar->siguiente); // REVISAR
 	}
 
 	lista->cantidad--;
