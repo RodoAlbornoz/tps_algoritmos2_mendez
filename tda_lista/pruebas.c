@@ -221,31 +221,54 @@ void lista_probar_buscar_por_posicion(lista_t *lista, lista_t* lista_sin_element
   valor_prueba = (lista != NULL && !lista_vacia(lista) && posicion_2 <= lista->cantidad - 1)? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "Se trae un elemento en alguna posicion del medio en una lista con al menos un elemento.");
 
-  elemento_en_posicion = lista_elemento_en_posicion(lista, 1);
+  elemento_en_posicion = lista_elemento_en_posicion(lista, 2);
   valor_prueba = elemento_en_posicion == NULL? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "Se trae un elemento del tipo NULL en la lista.");
 }
 
 
 /*
- * 
+ * Se reciben las referencias a elementos genéricos de cualquier tipo de dato 
  *
+ * Se castean los elementos genéricos a int, y se devuelve 0 si sus valores son iguales, o 1 si no lo son.
  */
 int comparar_enteros(void *entero1, void *entero2)
 {
   entero1 = (int *) entero1;
   entero2 = (int *) entero2;
-  return entero1 == entero2;
+
+  if (entero1 == entero2)
+    return 0;
+  
+  return 1;
 }
 
 
 /*
- * Se reciben las referencias a una lista no vacia y a una vacia, un entero para evaluar como resultaron las pruebas y
- * la referencia a un elemento genérico de cualquier tipo de dato
+ * Se reciben las referencias a elementos genéricos de cualquier tipo de dato 
+ *
+ * Se castean los elementos genéricos a char, y se devuelve 0 si sus valores son iguales, o 1 si no lo son.
+ */
+int comparar_char(void *char1, void *char2)
+{
+  char1 = (char *) char1;
+  char2 = (char *) char2;
+
+  if (char1 == char2)
+    return 0;
+  
+  return 1;
+}
+
+
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, un entero para evaluar como resultaron las pruebas, y
+ * la referencia a elementos genéricos de cualquier tipo de dato 
  *
  * Se realizan las pruebas sobre la función lista_buscar_elemento
  */
-void lista_probar_buscar_elemento(lista_t *lista, lista_t* lista_sin_elementos, int valor_prueba, void *elemento_a_buscar)
+void lista_probar_buscar_elemento(lista_t *lista, lista_t* lista_sin_elementos, int valor_prueba, void *elemento_a_buscar,
+                                  void *elemento_en_lista, void *elemento_en_lista_repetido)
 {
   pa2m_nuevo_grupo("Buscar elementos en la lista");
 
@@ -257,27 +280,21 @@ void lista_probar_buscar_elemento(lista_t *lista, lista_t* lista_sin_elementos, 
   valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "No se puede buscar un elemento si la función de comparación enviada es NULL.");
 
-  //77 - NULL - 5 - 5 // elemento_a_buscar: 1
+  elemento_encontrado = lista_buscar_elemento(lista_sin_elementos, comparar_enteros, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "No se encuentra el elemento buscado en una lista vacia.");
+
   elemento_encontrado = lista_buscar_elemento(lista, comparar_enteros, elemento_a_buscar);
   valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
-  pa2m_afirmar(valor_prueba, "No se encuentra el elemento.");
-  /*
-  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
-  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
-  pa2m_afirmar(valor_prueba, "Se encuentra el primer elemento encontrado.");
+  pa2m_afirmar(valor_prueba, "No se encuentra el elemento buscado.");
   
-  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
-  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
-  pa2m_afirmar(valor_prueba, "Se encuentra el primer elemento encontrado cuando hay otro igual en la lista.");
-
-  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
-  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
-  pa2m_afirmar(valor_prueba, "No se busca un elemento en una lista vacia.");
-
-  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
-  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
-  pa2m_afirmar(valor_prueba, "Se busca un elemento cuyo valor es NULL.");
-  */
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_char, elemento_en_lista);
+  valor_prueba = elemento_encontrado == elemento_en_lista? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "Se busca y se encuentra el primer elemento encontrado.");
+  
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_enteros, elemento_en_lista_repetido);
+  valor_prueba = elemento_encontrado == elemento_en_lista_repetido? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "Se encuentra el primer elemento encontrado cuando hay otro igual en la lista.");  
 }
 
 
@@ -425,12 +442,14 @@ int main() {
 
 
   lista_prueba_3 = lista_insertar(lista_prueba_3, &elemento_prueba_3);
+  lista_prueba_3 = lista_insertar(lista_prueba_3, &elemento_prueba_2);
   lista_prueba_3 = lista_insertar(lista_prueba_3, NULL);
   for (int i = 0; i < 2; i++)
     lista_prueba_3 = lista_insertar(lista_prueba_3, &elemento_prueba_1);
   
   lista_probar_buscar_por_posicion(lista_prueba_3, lista_vacia, valor_prueba);
-  lista_probar_buscar_elemento(lista_prueba_3, lista_vacia, valor_prueba, &elemento_prueba_4);
+  lista_probar_buscar_elemento(lista_prueba_3, lista_vacia, valor_prueba, &elemento_prueba_4, &elemento_prueba_2, 
+  &elemento_prueba_1); // Volver a probar después con GDB
 
 
   lista_prueba_4 = lista_insertar(lista_prueba_4, NULL);
