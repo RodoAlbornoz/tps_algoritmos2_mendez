@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pa2m.h"
+#include <string.h>
 
 #define CASO_EXITOSO 1
 #define CASO_FALLIDO 0
@@ -227,12 +228,56 @@ void lista_probar_buscar_por_posicion(lista_t *lista, lista_t* lista_sin_element
 
 
 /*
- *
+ * 
  *
  */
-void lista_probar_buscar_elemento()
+int comparar_enteros(void *entero1, void *entero2)
+{
+  entero1 = (int *) entero1;
+  entero2 = (int *) entero2;
+  return entero1 == entero2;
+}
+
+
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, un entero para evaluar como resultaron las pruebas y
+ * la referencia a un elemento genérico de cualquier tipo de dato
+ *
+ * Se realizan las pruebas sobre la función lista_buscar_elemento
+ */
+void lista_probar_buscar_elemento(lista_t *lista, lista_t* lista_sin_elementos, int valor_prueba, void *elemento_a_buscar)
 {
   pa2m_nuevo_grupo("Buscar elementos en la lista");
+
+  void *elemento_encontrado = lista_buscar_elemento(NULL, comparar_enteros, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "No se puede buscar un elemento en una lista NULL.");
+
+  elemento_encontrado = lista_buscar_elemento(lista, NULL, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "No se puede buscar un elemento si la función de comparación enviada es NULL.");
+
+  //77 - NULL - 5 - 5 // elemento_a_buscar: 1
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_enteros, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "No se encuentra el elemento.");
+  /*
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "Se encuentra el primer elemento encontrado.");
+  
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "Se encuentra el primer elemento encontrado cuando hay otro igual en la lista.");
+
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "No se busca un elemento en una lista vacia.");
+
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_elementos, elemento_a_buscar);
+  valor_prueba = elemento_encontrado == NULL? CASO_EXITOSO : CASO_FALLIDO;
+  pa2m_afirmar(valor_prueba, "Se busca un elemento cuyo valor es NULL.");
+  */
 }
 
 
@@ -357,17 +402,17 @@ void lista_probar_destruccion(lista_t *lista)
 
 int main() {
   int valor_prueba = 0;
+
   int elemento_prueba_1 = 5;
   char elemento_prueba_2 = 'f';
   int elemento_prueba_3 = 77;
+  int elemento_prueba_4 = 1;
 
   lista_t *lista_prueba_1 = lista_crear();
   lista_t *lista_prueba_2 = lista_crear();
   lista_t *lista_prueba_3 = lista_crear();
   lista_t *lista_prueba_4 = lista_crear();
   lista_t *lista_vacia = lista_crear();
-  if (lista_prueba_1 == NULL || lista_prueba_2 == NULL || lista_prueba_3 == NULL || lista_prueba_4 == NULL || lista_vacia == NULL) 
-    return -1;
 
   lista_probar_creacion(lista_prueba_1, valor_prueba);
 
@@ -385,7 +430,8 @@ int main() {
     lista_prueba_3 = lista_insertar(lista_prueba_3, &elemento_prueba_1);
   
   lista_probar_buscar_por_posicion(lista_prueba_3, lista_vacia, valor_prueba);
-  lista_probar_buscar_elemento(); // COMPLETAR
+  lista_probar_buscar_elemento(lista_prueba_3, lista_vacia, valor_prueba, &elemento_prueba_4);
+
 
   lista_prueba_4 = lista_insertar(lista_prueba_4, NULL);
   lista_probar_obtener_primer_elemento(lista_prueba_4, lista_vacia, valor_prueba, &elemento_prueba_1);
@@ -395,7 +441,7 @@ int main() {
   lista_probar_vacia_o_inexistente(lista_prueba_1, lista_vacia, valor_prueba);
   lista_probar_tamanio(lista_prueba_1, lista_vacia, valor_prueba);
 
-
+/*
   lista_probar_destruccion(lista_prueba_1);
 
 
@@ -414,6 +460,6 @@ int main() {
     free(lista_prueba_2->nodo_fin);
   }
   free(lista_prueba_2);
-
+*/
   return pa2m_mostrar_reporte();
 }

@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include <stdio.h>
+
 
 lista_t *lista_crear()
 {
@@ -225,9 +227,41 @@ void *lista_elemento_en_posicion(lista_t *lista, size_t posicion)
 }
 
 
+/**
+ * Devuelve el primer elemento de la lista que cumple la condición
+ * comparador(elemento, contexto) == 0.
+ *
+ * Si no existe el elemento devuelve NULL.
+ */
 void *lista_buscar_elemento(lista_t *lista, int (*comparador)(void *, void *),
 			    void *contexto)
 {
+	if (lista == NULL) {
+		free(lista);
+		return NULL;
+	}
+
+	if (comparador == NULL)
+		return NULL;
+
+	bool encontrado = false;
+	void *elemento_encontrado;
+	nodo_t *nodo_aux = lista->nodo_inicio;
+	int i = 0;
+
+	while (i < lista->cantidad && !encontrado) {
+		if (comparador(nodo_aux->elemento, contexto) == 0) {
+			encontrado = true;
+			elemento_encontrado = nodo_aux->elemento;
+		} else {
+			nodo_aux = nodo_aux->siguiente;
+			i++;
+		}
+	}
+
+	if (encontrado)
+		return elemento_encontrado;
+
 	return NULL;
 }
 
