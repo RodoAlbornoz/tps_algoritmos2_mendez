@@ -321,13 +321,25 @@ size_t lista_tamanio(lista_t *lista)
 
 void lista_destruir(lista_t *lista)
 {
-  if (lista->cantidad == 1) {
-    free(lista->nodo_inicio);
-  } else {
-    free(lista->nodo_inicio);
-    free(lista->nodo_fin);
-  }
-  free(lista);
+	if (lista == NULL || lista->cantidad == 0) {
+		free(lista);
+		return;
+	}
+
+	if (lista->cantidad == 1) {
+		free(lista->nodo_inicio);
+		lista->cantidad--;
+	} else {
+		nodo_t *nodo_aux = lista->nodo_inicio;
+		while (lista->nodo_inicio != NULL) {
+			free(lista->nodo_fin);
+			lista->nodo_inicio = lista->nodo_inicio->siguiente;
+			free(nodo_aux);
+			nodo_aux = lista->nodo_inicio;
+			lista->cantidad--;
+		}
+	}
+	free(lista);
 }
 
 

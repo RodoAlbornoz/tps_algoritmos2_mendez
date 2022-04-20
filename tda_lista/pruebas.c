@@ -61,7 +61,6 @@ void lista_probar_insercion_al_final(lista_t *lista, int valor_prueba, void *ele
   lista = lista_insertar(lista, &elemento_prueba);
   valor_prueba = (lista != NULL && lista->cantidad == cantidad_auxiliar + 1)? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "Se inserta exitosamente un elemento al final de una lista con al menos un elemento.");
-
 }
 
 
@@ -102,13 +101,13 @@ void lista_probar_eliminacion_al_final(lista_t *lista, lista_t *lista_vacia, int
  * Se realizan las pruebas sobre la función lista_insertar_en_posicion
  */
 void lista_probar_insercion_en_posicion(lista_t *lista, int valor_prueba, void *elemento_prueba)
-{
+{ 
   pa2m_nuevo_grupo("Inserción de elementos en una lista (Funcion lista_insertar_en_posicion)");
 
   lista_t *lista_no_existente = lista_insertar_en_posicion(NULL, &elemento_prueba, 0);
   valor_prueba = lista_no_existente == NULL? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "No se insertan elementos en una lista NULL.");
-
+//
   lista = lista_insertar_en_posicion(lista, &elemento_prueba, 0);
   valor_prueba = (lista != NULL && lista->cantidad == 1)? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "Se retorna la lista al insertar un elemento en la misma.");
@@ -153,14 +152,14 @@ void lista_probar_eliminacion_en_posicion(lista_t *lista, lista_t *lista_sin_ele
   void *elemento_eliminado_lista = lista_quitar_de_posicion(NULL, 9);
   valor_prueba = elemento_eliminado_lista == NULL? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "No se puede eliminar un elemento de una lista NULL.");
-  
+
   size_t cantidad_auxiliar = lista->cantidad;
   elemento_eliminado_lista = lista_quitar_de_posicion(lista, 5);
   valor_prueba = (lista != NULL && lista->cantidad == cantidad_auxiliar - 1)? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "Se elimina el ultimo elemento de la lista.");
   pa2m_afirmar(valor_prueba, "Se devuelve el elemento eliminado.");
   pa2m_afirmar(valor_prueba, "La cantidad de elementos se reduce en 1.");
-
+      
   cantidad_auxiliar = lista->cantidad;
   elemento_eliminado_lista = lista_quitar_de_posicion(lista, 2);
   valor_prueba = (lista != NULL && lista->cantidad == cantidad_auxiliar - 1)? CASO_EXITOSO : CASO_FALLIDO;
@@ -175,10 +174,10 @@ void lista_probar_eliminacion_en_posicion(lista_t *lista, lista_t *lista_sin_ele
   valor_prueba = elemento_eliminado_lista == NULL? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "Se retorna NULL al querer eliminar un elemento en una posicion inexistente.");
 
-  elemento_eliminado_lista = lista_quitar_de_posicion(lista, 1);
-  valor_prueba = (lista != NULL && !lista_vacia(lista))? CASO_EXITOSO : CASO_FALLIDO;
+  elemento_eliminado_lista = lista_quitar_de_posicion(lista, 0);
+  valor_prueba = (elemento_eliminado_lista == NULL)? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "Se elimina un elemento NULL de la lista.");
-
+  
   elemento_eliminado_lista = lista_quitar_de_posicion(lista_sin_elementos, 9);
   valor_prueba = elemento_eliminado_lista == NULL? CASO_EXITOSO : CASO_FALLIDO;
   pa2m_afirmar(valor_prueba, "No se permite eliminar un elemento de una lista vacia.");
@@ -404,21 +403,26 @@ void lista_probar_tamanio(lista_t *lista, lista_t *lista_vacia, int valor_prueba
 }
 
 
-void lista_probar_destruccion(lista_t *lista)
-{
+/*
+ * Se reciben las referencias a una lista no vacia y a una vacia, y un entero para evaluar como resultaron las pruebas
+ *
+ * Se realizan las pruebas sobre la función lista_destruir
+ */
+void lista_probar_destruccion(lista_t *lista, lista_t *lista_vacia, int valor_prueba)
+{/*
   pa2m_nuevo_grupo("Destrucción de la lista");
-//  pa2m_afirmar(valor_prueba, "Liberar memoria de solo uno de los 2 nodos cuando solo queda un elemento en la lista.");
-//pa2m_afirmar(valor_prueba, "Si se quiere eliminar un ultimo elemento de una lista vacia, la lista no debe liberarse.");
-//pa2m_afirmar(valor_prueba, "Si se quiere eliminar un elemento de una lista vacia, la lista no debe liberarse.");
-//pa2m_afirmar(valor_prueba, "Si se quiere buscar el primer elemento de una lista vacia, la lista no debe liberarse.");
-//pa2m_afirmar(valor_prueba, "Si se quiere buscar el ultimo elemento de una lista vacia, la lista no debe liberarse.");
-
-  lista_destruir(lista);
+  
+  pa2m_afirmar(valor_prueba, "Dada una lista NULL, esta se libera.");
+  pa2m_afirmar(valor_prueba, "Dada una lista vacia, esta se libera.");
+  pa2m_afirmar(valor_prueba, "Dada una lista de un solo elemento, se libera su único nodo (Principio/fin) y la lista.");
+  pa2m_afirmar(valor_prueba, "Dada una lista de mas de un elemento, se liberan todos los nodos y la lista.");
+  */
 }
 
 
 int main() {
   int valor_prueba = 0;
+  lista_t *lista_vacia = lista_crear();
 
   int elemento_prueba_1 = 5;
   char elemento_prueba_2 = 'f';
@@ -426,59 +430,64 @@ int main() {
   int elemento_prueba_4 = 1;
 
   lista_t *lista_prueba_1 = lista_crear();
-  lista_t *lista_prueba_2 = lista_crear();
-  lista_t *lista_prueba_3 = lista_crear();
-  lista_t *lista_prueba_4 = lista_crear();
-  lista_t *lista_vacia = lista_crear();
-
   lista_probar_creacion(lista_prueba_1, valor_prueba);
-
   lista_probar_insercion_al_final(lista_prueba_1, valor_prueba, &elemento_prueba_1); 
-  lista_probar_eliminacion_al_final(lista_prueba_1, lista_vacia, valor_prueba);
+  // EN ESTE PUNTO, LE QUEDAN 3 ELEMENTOS: 5 - NULL - 5
 
 
-  lista_probar_insercion_en_posicion(lista_prueba_2, valor_prueba, &elemento_prueba_2);
-  lista_probar_eliminacion_en_posicion(lista_prueba_2, lista_vacia, valor_prueba);
+  lista_t *lista_prueba_2 = lista_crear();
+  lista_prueba_2 = lista_insertar(lista_prueba_2, &elemento_prueba_1);
+  lista_prueba_2 = lista_insertar(lista_prueba_2, NULL);
+  lista_prueba_2 = lista_insertar(lista_prueba_2, &elemento_prueba_1);
+  lista_probar_eliminacion_al_final(lista_prueba_2, lista_vacia, valor_prueba);
+  // EN ESTE PUNTO, SOLO LE QUEDA UN ELEMENTO: 5
 
 
-  lista_prueba_3 = lista_insertar(lista_prueba_3, &elemento_prueba_3);
-  lista_prueba_3 = lista_insertar(lista_prueba_3, &elemento_prueba_2);
-  lista_prueba_3 = lista_insertar(lista_prueba_3, NULL);
+  lista_t *lista_prueba_3 = lista_crear();
+  lista_probar_insercion_en_posicion(lista_prueba_3, valor_prueba, &elemento_prueba_2);
+  // EN ESTE PUNTO, LE QUEDAN 6 ELEMENTOS: 'f - 'f' - 'f' - NULL - 'f' - 'f'
+
+
+  lista_t *lista_prueba_4 = lista_crear();
+  lista_prueba_4 = lista_insertar(lista_prueba_4, &elemento_prueba_2);
+  lista_prueba_4 = lista_insertar(lista_prueba_4, NULL);
+  for (int i = 0; i < 4; i++)
+    lista_prueba_4 = lista_insertar(lista_prueba_4, &elemento_prueba_2);
+  lista_probar_eliminacion_en_posicion(lista_prueba_4, lista_vacia, valor_prueba); 
+  // EN ESTE PUNTO, LE QUEDAN 2 ELEMENTOS: 'f' - 'f'
+
+  lista_t *lista_prueba_5 = lista_crear();
+  lista_prueba_5 = lista_insertar(lista_prueba_5, &elemento_prueba_3);
+  lista_prueba_5 = lista_insertar(lista_prueba_5, &elemento_prueba_2);
+  lista_prueba_5 = lista_insertar(lista_prueba_5, NULL);
   for (int i = 0; i < 2; i++)
-    lista_prueba_3 = lista_insertar(lista_prueba_3, &elemento_prueba_1);
-  
-  lista_probar_buscar_por_posicion(lista_prueba_3, lista_vacia, valor_prueba);
-  lista_probar_buscar_elemento(lista_prueba_3, lista_vacia, valor_prueba, &elemento_prueba_4, &elemento_prueba_2, 
+    lista_prueba_5 = lista_insertar(lista_prueba_5, &elemento_prueba_1);
+  lista_probar_buscar_por_posicion(lista_prueba_5, lista_vacia, valor_prueba);
+  lista_probar_buscar_elemento(lista_prueba_5, lista_vacia, valor_prueba, &elemento_prueba_4, &elemento_prueba_2, 
   &elemento_prueba_1); // Volver a probar después con GDB
 
 
-  lista_prueba_4 = lista_insertar(lista_prueba_4, NULL);
-  lista_probar_obtener_primer_elemento(lista_prueba_4, lista_vacia, valor_prueba, &elemento_prueba_1);
-  lista_probar_obtener_ultimo_elemento(lista_prueba_4, lista_vacia, valor_prueba, &elemento_prueba_2);
+  lista_t *lista_prueba_6 = lista_crear();
+  lista_prueba_6 = lista_insertar(lista_prueba_6, NULL);
+  lista_probar_obtener_primer_elemento(lista_prueba_6, lista_vacia, valor_prueba, &elemento_prueba_1);
+  lista_quitar(lista_prueba_6);
+  lista_probar_obtener_ultimo_elemento(lista_prueba_6, lista_vacia, valor_prueba, &elemento_prueba_2);
+  // EN ESTE PUNTO, LE QUEDAN 2 ELEMENTOS: NULL - 'f'
 
 
   lista_probar_vacia_o_inexistente(lista_prueba_1, lista_vacia, valor_prueba);
   lista_probar_tamanio(lista_prueba_1, lista_vacia, valor_prueba);
 
-/*
-  lista_probar_destruccion(lista_prueba_1);
 
 
-  if (lista_prueba_1->cantidad == 1) {
-    free(lista_prueba_1->nodo_inicio);
-  } else {
-    free(lista_prueba_1->nodo_inicio);
-    free(lista_prueba_1->nodo_fin);
-  }
-  free(lista_prueba_1);
+//lista_probar_destruccion(lista_prueba_1, lista_vacia, valor_prueba);
+  lista_destruir(lista_prueba_1);
+  lista_destruir(lista_prueba_2);
+  lista_destruir(lista_prueba_3);
+  lista_destruir(lista_prueba_4);
+  lista_destruir(lista_prueba_5);
+  lista_destruir(lista_prueba_6);
+  lista_destruir(lista_vacia);
 
-  if (lista_prueba_2->cantidad == 1) {
-    free(lista_prueba_2->nodo_inicio);
-  } else {
-    free(lista_prueba_2->nodo_inicio);
-    free(lista_prueba_2->nodo_fin);
-  }
-  free(lista_prueba_2);
-*/
   return pa2m_mostrar_reporte();
 }
