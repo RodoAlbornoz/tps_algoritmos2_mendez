@@ -177,24 +177,26 @@ void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 		return NULL;
 	} else if (posicion == 0) {
 		nodo_t *nodo_a_eliminar = lista->nodo_inicio;
-		lista->nodo_inicio = lista->nodo_inicio->siguiente;
 		elemento_eliminado = nodo_a_eliminar->elemento;
+		lista->nodo_inicio = lista->nodo_inicio->siguiente;
 		nodo_a_eliminar->siguiente = NULL;
 		free(nodo_a_eliminar);
 	} else if (posicion == lista->cantidad - 1) {
 		elemento_eliminado = ultimo_elemento_eliminado(lista);
 	} else {
-		nodo_t *nodo_aux = lista->nodo_inicio;
+		nodo_t *nodo_a_eliminar = lista->nodo_inicio;
+		nodo_t *nodo_anterior;
+
 		int i = 0;
-		while (i < posicion - 1) {
-			nodo_aux = nodo_aux->siguiente;
+		while (i < posicion) {
+			nodo_anterior = nodo_a_eliminar;
+			nodo_a_eliminar = nodo_a_eliminar->siguiente;
 			i++;
 		}
-		nodo_t *nodo_a_eliminar = nodo_aux->siguiente;
-		nodo_aux->siguiente = nodo_aux->siguiente->siguiente;
+		nodo_anterior->siguiente = nodo_anterior->siguiente->siguiente;
 		elemento_eliminado = nodo_a_eliminar->elemento;
 		nodo_a_eliminar->siguiente = NULL;
-		free(nodo_a_eliminar->siguiente); // REVISAR POR QUÉ FUNCIONA ASÍ
+		free(nodo_a_eliminar);
 	}
 
 	lista->cantidad--;
@@ -224,12 +226,6 @@ void *lista_elemento_en_posicion(lista_t *lista, size_t posicion)
 }
 
 
-/**
- * Devuelve el primer elemento de la lista que cumple la condición
- * comparador(elemento, contexto) == 0.
- *
- * Si no existe el elemento devuelve NULL.
- */
 void *lista_buscar_elemento(lista_t *lista, int (*comparador)(void *, void *),
 			    void *contexto)
 {
@@ -325,23 +321,46 @@ void lista_destruir(lista_t *lista)
 
 	if (lista->cantidad == 1) {
 		free(lista->nodo_inicio);
-		lista->cantidad--;
 	} else {
 		nodo_t *nodo_aux = lista->nodo_inicio;
 		while (lista->nodo_inicio != NULL) {
 			lista->nodo_inicio = lista->nodo_inicio->siguiente;
 			free(nodo_aux);
 			nodo_aux = lista->nodo_inicio;
-			lista->cantidad--;
 		}
 	}
+
+	lista->cantidad--;
 	free(lista);
 }
 
 
 void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 {
+	if (lista == NULL || lista->cantidad == 0) {
+		free(lista);
+		return;
+	}
 
+	bool destructora_es_null = funcion == NULL? true : false;
+
+	if (lista->cantidad == 1) {
+		if (!destructora_es_null)
+			funcion(lista->nodo_inicio->elemento);
+		free(lista->nodo_inicio);
+	} else {
+		nodo_t *nodo_aux = lista->nodo_inicio;
+		while (lista->nodo_inicio != NULL) {
+			if (!destructora_es_null)
+				funcion(lista->nodo_inicio->elemento);
+			lista->nodo_inicio = lista->nodo_inicio->siguiente;
+			free(nodo_aux);
+			nodo_aux = lista->nodo_inicio;
+		}
+	}
+
+	lista->cantidad--;
+	free(lista);
 }
 
 
