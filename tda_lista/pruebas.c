@@ -12,7 +12,6 @@ void lista_probar_creacion()
   pa2m_nuevo_grupo("Creación de una lista");
 
   lista_t *lista = lista_crear();
-
   pa2m_afirmar(lista != NULL, "Se crea la lista exitosamente.");
   pa2m_afirmar(lista != NULL && lista->nodo_inicio == NULL, "El puntero al nodo inicial está inicializado en NULL.");
   pa2m_afirmar(lista != NULL && lista->nodo_fin == NULL, "El puntero al nodo final está inicializado en NULL.");
@@ -40,14 +39,15 @@ void lista_probar_insercion_al_final()
   pa2m_afirmar(lista != NULL && lista->cantidad == 1, "La cantidad de elementos de la lista aumenta en 1.");
 
   size_t cantidad_auxiliar = lista->cantidad;
-  pa2m_afirmar(lista_insertar(lista, &elemento_prueba_2) != NULL && lista->cantidad == cantidad_auxiliar + 1, 
+  lista = lista_insertar(lista, &elemento_prueba_2);
+  pa2m_afirmar(lista != NULL && lista->cantidad == cantidad_auxiliar + 1, 
                "Se inserta exitosamente un elemento al final de una lista con al menos un elemento.");
 
-  pa2m_afirmar(lista_insertar(lista, NULL) != NULL, "Se inserta un elemento NULL a la lista.");
+  lista = lista_insertar(lista, NULL);
+  pa2m_afirmar(lista != NULL, "Se inserta un elemento NULL a la lista.");
 
   lista_destruir(lista);
 }
-
 
 
 // Se realizan las pruebas sobre la función lista_quitar
@@ -56,25 +56,29 @@ void lista_probar_eliminacion_al_final()
   pa2m_nuevo_grupo("Eliminación de elementos al final de una lista");
 
   lista_t *lista = lista_crear();
-  lista_t *lista_vacia = lista_crear();
 
   int elemento_prueba_1 = 11;
   char elemento_prueba_2 = 'a';
+
   lista = lista_insertar(lista, &elemento_prueba_2);
   lista = lista_insertar(lista, NULL);
   lista = lista_insertar(lista, &elemento_prueba_1);
 
   pa2m_afirmar(lista_quitar(NULL) == NULL, "No se puede eliminar un elemento de una lista NULL.");
-  pa2m_afirmar(lista_quitar(lista_vacia) == NULL, "No se puede eliminar un elemento de una lista vacia.");
+
+  lista_t *lista_vacia = lista_crear();
+  void *elemento_eliminado = lista_quitar(lista_vacia);
+  pa2m_afirmar(elemento_eliminado == NULL, "No se puede eliminar un elemento de una lista vacia.");
 
   size_t cantidad_auxiliar = lista->cantidad;
-  lista_quitar(lista);
-  pa2m_afirmar(lista != NULL, "Se elimina un elemento de la lista.");
-  pa2m_afirmar(lista != NULL, "Se devuelve el elemento eliminado.");
-  pa2m_afirmar(lista != NULL && lista->cantidad == cantidad_auxiliar - 1, 
+  elemento_eliminado = lista_quitar(lista);
+  pa2m_afirmar(elemento_eliminado != NULL, "Se elimina un elemento no NULL de la lista.");
+  pa2m_afirmar(elemento_eliminado != NULL, "Se devuelve el elemento eliminado.");
+  pa2m_afirmar(elemento_eliminado != NULL && lista->cantidad == cantidad_auxiliar - 1, 
                "La cantidad de elementos de la lista se reduce en 1.");
                
-  pa2m_afirmar(lista_quitar(lista) == NULL, "Se elimina un elemento NULL de la lista.");
+  elemento_eliminado = lista_quitar(lista);
+  pa2m_afirmar(elemento_eliminado == NULL, "Se elimina un elemento NULL de la lista.");
 
   lista_destruir(lista);
   lista_destruir(lista_vacia);
@@ -92,23 +96,28 @@ void lista_probar_insercion_en_posicion()
   int elemento_prueba_2 = 19;
   char elemento_prueba_3 = '<';
 
+  pa2m_afirmar(lista_insertar_en_posicion(NULL, &elemento_prueba_1, 5) == NULL, "No se insertan elementos en una lista NULL.");
+
   lista = lista_insertar_en_posicion(lista, &elemento_prueba_3, 0);
   pa2m_afirmar(lista != NULL, "Se retorna la lista al insertar un elemento en la misma.");
   pa2m_afirmar(lista != NULL, "Se inserta exitosamente un elemento en una lista vacia.");
   pa2m_afirmar(lista != NULL && lista->cantidad == 1, "La cantidad de elementos de la lista aumenta en 1.");
 
   size_t cantidad_auxiliar = lista->cantidad;
-  pa2m_afirmar(lista_insertar_en_posicion(lista, NULL, 1) != NULL && lista->cantidad == cantidad_auxiliar + 1, 
-               "Se inserta un elemento NULL a la lista.");
+  lista = lista_insertar_en_posicion(lista, NULL, 1);
+  pa2m_afirmar(lista != NULL && lista->cantidad == cantidad_auxiliar + 1, "Se inserta un elemento NULL a la lista.");
 
-  pa2m_afirmar(lista_insertar_en_posicion(lista, &elemento_prueba_2, 0) != NULL, 
-               "Se inserta exitosamente un elemento al principio de una lista con al menos un elemento.");
-  pa2m_afirmar(lista_insertar_en_posicion(lista, &elemento_prueba_1, 1) != NULL, 
-               "Se inserta exitosamente un elemento en medio de una lista con al menos un elemento.");
-  pa2m_afirmar(lista_insertar_en_posicion(lista, &elemento_prueba_3, 4) != NULL, 
-               "Se inserta exitosamente un elemento al final de una lista con al menos un elemento.");
-  pa2m_afirmar(lista_insertar_en_posicion(lista, &elemento_prueba_2, 99) != NULL, 
-               "Se inserta al final un elemento que se queria insertar en una posicion no existente.");
+  lista = lista_insertar_en_posicion(lista, &elemento_prueba_2, 0);
+  pa2m_afirmar(lista != NULL, "Se inserta exitosamente un elemento al principio de una lista con al menos un elemento.");
+  
+  lista = lista_insertar_en_posicion(lista, &elemento_prueba_1, 1);
+  pa2m_afirmar(lista != NULL, "Se inserta exitosamente un elemento en medio de una lista con al menos un elemento.");
+
+  lista = lista_insertar_en_posicion(lista, &elemento_prueba_3, 4);
+  pa2m_afirmar(lista != NULL, "Se inserta exitosamente un elemento al final de una lista con al menos un elemento.");
+
+  lista = lista_insertar_en_posicion(lista, &elemento_prueba_2, 99);
+  pa2m_afirmar(lista != NULL, "Se inserta al final un elemento que se queria insertar en una posicion no existente.");
 
   lista_destruir(lista);
 }
@@ -120,7 +129,6 @@ void lista_probar_eliminacion_en_posicion()
   pa2m_nuevo_grupo("Eliminación de elementos en cierta posicion de una lista");
 
   lista_t *lista = lista_crear();
-  lista_t *lista_vacia = lista_crear();
 
   char *elemento_prueba_1 = "Hola";
   int elemento_prueba_2 = -6;
@@ -133,21 +141,29 @@ void lista_probar_eliminacion_en_posicion()
   lista_insertar_en_posicion(lista, &elemento_prueba_2, 3);
 
   pa2m_afirmar(lista_quitar_de_posicion(NULL, 9) == NULL, "No se puede eliminar un elemento de una lista NULL.");
-  pa2m_afirmar(lista_quitar_de_posicion(lista_vacia, 9) == NULL, 
-               "No se permite eliminar un elemento de una lista vacia.");
+
+  lista_t *lista_vacia = lista_crear();
+  void *elemento_eliminado_lista = lista_quitar_de_posicion(lista_vacia, 9);
+  pa2m_afirmar(elemento_eliminado_lista == NULL, "No se permite eliminar un elemento de una lista vacia.");
 
   size_t cantidad_auxiliar = lista->cantidad;
-  void *elemento_eliminado_lista = lista_quitar_de_posicion(lista, 4);
-  pa2m_afirmar(elemento_eliminado_lista != NULL, "Se elimina el ultimo elemento de la lista.");
+  elemento_eliminado_lista = lista_quitar_de_posicion(lista, 1);
+  pa2m_afirmar(elemento_eliminado_lista != NULL, "Se elimina un elemento no NULL del medio de la lista.");
   pa2m_afirmar(elemento_eliminado_lista != NULL, "Se devuelve el elemento eliminado.");
   pa2m_afirmar(elemento_eliminado_lista != NULL && lista->cantidad == cantidad_auxiliar - 1, 
                "La cantidad de elementos se reduce en 1.");
 
-  pa2m_afirmar(lista_quitar_de_posicion(lista, 1) != NULL, "Se elimina un elemento del medio de la lista.");
-  pa2m_afirmar(lista_quitar_de_posicion(lista, 0) != NULL, "Se elimina el primer elemento de la lista.");
-  pa2m_afirmar(lista_quitar_de_posicion(lista, 99) == NULL, 
-               "Se retorna NULL al querer eliminar un elemento en una posicion inexistente.");
-  pa2m_afirmar(lista_quitar_de_posicion(lista, 0) == NULL, "Se elimina un elemento NULL de la lista.");
+  elemento_eliminado_lista = lista_quitar_de_posicion(lista, 3);
+  pa2m_afirmar(elemento_eliminado_lista != NULL, "Se elimina el ultimo elemento de la lista.");
+
+  elemento_eliminado_lista = lista_quitar_de_posicion(lista, 0);
+  pa2m_afirmar(elemento_eliminado_lista != NULL, "Se elimina el primer elemento de la lista.");
+
+  elemento_eliminado_lista = lista_quitar_de_posicion(lista, 99);
+  pa2m_afirmar(elemento_eliminado_lista == NULL, "Se retorna NULL al querer eliminar un elemento en una posicion inexistente.");
+
+  elemento_eliminado_lista = lista_quitar_de_posicion(lista, 0);
+  pa2m_afirmar(elemento_eliminado_lista == NULL, "Se elimina un elemento NULL de la lista.");
 
   lista_destruir(lista);
   lista_destruir(lista_vacia);
@@ -160,30 +176,38 @@ void lista_probar_buscar_por_posicion()
   pa2m_nuevo_grupo("Buscar elementos por posicion en la lista");
 
   lista_t *lista = lista_crear();
-  lista_t *lista_vacia = lista_crear();
 
   char elemento_prueba_1 = 'k';
   int elemento_prueba_2 = 0;
   char elemento_prueba_3 = '!';
+
   lista = lista_insertar(lista, &elemento_prueba_1);
   lista = lista_insertar(lista, &elemento_prueba_2);
   lista = lista_insertar(lista, NULL);
   lista = lista_insertar(lista, &elemento_prueba_3);
 
-  pa2m_afirmar(lista_elemento_en_posicion(NULL, 0) == NULL, 
-               "No se puede buscar un elemento por su posicion en una lista NULL.");
-  pa2m_afirmar(lista_elemento_en_posicion(lista_vacia, 2) == NULL, 
-               "Se retorna NULL al buscar un elemento en cierta posicion en una lista vacia.");
-  pa2m_afirmar(lista_elemento_en_posicion(lista, 9876) == NULL, 
-               "Se retorna NULL al buscar un elemento en una posicion inexistente de una lista.");
-               
-  pa2m_afirmar(lista_elemento_en_posicion(lista, 0) != NULL, 
-               "Se trae el elemento en la primera posicion en una lista con al menos un elemento.");
-  pa2m_afirmar(lista_elemento_en_posicion(lista, 3) != NULL, 
-               "Se trae el elemento en la ultima posicion en una lista con al menos un elemento.");
-  pa2m_afirmar(lista_elemento_en_posicion(lista, 1) != NULL, 
+  void *elemento_en_posicion = lista_elemento_en_posicion(NULL, 0);
+  pa2m_afirmar(elemento_en_posicion == NULL, "No se puede buscar un elemento por su posicion en una lista NULL.");
+
+  lista_t *lista_vacia = lista_crear();
+  elemento_en_posicion = lista_elemento_en_posicion(lista_vacia, 2);
+  pa2m_afirmar(elemento_en_posicion == NULL, "Se retorna NULL al buscar un elemento en cierta posicion en una lista vacia.");
+
+  elemento_en_posicion = lista_elemento_en_posicion(lista, 9876);
+  pa2m_afirmar(elemento_en_posicion == NULL, "Se retorna NULL al buscar un elemento en una posicion inexistente de una lista.");
+
+  elemento_en_posicion = lista_elemento_en_posicion(lista, 0);
+  pa2m_afirmar(elemento_en_posicion != NULL, "Se trae el elemento en la primera posicion en una lista con al menos un elemento.");
+
+  elemento_en_posicion = lista_elemento_en_posicion(lista, 3);
+  pa2m_afirmar(elemento_en_posicion != NULL, "Se trae el elemento en la ultima posicion en una lista con al menos un elemento.");
+
+  elemento_en_posicion = lista_elemento_en_posicion(lista, 1);
+  pa2m_afirmar(elemento_en_posicion != NULL, 
                "Se trae un elemento en alguna posicion del medio en una lista con al menos un elemento.");
-  pa2m_afirmar(lista_elemento_en_posicion(lista, 2) == NULL, "Se trae un elemento del tipo NULL en la lista.");
+
+  elemento_en_posicion = lista_elemento_en_posicion(lista, 2);
+  pa2m_afirmar(elemento_en_posicion == NULL, "Se trae un elemento NULL de la lista.");
 
   lista_destruir(lista);
   lista_destruir(lista_vacia);
@@ -230,7 +254,6 @@ void lista_probar_buscar_elemento()
   pa2m_nuevo_grupo("Buscar elementos en la lista");
 
   lista_t *lista = lista_crear();
-  lista_t *lista_vacia = lista_crear();
 
   int elemento_prueba_1 = 100;
   char elemento_prueba_2 = 'x';
@@ -244,21 +267,22 @@ void lista_probar_buscar_elemento()
                "No se puede buscar un elemento en una lista NULL.");
   pa2m_afirmar(lista_buscar_elemento(lista, NULL, &elemento_prueba_2) == NULL, 
                "No se puede buscar un elemento si la función de comparación enviada es NULL.");
-  pa2m_afirmar(lista_buscar_elemento(lista_vacia, comparar_enteros, &elemento_prueba_2) == NULL, 
-               "No se encuentra el elemento buscado en una lista vacia.");
 
-  pa2m_afirmar(lista_buscar_elemento(lista, comparar_enteros, &elemento_a_buscar) == NULL, 
-               "No se encuentra el elemento buscado.");
+  lista_t *lista_vacia = lista_crear();
+  void *elemento_encontrado = lista_buscar_elemento(lista_vacia, comparar_enteros, &elemento_prueba_2);
+  pa2m_afirmar(elemento_encontrado == NULL, "No se encuentra el elemento buscado en una lista vacia.");
 
-  pa2m_afirmar(lista_buscar_elemento(lista, comparar_enteros, &elemento_prueba_1) == &elemento_prueba_1, 
-               "Se busca y se encuentra el primer elemento encontrado.");
-  pa2m_afirmar(lista_buscar_elemento(lista, comparar_enteros, &elemento_prueba_1) == &elemento_prueba_1, 
-               "Se busca y encuentra un elemento del tipo entero.");
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_enteros, &elemento_a_buscar);
+  pa2m_afirmar(elemento_encontrado == NULL, "No se encuentra el elemento buscado.");
 
-  pa2m_afirmar(lista_buscar_elemento(lista, comparar_char, &elemento_prueba_2) == &elemento_prueba_2, 
-               "Se encuentra el primer elemento encontrado cuando hay otro igual más adelante en la lista."); 
-  pa2m_afirmar(lista_buscar_elemento(lista, comparar_char, &elemento_prueba_2) == &elemento_prueba_2, 
-               "Se busca y encuentra un elemento del tipo char.");   
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_enteros, &elemento_prueba_1);
+  pa2m_afirmar(elemento_encontrado == &elemento_prueba_1, "Se busca y se encuentra el primer elemento encontrado.");
+  pa2m_afirmar(elemento_encontrado == &elemento_prueba_1, "Se busca y encuentra un elemento del tipo entero.");
+
+  elemento_encontrado = lista_buscar_elemento(lista, comparar_char, &elemento_prueba_2);
+  pa2m_afirmar(elemento_encontrado == &elemento_prueba_2, 
+               "Se encuentra el primer elemento encontrado cuando hay otro igual más adelante en la lista.");
+  pa2m_afirmar(elemento_encontrado == &elemento_prueba_2, "Se busca y encuentra un elemento del tipo char.");   
 
   lista_destruir(lista);
   lista_destruir(lista_vacia);
@@ -271,7 +295,6 @@ void lista_probar_obtener_primer_elemento()
   pa2m_nuevo_grupo("Obtención de primer elemento de una lista");
 
   lista_t *lista = lista_crear();
-  lista_t *lista_vacia = lista_crear();
 
   int elemento_prueba_1 = 99;
   char elemento_prueba_2 = 'E';
@@ -279,11 +302,16 @@ void lista_probar_obtener_primer_elemento()
   lista = lista_insertar(lista, &elemento_prueba_1);
 
   pa2m_afirmar(lista_primero(NULL) == NULL, "Se retorna NULL al buscar el primer elemento de una lista NULL.");
-  pa2m_afirmar(lista_primero(lista_vacia) == NULL, "Se retorna NULL al buscar el primer elemento de una lista vacia.");
 
+  lista_t *lista_vacia = lista_crear();
+  void *primer_elemento = lista_primero(lista_vacia);
+  pa2m_afirmar(primer_elemento == NULL, "Se retorna NULL al buscar el primer elemento de una lista vacia.");
+
+  primer_elemento = lista_primero(lista);
   pa2m_afirmar(lista != NULL, "En una lista de un solo elemento, se devuelve su único elemento como primero.");
 
   lista = lista_insertar(lista, &elemento_prueba_2);
+  primer_elemento = lista_primero(lista);
   pa2m_afirmar(lista != NULL, "Se retorna el primer elemento de una lista con mas de un elemento.");
 
   lista_destruir(lista);
@@ -296,8 +324,7 @@ void lista_probar_obtener_ultimo_elemento()
 {
   pa2m_nuevo_grupo("Obtención de ultimo elemento de una lista");
 
-  lista_t *lista = lista_crear();
-  lista_t *lista_vacia = lista_crear();  
+  lista_t *lista = lista_crear(); 
 
   int elemento_prueba_1 = 11;
   float elemento_prueba_2 = 0.5;
@@ -305,11 +332,17 @@ void lista_probar_obtener_ultimo_elemento()
   lista = lista_insertar(lista, &elemento_prueba_1);
 
   pa2m_afirmar(lista_ultimo(NULL) == NULL, "Se retorna NULL al buscar el ultimo elemento de una lista NULL.");
-  pa2m_afirmar(lista_ultimo(lista_vacia) == NULL, "Se retorna NULL al buscar el ultimo elemento de una lista vacia.");
 
+  lista_t *lista_vacia = lista_crear();
+  void *ultimo_elemento = lista_ultimo(lista_vacia);
+  pa2m_afirmar(ultimo_elemento == NULL, "Se retorna NULL al buscar el ultimo elemento de una lista vacia.");
+
+  ultimo_elemento = lista_ultimo(lista_vacia);
   pa2m_afirmar(lista != NULL, "En una lista de un solo elemento, se devuelve su único elemento como ultimo.");
 
+
   lista = lista_insertar(lista, &elemento_prueba_2);
+  ultimo_elemento = lista_ultimo(lista_vacia);
   pa2m_afirmar(lista != NULL, "Se retorna el ultimo elemento de una lista con mas de un elemento.");
 
   lista_destruir(lista);
@@ -323,15 +356,19 @@ void lista_probar_vacia_o_inexistente()
   pa2m_nuevo_grupo("Comprobación de lista vacia o no existente");
 
   lista_t *lista = lista_crear();
-  lista_t *lista_sin_elementos = lista_crear();
 
   int elemento_prueba = 6;
 
   lista = lista_insertar(lista, &elemento_prueba);
 
   pa2m_afirmar(lista_vacia(NULL), "Se devuelve true para una lista NULL.");
-  pa2m_afirmar(lista_vacia(lista_sin_elementos), "Se devuelve true para una lista vacia.");
-  pa2m_afirmar(!lista_vacia(lista), "Se devuelve false para una lista con al menos un elemento.");
+
+  lista_t *lista_sin_elementos = lista_crear();
+  bool es_vacia = lista_vacia(lista_sin_elementos);
+  pa2m_afirmar(es_vacia, "Se devuelve true para una lista vacia.");
+
+  es_vacia = lista_vacia(lista);
+  pa2m_afirmar(!es_vacia, "Se devuelve false para una lista con al menos un elemento.");
 
   lista_destruir(lista);
   lista_destruir(lista_sin_elementos);
@@ -344,16 +381,21 @@ void lista_probar_tamanio()
   pa2m_nuevo_grupo("Comprobación de tamaño de una lista");
 
   lista_t *lista = lista_crear();
-  lista_t *lista_vacia = lista_crear();
-  lista_t *lista_nula = NULL;
 
   char elemento_prueba = 'i';
 
   lista = lista_insertar(lista, &elemento_prueba);
 
-  pa2m_afirmar(lista_nula == NULL && lista_tamanio(lista_nula) == 0, "Se devuelve 0 para una lista NULL.");
-  pa2m_afirmar(lista_vacia!= NULL && lista_tamanio(lista_vacia) == 0, "Se devuelve 0 para una lista vacia.");
-  pa2m_afirmar(lista != NULL && lista_tamanio(lista) > 0, 
+  lista_t *lista_nula = NULL;
+  size_t tamanio_lista = lista_tamanio(lista_nula);
+  pa2m_afirmar(lista_nula == NULL && tamanio_lista == 0, "Se devuelve 0 para una lista NULL.");
+
+  lista_t *lista_vacia = lista_crear();
+  tamanio_lista = lista_tamanio(lista_vacia);
+  pa2m_afirmar(lista_vacia != NULL && tamanio_lista == 0, "Se devuelve 0 para una lista vacia.");
+
+  tamanio_lista = lista_tamanio(lista);
+  pa2m_afirmar(lista != NULL && tamanio_lista > 0, 
                "Se devuelve la cantidad de elementos para una lista con al menos un elemento.");
 
   lista_destruir(lista);
@@ -366,25 +408,36 @@ void lista_probar_destruccion()
 {
   pa2m_nuevo_grupo("Destrucción de la lista");
 
-  lista_t *lista_de_un_elemento = lista_crear();
-  lista_t *lista_mas_de_un_elemento = lista_crear();
-  lista_t *lista_sin_elementos = lista_crear();
+  int elemento_prueba_1 = 9;
+  char elemento_prueba_2 = 'z';
 
   lista_t *lista_inexistente = NULL;
   lista_destruir(lista_inexistente);
   pa2m_afirmar(lista_inexistente == NULL, "Se libera una lista NULL.");
 
+  lista_t *lista_sin_elementos = lista_crear();
   bool lista_es_vacia = lista_vacia(lista_sin_elementos);
   lista_destruir(lista_sin_elementos);
   pa2m_afirmar(lista_es_vacia, "Se libera una lista vacia");
 
+  lista_t *lista_de_un_elemento = lista_crear();
+  lista_de_un_elemento = lista_insertar(lista_de_un_elemento, &elemento_prueba_1);
   lista_destruir(lista_de_un_elemento);
-  pa2m_afirmar(lista_de_un_elemento != NULL, 
-               "Se libera una lista de un solo elemento junto con su único nodo.");
+  pa2m_afirmar(lista_de_un_elemento != NULL, "Se libera una lista de un solo elemento junto con su único nodo.");
 
+  lista_t *lista_mas_de_un_elemento = lista_crear();
+  lista_mas_de_un_elemento = lista_insertar(lista_mas_de_un_elemento, &elemento_prueba_2);
+  lista_mas_de_un_elemento = lista_insertar(lista_mas_de_un_elemento, &elemento_prueba_1);
   lista_destruir(lista_mas_de_un_elemento);
-  pa2m_afirmar(lista_mas_de_un_elemento != NULL, 
-               "Se libera una lista de mas de un elemento junto con todos sus nodos.");
+  pa2m_afirmar(lista_mas_de_un_elemento != NULL, "Se libera una lista de mas de un elemento junto con todos sus nodos.");
+}
+
+
+// Se recibe un archivo como un void*, lo castea a FILE* y lo cierra (Funciona como fclose)
+void cerrar_archivo(void *archivo)
+{
+  archivo = (FILE *) archivo;
+  fclose(archivo);
 }
 
 
@@ -392,9 +445,13 @@ void lista_probar_destruccion()
 void lista_probar_destruccion_total()
 {
   pa2m_nuevo_grupo("Destrucción de la lista y de sus elementos");
-  /*
-  lista_t *lista_de_un_elemento = lista_crear();
-  lista_t *lista_mas_de_un_elemento = lista_crear();*/
+  
+  int elemento_prueba_1 = 9;
+  int *elemento_prueba_2 = malloc(sizeof(int));
+  int *elemento_prueba_3 = malloc(sizeof(int));
+  FILE *archivo_prueba_1 = fopen("prueba1.txt", "r");
+  FILE *archivo_prueba_2 = fopen("prueba2.txt", "r");
+
   lista_t *lista_sin_elementos = lista_crear();
 
   lista_t *lista_inexistente = NULL;
@@ -404,14 +461,32 @@ void lista_probar_destruccion_total()
   bool lista_es_vacia = lista_vacia(lista_sin_elementos);
   lista_destruir_todo(lista_sin_elementos, free);
   pa2m_afirmar(lista_es_vacia, "Se libera una lista vacia");
-/*
-  lista_destruir(lista_de_un_elemento);
-  pa2m_afirmar(lista_de_un_elemento != NULL, 
-               "Se libera una lista de un solo elemento junto con su único nodo.");
 
-  lista_destruir(lista_mas_de_un_elemento);
+  lista_t *lista_de_un_elemento = lista_crear();
+  lista_de_un_elemento = lista_insertar(lista_de_un_elemento, &elemento_prueba_1);
+  lista_destruir_todo(lista_de_un_elemento, NULL);
+
+  pa2m_afirmar(lista_de_un_elemento != NULL, 
+               "Se libera una lista de un solo elemento junto con su único nodo y se destruye su elemento.");
+  pa2m_afirmar(lista_de_un_elemento != NULL, "La función destructora enviada es NULL, asi que solo se libera memoria.");
+
+  lista_t *lista_mas_de_un_elemento = lista_crear();
+  lista_mas_de_un_elemento = lista_insertar(lista_mas_de_un_elemento, elemento_prueba_2);
+  lista_mas_de_un_elemento = lista_insertar(lista_mas_de_un_elemento, elemento_prueba_3);
+  lista_destruir_todo(lista_mas_de_un_elemento, free);
+
   pa2m_afirmar(lista_mas_de_un_elemento != NULL, 
-               "Se libera una lista de mas de un elemento junto con todos sus nodos.");*/
+               "Se libera una lista de mas de un elemento junto con todos sus nodos y se destruyen sus elementos.");
+  pa2m_afirmar(lista_mas_de_un_elemento != NULL && elemento_prueba_2 != NULL && elemento_prueba_3 != NULL, 
+               "Se libera la memoria de los elementos de la lista al enviar free como funcion destructora.");
+
+  lista_t *lista_de_archivos = lista_crear();
+  lista_de_archivos = lista_insertar(lista_de_archivos, archivo_prueba_1);
+  lista_de_archivos = lista_insertar(lista_de_archivos, archivo_prueba_2);
+  lista_destruir_todo(lista_de_archivos, cerrar_archivo);
+
+  pa2m_afirmar(lista_de_archivos != NULL && archivo_prueba_1 != NULL && archivo_prueba_2 != NULL, 
+               "Se cierran los archivos que son elementos de la lista al enviar cerrar_archivo (fclose) como funcion destructora.");
 }
 
 

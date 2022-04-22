@@ -321,16 +321,17 @@ void lista_destruir(lista_t *lista)
 
 	if (lista->cantidad == 1) {
 		free(lista->nodo_inicio);
+		lista->cantidad--;
 	} else {
 		nodo_t *nodo_aux = lista->nodo_inicio;
 		while (lista->nodo_inicio != NULL) {
 			lista->nodo_inicio = lista->nodo_inicio->siguiente;
 			free(nodo_aux);
 			nodo_aux = lista->nodo_inicio;
+			lista->cantidad--;
 		}
 	}
 
-	lista->cantidad--;
 	free(lista);
 }
 
@@ -348,6 +349,7 @@ void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 		if (!destructora_es_null)
 			funcion(lista->nodo_inicio->elemento);
 		free(lista->nodo_inicio);
+		lista->cantidad--;
 	} else {
 		nodo_t *nodo_aux = lista->nodo_inicio;
 		while (lista->nodo_inicio != NULL) {
@@ -356,10 +358,10 @@ void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 			lista->nodo_inicio = lista->nodo_inicio->siguiente;
 			free(nodo_aux);
 			nodo_aux = lista->nodo_inicio;
+			lista->cantidad--;
 		}
 	}
 
-	lista->cantidad--;
 	free(lista);
 }
 
