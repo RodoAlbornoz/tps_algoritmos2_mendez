@@ -343,18 +343,19 @@ void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 		return;
 	}
 
-	bool destructora_es_null = funcion == NULL? true : false;
+	if (funcion == NULL) {
+		lista_destruir(lista);
+		return;
+	}
 
 	if (lista->cantidad == 1) {
-		if (!destructora_es_null)
-			funcion(lista->nodo_inicio->elemento);
+		funcion(lista->nodo_inicio->elemento);
 		free(lista->nodo_inicio);
 		lista->cantidad--;
 	} else {
 		nodo_t *nodo_aux = lista->nodo_inicio;
 		while (lista->nodo_inicio != NULL) {
-			if (!destructora_es_null)
-				funcion(lista->nodo_inicio->elemento);
+			funcion(lista->nodo_inicio->elemento);
 			lista->nodo_inicio = lista->nodo_inicio->siguiente;
 			free(nodo_aux);
 			nodo_aux = lista->nodo_inicio;
@@ -368,7 +369,23 @@ void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 
 lista_iterador_t *lista_iterador_crear(lista_t *lista)
 {
-	return NULL;
+	if (lista == NULL) {
+		free(lista);
+		return NULL;
+	}
+
+	lista_iterador_t *iterador = malloc(sizeof(lista_iterador_t));
+
+	if (iterador == NULL) {
+		free(iterador);
+		free(lista);
+		return NULL;
+	}
+
+	iterador->corriente = lista->nodo_inicio;
+	iterador->lista = lista;
+
+	return iterador;
 }
 
 
@@ -392,7 +409,7 @@ void *lista_iterador_elemento_actual(lista_iterador_t *iterador)
 
 void lista_iterador_destruir(lista_iterador_t *iterador)
 {
-
+	free(iterador);
 }
 
 

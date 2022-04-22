@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include "pa2m.h"
 
-
 // Se realizan las pruebas sobre la función lista_crear
 void lista_probar_creacion() 
 {
@@ -468,7 +467,8 @@ void lista_probar_destruccion_total()
 
   pa2m_afirmar(lista_de_un_elemento != NULL, 
                "Se libera una lista de un solo elemento junto con su único nodo y se destruye su elemento.");
-  pa2m_afirmar(lista_de_un_elemento != NULL, "La función destructora enviada es NULL, asi que solo se libera memoria.");
+  pa2m_afirmar(lista_de_un_elemento != NULL, 
+               "La función destructora enviada es NULL, asi que solo se libera memoria de la lista.");
 
   lista_t *lista_mas_de_un_elemento = lista_crear();
   lista_mas_de_un_elemento = lista_insertar(lista_mas_de_un_elemento, elemento_prueba_2);
@@ -490,6 +490,39 @@ void lista_probar_destruccion_total()
 }
 
 
+// Se realizan las pruebas sobre la función lista_iterador_crear
+void lista_probar_creacion_iterador()
+{
+  pa2m_nuevo_grupo("Creación de un iterador para la lista");
+
+  int elemento_prueba_1 = 7;
+  char elemento_prueba_2 = 'J';
+
+  lista_iterador_t *iterador_nulo = lista_iterador_crear(NULL);
+  pa2m_afirmar(iterador_nulo == NULL, "No se crea el iterador si la lista enviada es NULL.");
+
+  lista_t *lista_vacia = lista_crear();
+  lista_iterador_t *iterador1 = lista_iterador_crear(lista_vacia);
+  pa2m_afirmar(iterador1 != NULL, "Se crea el iterador exitosamente a partir de una lista no NULL.");
+  pa2m_afirmar(iterador1 != NULL && iterador1->lista == lista_vacia, 
+               "La lista a la que apunta el iterador es igual a la lista enviada a la función.");
+  pa2m_afirmar(iterador1 != NULL && iterador1->corriente == NULL, 
+               "El iterador apunta inicialmente al primer nodo de una lista vacia (O sea a NULL).");
+
+  lista_t *lista = lista_crear();
+  lista = lista_insertar(lista, &elemento_prueba_1);
+  lista = lista_insertar(lista, &elemento_prueba_2);
+  lista_iterador_t *iterador2 = lista_iterador_crear(lista);
+  pa2m_afirmar(iterador2 != NULL && iterador2->corriente == lista->nodo_inicio, 
+               "El iterador apunta inicialmente al primer nodo de una lista no vacia.");
+
+  lista_destruir(lista);
+  lista_destruir(lista_vacia);
+  lista_iterador_destruir(iterador1);
+  lista_iterador_destruir(iterador2);
+}
+
+
 // Se realizan las pruebas sobre las operaciones de una lista
 void pruebas_lista()
 {
@@ -506,27 +539,127 @@ void pruebas_lista()
   lista_probar_tamanio();
   lista_probar_destruccion();
   lista_probar_destruccion_total();
+  lista_probar_creacion_iterador();
 }
 
 
-// Se realizan las pruebas sobre las operaciones de una pila
-void pruebas_pila()
+
+
+
+
+
+
+
+
+// Se realizan las pruebas sobre la funcion pila_crear 
+/* void pila_probar_creacion()
+{
+  pa2m_nuevo_grupo("Creación de una pila");
+
+  lista_t *pila = pila_crear();
+  pa2m_afirmar(pila != NULL, "Se crea la pila exitosamente.");
+  pa2m_afirmar(pila != NULL && pila->nodo_inicio == NULL, "El tope de la pila está inicializado en NULL.");
+  pa2m_afirmar(pila != NULL && pila->cantidad == 0, "La cantidad de elementos de la pila se inicializa en 0.");
+
+  pila_destruir(pila);
+}
+
+
+// Se realizan las pruebas sobre la funcion pila_apilar
+void pila_probar_apilar()
+{
+  pa2m_nuevo_grupo("Apilar un elemento en una pila");
+
+  lista_t *pila = pila_crear();
+
+  int elemento_prueba_1 = 5;
+  char elemento_prueba_2 = 'l';
+
+  pa2m_afirmar(pila_apilar(NULL, &elemento_prueba_1) == NULL, "No se apila sobre una pila NULL.");
+
+  pila = pila_apilar(pila, &elemento_prueba_1);
+  pa2m_afirmar(pila != NULL, "Se retorna la pila al apilar un elemento sobre ella.");
+  pa2m_afirmar(pila != NULL, "Se apila exitosamente sobre una pila vacia.");
+  pa2m_afirmar(pila!= NULL && pila->cantidad == 1, "La cantidad de elementos de la pila aumenta en 1.");
+
+  size_t cantidad_auxiliar = pila->cantidad;
+  pila  = pila_apilar(pila, &elemento_prueba_2);
+  pa2m_afirmar(pila!= NULL && pila->cantidad == cantidad_auxiliar + 1, 
+               "Se apila exitosamente sobre una pila con al menos un elemento.");
+
+  pila = pila_apilar(pila, NULL);
+  pa2m_afirmar(pila != NULL, "Se apila un elemento NULL sobre la pila.");
+
+  pila_destruir(pila);
+}
+
+
+// Se realizan las pruebas sobre la funcion pila_desapilar
+void pila_probar_desapilar()
 {
 
 }
+
+
+// Se realizan las pruebas sobre la funcion pila_tope
+void pila_probar_tope()
+{
+
+}
+
+
+// Se realizan las pruebas sobre la funcion pila_tamanio
+void pila_probar_tamanio()
+{
+
+}
+
+
+
+// Se realizan las pruebas sobre la funcion pila_vacia
+void pila_probar_vacia()
+{
+
+}
+
+
+// Se realizan las pruebas sobre la funcion pila_destruir
+void pila_probar_destruir()
+{
+
+}
+*/
+
+// Se realizan las pruebas sobre las operaciones de una pila 
+/*void pruebas_pila()
+{
+  pila_probar_creacion();
+  pila_probar_apilar();
+  pila_probar_desapilar();
+  pila_probar_tope();
+  pila_probar_tamanio();
+  pila_probar_vacia();
+  pila_probar_destruir();
+}*/
 
 
 // Se realizan las pruebas sobre las operaciones de una cola
-void pruebas_cola()
+/*void pruebas_cola()
 {
-
-}
+  cola_probar_creacion();
+  cola_probar_encolar();
+  cola_probar_desencolar();
+  cola_probar_frente();
+  cola_probar_tamanio();
+  cola_probar_vacia();
+  cola_probar_destruir();
+}*/
 
 
 int main() {  
   pruebas_lista();
-  pruebas_pila();
-  pruebas_cola();
+//  pruebas_pila();
+//  pruebas_cola();
 
   return pa2m_mostrar_reporte();
 }
