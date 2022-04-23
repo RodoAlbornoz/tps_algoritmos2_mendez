@@ -61,7 +61,7 @@ void probar_operaciones_lista()
 
 	for (it = lista_iterador_crear(lista);
 	     lista_iterador_tiene_siguiente(it); lista_iterador_avanzar(it))
-		printf("%c ", *(char *)lista_iterador_elemento_actual(it));
+		printf("%c ", *(char *)lista_iterador_elemento_actual(it)); ///////////
 	printf("\n\n");
 
 	lista_iterador_destruir(it);
@@ -72,7 +72,7 @@ void probar_operaciones_lista()
 	elementos_recorridos = lista_con_cada_elemento(lista, mostrar_elemento,
 						       (void *)&contador);
 
-	printf("Recorri %lu elementos con el iterador interno y sume %i elementos\n",
+	printf("Recorri %lu elementos con el iterador interno y sume %i elementos\n", ///////////
 	       elementos_recorridos, contador);
 
 	printf("\n");
@@ -159,10 +159,10 @@ int main()
 	printf("\nEjemplo del destructor de lista (no debería perder memoria)\n");
 	probar_operaciones_destructor_lista();
 
-
+	/*
 	printf("\nEjemplo del uso de cola\n");
 	probar_operaciones_cola();
-
+	*/
 	printf("\nEjemplo del uso de pila\n");
 	probar_operaciones_pila();
 

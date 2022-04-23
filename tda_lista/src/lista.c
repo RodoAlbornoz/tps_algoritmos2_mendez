@@ -63,13 +63,8 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 	}
 
 	bool lista_es_vacia = lista_vacia(lista);
-	if (lista_es_vacia) {
-		if (lista_insertar_al_final(lista, elemento, lista_es_vacia) == -1)
-			return NULL;
-	} else { 
-		if (lista_insertar_al_final(lista, elemento, lista_es_vacia) == -1)
-			return NULL;
-	}
+	if (lista_insertar_al_final(lista, elemento, lista_es_vacia) == -1)
+		return NULL;
 
 	lista->cantidad++;
 	return lista;

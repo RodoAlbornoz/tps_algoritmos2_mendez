@@ -14,7 +14,7 @@ void lista_probar_creacion()
   pa2m_afirmar(lista != NULL, "Se crea la lista exitosamente.");
   pa2m_afirmar(lista != NULL && lista->nodo_inicio == NULL, "El puntero al nodo inicial está inicializado en NULL.");
   pa2m_afirmar(lista != NULL && lista->nodo_fin == NULL, "El puntero al nodo final está inicializado en NULL.");
-  pa2m_afirmar(lista != NULL && lista->cantidad == 0, "La cantidad de elementos de la lista se inicializa en 0.");
+  pa2m_afirmar(lista != NULL && lista_tamanio(lista) == 0, "La cantidad de elementos de la lista se inicializa en 0.");
 
   lista_destruir(lista);
 }
@@ -726,7 +726,7 @@ void lista_probar_iterador_interno()
   lista2 = lista_insertar(lista2, &elemento_prueba_1);
   lista2 = lista_insertar(lista2, &elemento_prueba_3);
   lista2 = lista_insertar(lista2, &elemento_prueba_2);
-  // 36 - 6 - 27
+
   cant_elementos_iterados = lista_con_cada_elemento(lista2, segundo_divide_al_primero, &divisor_3);
   pa2m_afirmar(cant_elementos_iterados == 0, "Se tiene una lista de mas de un elemento y no se itera sobre ningun elemento.");
 
@@ -770,18 +770,18 @@ void pruebas_lista()
 }
 
 
-// // Se realizan las pruebas sobre la funcion pila_crear 
-// void pila_probar_creacion()
-// {
-//   pa2m_nuevo_grupo("Creación de una pila");
+// Se realizan las pruebas sobre la funcion pila_crear 
+void pila_probar_creacion()
+{
+  pa2m_nuevo_grupo("Creación de una pila");
 
-//   lista_t *pila = pila_crear();
-//   pa2m_afirmar(pila != NULL, "Se crea la pila exitosamente.");
-//   pa2m_afirmar(pila != NULL && pila->nodo_inicio == NULL, "El tope de la pila está inicializado en NULL.");
-//   pa2m_afirmar(pila != NULL && pila->cantidad == 0, "La cantidad de elementos de la pila se inicializa en 0.");
+  pila_t *pila = pila_crear();
+  pa2m_afirmar(pila != NULL, "Se crea la pila exitosamente.");
+  pa2m_afirmar(pila != NULL && pila_tope(pila) == NULL, "El tope de la pila está inicializado en NULL.");
+  pa2m_afirmar(pila != NULL && pila_vacia(pila), "La cantidad de elementos de la pila se inicializa en 0.");
 
-//   pila_destruir(pila);
-// }
+  pila_destruir(pila);
+}
 
 
 // // Se realizan las pruebas sobre la funcion pila_apilar
@@ -820,46 +820,130 @@ void pruebas_lista()
 // }
 
 
-// // Se realizan las pruebas sobre la funcion pila_tope
-// void pila_probar_tope()
-// {
+// Se realizan las pruebas sobre la funcion pila_tope
+void pila_probar_tope()
+{
+  pa2m_nuevo_grupo("Obtencion de elemento en el tope de una pila");
 
-// }
+  pila_t *pila = pila_crear();
+
+  char elemento_prueba_1 = '|';
+  char elemento_prueba_2 = '_';
+
+  pa2m_afirmar(pila_tope(NULL) == NULL, "Se retorna NULL al buscar el tope de una pila NULL.");
+  
+  void *elemento_tope = pila_tope(pila);
+  pa2m_afirmar(elemento_tope == NULL, "Se retorna NULL al buscar el tope de una pila vacia.");
+  
+  pila = pila_apilar(pila, &elemento_prueba_1);
+  elemento_tope = pila_tope(pila);
+  pa2m_afirmar(pila != NULL && elemento_tope != NULL, "Se retorna el elemento dentro del tope de una pila con un solo elemento.");
+
+  pila = pila_apilar(pila, &elemento_prueba_2);
+  elemento_tope = pila_tope(pila);
+  pa2m_afirmar(pila != NULL && elemento_tope != NULL, 
+               "Se retorna el elemento dentro del tope de una pila con mas de un elemento.");
+
+  pila = pila_apilar(pila, NULL);
+  elemento_tope = pila_tope(pila);
+  pa2m_afirmar(elemento_tope == NULL, "Se retorna un elemento NULL del tope de la pila.");
+
+  pila_destruir(pila);
+}
 
 
-// // Se realizan las pruebas sobre la funcion pila_tamanio
-// void pila_probar_tamanio()
-// {
+// Se realizan las pruebas sobre la funcion pila_tamanio
+void pila_probar_tamanio()
+{
+  pa2m_nuevo_grupo("Comprobación de tamaño de una pila");
 
-// }
+  int elemento_prueba = 11;
+
+  pila_t *pila = pila_crear();
+
+  pila_t *pila_nula = NULL;
+  size_t tamanio_pila = pila_tamanio(NULL);
+  pa2m_afirmar(pila_nula == NULL && tamanio_pila == 0, "Se devuelve 0 para una pila NULL.");
+ 
+  pila_t *pila_vacia = pila_crear();
+  tamanio_pila = pila_tamanio(pila_vacia); 
+  pa2m_afirmar(pila_vacia != NULL && tamanio_pila == 0, "Se devuelve 0 para una pila vacia.");
+
+  pila = pila_apilar(pila, &elemento_prueba);
+  tamanio_pila = pila_tamanio(pila); 
+  pa2m_afirmar(pila != NULL && pila_tamanio(pila) > 0, 
+               "Se devuelve la cantidad de elementos para una pila con al menos un elemento.");
+
+  pila_destruir(pila_vacia);
+  pila_destruir(pila);
+}
 
 
+// Se realizan las pruebas sobre la funcion pila_vacia
+void pila_probar_vacia()
+{
+  pa2m_nuevo_grupo("Comprobación de pila vacia o no existente");
 
-// // Se realizan las pruebas sobre la funcion pila_vacia
-// void pila_probar_vacia()
-// {
+  int elemento_prueba = 9;
 
-// }
+  pila_t *pila = pila_crear();
+
+  pa2m_afirmar(pila_vacia(NULL), "Se devuelve true para una pila NULL.");
+
+  pila_t *pila_sin_elementos = pila_crear();
+  bool es_vacia = pila_vacia(pila_sin_elementos);
+  pa2m_afirmar(es_vacia, "Se devuelve true para una pila vacia.");
+
+  pila = pila_apilar(pila, &elemento_prueba);
+  es_vacia = pila_vacia(pila);
+  pa2m_afirmar(!es_vacia, "Se devuelve false para una pila con al menos un elemento.");
+
+  pila_destruir(pila_sin_elementos);
+  pila_destruir(pila);
+}
 
 
-// // Se realizan las pruebas sobre la funcion pila_destruir
-// void pila_probar_destruir()
-// {
+// Se realizan las pruebas sobre la funcion pila_destruir
+void pila_probar_destruir()
+{
+  pa2m_nuevo_grupo("Destrucción de la pila");
 
-// }
+  int elemento_prueba_1 = 111;
+  char elemento_prueba_2 = 'K';
+
+  pila_t *pila_inexistente = NULL;
+  pila_destruir(pila_inexistente);
+  pa2m_afirmar(pila_inexistente == NULL, "Se libera una pila NULL.");
+
+  pila_t *pila_sin_elementos = pila_crear();
+  bool es_vacia = pila_vacia(pila_sin_elementos);
+  pila_destruir(pila_sin_elementos);
+  pa2m_afirmar(es_vacia, "Se libera una pila vacia");
+
+  pila_t *pila_un_elemento = pila_crear();
+  pila_un_elemento = pila_apilar(pila_un_elemento, &elemento_prueba_1);
+  pila_destruir(pila_un_elemento);
+  pa2m_afirmar(pila_un_elemento != NULL, "Se libera una pila de un solo elemento junto con su único nodo."); 
+
+  pila_t *pila_mas_de_un_elemento = pila_crear();
+  pila_mas_de_un_elemento = pila_apilar(pila_mas_de_un_elemento, &elemento_prueba_1);
+  pila_mas_de_un_elemento = pila_apilar(pila_mas_de_un_elemento, &elemento_prueba_2);
+  pila_destruir(pila_mas_de_un_elemento);
+  pa2m_afirmar(pila_mas_de_un_elemento != NULL, "Se libera una pila de mas de un elemento junto con todos sus nodos."); 
+}
 
 
-// // Se realizan las pruebas sobre las operaciones de una pila 
-// void pruebas_pila()
-// {
-//   pila_probar_creacion();
-//   pila_probar_apilar();
-//   pila_probar_desapilar();
-//   pila_probar_tope();
-//   pila_probar_tamanio();
-//   pila_probar_vacia();
-//   pila_probar_destruir();
-// }
+// Se realizan las pruebas sobre las operaciones de una pila 
+void pruebas_pila()
+{
+  pila_probar_creacion();/*
+  pila_probar_apilar();
+  pila_probar_desapilar();*/
+  pila_probar_tope();
+  pila_probar_tamanio();
+  pila_probar_vacia();
+  pila_probar_destruir();
+}
 
 
 // // Se realizan las pruebas sobre las operaciones de una cola
@@ -877,7 +961,7 @@ void pruebas_lista()
 
 int main() {  
   pruebas_lista();
-//  pruebas_pila();
+  pruebas_pila();
 //  pruebas_cola();
 
   return pa2m_mostrar_reporte();
