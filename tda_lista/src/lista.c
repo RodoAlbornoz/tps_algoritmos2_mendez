@@ -391,19 +391,44 @@ lista_iterador_t *lista_iterador_crear(lista_t *lista)
 
 bool lista_iterador_tiene_siguiente(lista_iterador_t *iterador)
 {
-	return false;
+	if (iterador == NULL) {
+		free(iterador);
+		return false;
+	}
+
+	if (iterador->lista->cantidad == 0) 
+		return false;
+
+	return iterador->corriente->siguiente != NULL;
 }
 
 
 bool lista_iterador_avanzar(lista_iterador_t *iterador)
 {
-	return false;
+	if (iterador == NULL) {
+		free(iterador);
+		return false;
+	}
+
+	if (iterador->lista->cantidad == 0 || iterador->corriente->siguiente == NULL) 
+		return false;
+
+	iterador->corriente = iterador->corriente->siguiente;
+	return true;
 }
 
 
 void *lista_iterador_elemento_actual(lista_iterador_t *iterador)
 {
-	return NULL;
+	if (iterador == NULL) {
+		free(iterador);
+		return NULL;
+	}
+
+	if (iterador->corriente == iterador->lista->nodo_fin)
+		return NULL;
+
+	return iterador->corriente->elemento;
 }
 
 
@@ -416,5 +441,21 @@ void lista_iterador_destruir(lista_iterador_t *iterador)
 size_t lista_con_cada_elemento(lista_t *lista, bool (*funcion)(void *, void *),
 			       void *contexto)
 {
-	return 0;
+	if (lista == NULL) {
+		free(lista);
+		return 0;
+	}
+
+	if (funcion == NULL || lista->cantidad == 0)
+		return 0;
+
+	nodo_t *nodo_aux = lista->nodo_inicio;
+	size_t cant_elementos_iterados = 0;
+
+	while (cant_elementos_iterados < lista->cantidad && funcion(nodo_aux->elemento, contexto)) {
+		cant_elementos_iterados++;
+		nodo_aux = nodo_aux->siguiente;
+	}
+
+	return cant_elementos_iterados;
 }

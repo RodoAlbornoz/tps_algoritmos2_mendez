@@ -218,12 +218,12 @@ void lista_probar_buscar_por_posicion()
  *
  * Se castean los elementos genéricos a int, y se devuelve 0 si sus valores son iguales, o 1 si no lo son.
  */
-int comparar_enteros(void *entero1, void *entero2)
+int comparar_enteros(void *elemento1, void *elemento2)
 {
-  entero1 = (int *) entero1;
-  entero2 = (int *) entero2;
+  int *entero1 = (int *) elemento1;
+  int *entero2 = (int *) elemento2;
 
-  if (entero1 == entero2)
+  if ((*entero1) == (*entero2))
     return 0;
   
   return 1;
@@ -235,12 +235,12 @@ int comparar_enteros(void *entero1, void *entero2)
  *
  * Se castean los elementos genéricos a char, y se devuelve 0 si sus valores son iguales, o 1 si no lo son.
  */
-int comparar_char(void *char1, void *char2)
+int comparar_char(void *elemento1, void *elemento2)
 {
-  char1 = (char *) char1;
-  char2 = (char *) char2;
+  char *caracter1 = (char *) elemento1;
+  char *caracter2 = (char *) elemento2;
 
-  if (char1 == char2)
+  if ((*caracter1) == (*caracter2))
     return 0;
   
   return 1;
@@ -433,9 +433,9 @@ void lista_probar_destruccion()
 
 
 // Se recibe un archivo como un void*, lo castea a FILE* y lo cierra (Funciona como fclose)
-void cerrar_archivo(void *archivo)
+void cerrar_archivo(void *elemento)
 {
-  archivo = (FILE *) archivo;
+  FILE *archivo = (FILE *) elemento;
   fclose(archivo);
 }
 
@@ -508,6 +508,7 @@ void lista_probar_creacion_iterador()
                "La lista a la que apunta el iterador es igual a la lista enviada a la función.");
   pa2m_afirmar(iterador1 != NULL && iterador1->corriente == NULL, 
                "El iterador apunta inicialmente al primer nodo de una lista vacia (O sea a NULL).");
+  lista_iterador_destruir(iterador1);
 
   lista_t *lista = lista_crear();
   lista = lista_insertar(lista, &elemento_prueba_1);
@@ -515,11 +516,231 @@ void lista_probar_creacion_iterador()
   lista_iterador_t *iterador2 = lista_iterador_crear(lista);
   pa2m_afirmar(iterador2 != NULL && iterador2->corriente == lista->nodo_inicio, 
                "El iterador apunta inicialmente al primer nodo de una lista no vacia.");
+  lista_iterador_destruir(iterador2);
 
   lista_destruir(lista);
   lista_destruir(lista_vacia);
+}
+
+
+// Se realizan las pruebas sobre la función lista_iterador_tiene_siguiente
+void lista_probar_iterador_siguiente()
+{
+  pa2m_nuevo_grupo("Verificacion de si hay mas elementos sobre los cuales iterar en un iterador");
+
+  char elemento_prueba_1 = 'T';
+  char elemento_prueba_2 = '9';
+
+  bool iterador_tiene_siguiente = lista_iterador_tiene_siguiente(NULL);
+  pa2m_afirmar(!iterador_tiene_siguiente, "No hay mas elementos para iterar con un iterador NULL.");
+
+  lista_t *lista_vacia = lista_crear();
+  lista_iterador_t *iterador_lista_vacia = lista_iterador_crear(lista_vacia);
+  iterador_tiene_siguiente = lista_iterador_tiene_siguiente(iterador_lista_vacia);
+  pa2m_afirmar(!iterador_tiene_siguiente, "No hay mas elementos para iterar en una lista vacia.");
+  lista_iterador_destruir(iterador_lista_vacia);
+
+  lista_t *lista = lista_crear();
+  lista = lista_insertar(lista, &elemento_prueba_2);
+  lista_iterador_t *iterador1 = lista_iterador_crear(lista);
+  iterador_tiene_siguiente = lista_iterador_tiene_siguiente(iterador1);
+  pa2m_afirmar(!iterador_tiene_siguiente, "No hay mas elementos para iterar en una lista con un solo elemento.");
   lista_iterador_destruir(iterador1);
+
+  lista = lista_insertar(lista, &elemento_prueba_1);
+  lista_iterador_t *iterador2 = lista_iterador_crear(lista);
+  iterador_tiene_siguiente = lista_iterador_tiene_siguiente(iterador2);
+  pa2m_afirmar(iterador_tiene_siguiente, 
+               "Hay mas elementos para iterar cuando el elemento actual del iterador no apunta al último elemento de una lista con mas de un elemento.");
+  
+  iterador2->corriente = iterador2->corriente->siguiente;
+  iterador_tiene_siguiente = lista_iterador_tiene_siguiente(iterador2);
+  pa2m_afirmar(!iterador_tiene_siguiente, 
+               "No hay mas elementos para iterar cuando el elemento actual del iterador apunta al último elemento de una lista con mas de un elemento.");
   lista_iterador_destruir(iterador2);
+
+  lista_destruir(lista_vacia);
+  lista_destruir(lista);
+}
+
+
+// Se realizan las pruebas sobre la función lista_iterador_avanzar
+void lista_probar_iterador_avanzar()
+{
+  pa2m_nuevo_grupo("Avanzar el iterador al siguiente elemento");
+
+  int elemento_prueba_1 = 66;
+  char elemento_prueba_2 = 'r';
+
+  bool se_puede_avanzar = lista_iterador_avanzar(NULL); 
+  pa2m_afirmar(!se_puede_avanzar, "No se puede avanzar en una lista con iterador NULL.");
+
+  lista_t *lista_vacia = lista_crear();
+  lista_iterador_t *iterador_lista_vacia = lista_iterador_crear(lista_vacia);
+  se_puede_avanzar = lista_iterador_avanzar(iterador_lista_vacia);
+  pa2m_afirmar(!se_puede_avanzar, "No se puede seguir avanzando en una lista vacia.");
+  lista_iterador_destruir(iterador_lista_vacia);
+
+  lista_t *lista = lista_crear();
+  lista = lista_insertar(lista, &elemento_prueba_2);
+  lista_iterador_t *iterador1 = lista_iterador_crear(lista);
+  se_puede_avanzar = lista_iterador_avanzar(iterador1);
+  pa2m_afirmar(!se_puede_avanzar, "No se puede seguir avanzando en una lista con un solo elemento.");
+  lista_iterador_destruir(iterador1);
+
+  lista = lista_insertar(lista, &elemento_prueba_1);
+  lista_iterador_t *iterador2 = lista_iterador_crear(lista);
+  se_puede_avanzar = lista_iterador_tiene_siguiente(iterador2);
+  pa2m_afirmar(se_puede_avanzar, 
+               "Se puede avanzar en una lista con mas de un elemento cuando el iterador no apunta a su último elemento.");
+  
+  iterador2->corriente = iterador2->corriente->siguiente;
+  se_puede_avanzar = lista_iterador_tiene_siguiente(iterador2);
+  pa2m_afirmar(!se_puede_avanzar, 
+               "No se puede avanzar en una lista con mas de un elemento cuando el iterador apunta a su último elemento.");
+  lista_iterador_destruir(iterador2);
+
+  lista_destruir(lista_vacia);
+  lista_destruir(lista);
+}
+
+
+// Se realizan las pruebas sobre la función lista_iterador_elemento_actual
+void lista_probar_iterador_elemento_actual()
+{
+  pa2m_nuevo_grupo("Obtener el elemento actual del iterador");
+
+  int elemento_prueba_1 = 10;
+  int elemento_prueba_2 = 11;
+
+  void *elemento_actual_iterador = lista_iterador_elemento_actual(NULL); 
+  pa2m_afirmar(elemento_actual_iterador == NULL, "No hay un elemento actual para un iterador NULL.");
+
+  lista_t *lista_vacia = lista_crear();
+  lista_iterador_t *iterador_lista_vacia = lista_iterador_crear(lista_vacia);
+  elemento_actual_iterador = lista_iterador_elemento_actual(iterador_lista_vacia);
+  pa2m_afirmar(elemento_actual_iterador == NULL, "No se puede obtener el elemento actual en una lista vacia.");
+  lista_iterador_destruir(iterador_lista_vacia);
+
+  lista_t *lista = lista_crear();
+  lista = lista_insertar(lista, &elemento_prueba_1);
+  lista_iterador_t *iterador1 = lista_iterador_crear(lista);
+  elemento_actual_iterador = lista_iterador_elemento_actual(iterador1);
+  pa2m_afirmar(elemento_actual_iterador == NULL, 
+               "No se puede obtener el elemento actual de una lista de un elemento porque este es el primero y último.");
+  lista_iterador_destruir(iterador1);
+  /// 
+  lista = lista_insertar(lista, NULL);
+  lista = lista_insertar(lista, &elemento_prueba_2);
+  lista_iterador_t *iterador2 = lista_iterador_crear(lista);
+  elemento_actual_iterador = lista_iterador_elemento_actual(iterador2);
+  pa2m_afirmar(elemento_actual_iterador != NULL, 
+               "Se retorna un elemento porque el iterador no apunta al ultimo elemento de la lista.");
+  pa2m_afirmar(elemento_actual_iterador != NULL, 
+               "Se retorna un elemento no NULL al que apunta actualmente el iterador.");
+
+  iterador2->corriente = iterador2->corriente->siguiente;
+  elemento_actual_iterador = lista_iterador_elemento_actual(iterador2);
+  pa2m_afirmar(elemento_actual_iterador == NULL, 
+               "Se retorna un elemento NULL al que apunta actualmente el iterador.");
+
+  iterador2->corriente = iterador2->corriente->siguiente;
+  elemento_actual_iterador = lista_iterador_elemento_actual(iterador2);
+  pa2m_afirmar(elemento_actual_iterador == NULL, 
+               "El iterador apunta al ultimo elemento de la lista y se retorna NULL.");
+  lista_iterador_destruir(iterador2);
+
+  lista_destruir(lista_vacia);
+  lista_destruir(lista);
+}
+
+
+// Se realizan las pruebas sobre la función lista_iterador_destruir
+void lista_probar_destruccion_iterador()
+{
+  pa2m_nuevo_grupo("Destruccion del iterador de la lista");
+
+  lista_iterador_t *iterador_inexistente = NULL;
+  lista_iterador_destruir(iterador_inexistente);
+  pa2m_afirmar(iterador_inexistente == NULL, "Se libera un iterador NULL.");
+
+  lista_t *lista = lista_crear();
+  lista_iterador_t *iterador = lista_iterador_crear(lista);
+  lista_iterador_destruir(iterador);
+  pa2m_afirmar(iterador != NULL, "Se libera un iterador no NULL.");
+
+  lista_destruir(lista);
+}
+
+
+/*
+ * Se reciben 2 punteros a enteros como punteros genéricos de cualquier tipo de dato.
+ * Se devuelve un booleano que dice si entero2 divide a entero1 (entero2 | entero1)
+ */
+bool segundo_divide_al_primero(void *elemento1, void *elemento2)
+{
+  int *entero1 = (int *) elemento1;
+  int *entero2 = (int *) elemento2;
+
+  if (((*entero1) % (*entero2)) == 0)
+    return true;
+
+  return false;
+}
+
+
+// Se realizan las pruebas sobre la función lista_con_cada_elemento
+void lista_probar_iterador_interno()
+{
+  pa2m_nuevo_grupo("Probar iterador interno de la lista");
+
+  int elemento_prueba_1 = 36;
+  int elemento_prueba_2 = 27;
+  int elemento_prueba_3 = 6;
+
+  int divisor_1 = 2;
+  int divisor_2 = 3;
+  int divisor_3 = 7;
+
+  size_t cant_elementos_iterados = lista_con_cada_elemento(NULL, segundo_divide_al_primero, &elemento_prueba_1);
+  pa2m_afirmar(cant_elementos_iterados == 0, "No se pueden iterar elementos en una lista NULL.");
+
+  lista_t *lista_vacia = lista_crear();
+  cant_elementos_iterados = lista_con_cada_elemento(lista_vacia, NULL, &elemento_prueba_3);
+  pa2m_afirmar(cant_elementos_iterados == 0, "No se pueden iterar elementos utilizando una función NULL.");
+
+  cant_elementos_iterados = lista_con_cada_elemento(lista_vacia, segundo_divide_al_primero, &elemento_prueba_2);
+  pa2m_afirmar(cant_elementos_iterados == 0, "No hay elemento para iterar en una lista vacia.");
+
+  lista_t *lista1 = lista_crear();
+  lista1 = lista_insertar(lista1, &elemento_prueba_2);
+  cant_elementos_iterados = lista_con_cada_elemento(lista1, segundo_divide_al_primero, &divisor_1);
+  pa2m_afirmar(cant_elementos_iterados == 0, 
+               "Se tiene una lista de un solo elemento y no se itera sobre ese único elemento.");
+
+  cant_elementos_iterados = lista_con_cada_elemento(lista1, segundo_divide_al_primero, &divisor_2);
+  pa2m_afirmar(cant_elementos_iterados == 1, 
+               "Se tiene una lista de un solo elemento y se itera sobre ese único elemento.");
+
+  lista_t *lista2 = lista_crear();
+  lista2 = lista_insertar(lista2, &elemento_prueba_1);
+  lista2 = lista_insertar(lista2, &elemento_prueba_3);
+  lista2 = lista_insertar(lista2, &elemento_prueba_2);
+  // 36 - 6 - 27
+  cant_elementos_iterados = lista_con_cada_elemento(lista2, segundo_divide_al_primero, &divisor_3);
+  pa2m_afirmar(cant_elementos_iterados == 0, "Se tiene una lista de mas de un elemento y no se itera sobre ningun elemento.");
+
+  cant_elementos_iterados = lista_con_cada_elemento(lista2, segundo_divide_al_primero, &divisor_1);
+  pa2m_afirmar(cant_elementos_iterados == 2, 
+               "Se tiene una lista de mas de un elemento y se itera solo sobre algunos elementos.");
+
+  cant_elementos_iterados = lista_con_cada_elemento(lista2, segundo_divide_al_primero, &divisor_2);
+  pa2m_afirmar(cant_elementos_iterados == lista2->cantidad, 
+                "Se tiene una lista de mas de un elemento y se itera sobre todos los elementos.");   
+
+  lista_destruir(lista1);
+  lista_destruir(lista2);
+  lista_destruir(lista_vacia);
 }
 
 
@@ -539,121 +760,119 @@ void pruebas_lista()
   lista_probar_tamanio();
   lista_probar_destruccion();
   lista_probar_destruccion_total();
+
   lista_probar_creacion_iterador();
+  lista_probar_iterador_siguiente();
+  lista_probar_iterador_avanzar();
+  lista_probar_iterador_elemento_actual();
+  lista_probar_destruccion_iterador();
+  lista_probar_iterador_interno();
 }
 
 
+// // Se realizan las pruebas sobre la funcion pila_crear 
+// void pila_probar_creacion()
+// {
+//   pa2m_nuevo_grupo("Creación de una pila");
+
+//   lista_t *pila = pila_crear();
+//   pa2m_afirmar(pila != NULL, "Se crea la pila exitosamente.");
+//   pa2m_afirmar(pila != NULL && pila->nodo_inicio == NULL, "El tope de la pila está inicializado en NULL.");
+//   pa2m_afirmar(pila != NULL && pila->cantidad == 0, "La cantidad de elementos de la pila se inicializa en 0.");
+
+//   pila_destruir(pila);
+// }
+
+
+// // Se realizan las pruebas sobre la funcion pila_apilar
+// void pila_probar_apilar()
+// {
+//   pa2m_nuevo_grupo("Apilar un elemento en una pila");
+
+//   lista_t *pila = pila_crear();
+
+//   int elemento_prueba_1 = 5;
+//   char elemento_prueba_2 = 'l';
+
+//   pa2m_afirmar(pila_apilar(NULL, &elemento_prueba_1) == NULL, "No se apila sobre una pila NULL.");
+
+//   pila = pila_apilar(pila, &elemento_prueba_1);
+//   pa2m_afirmar(pila != NULL, "Se retorna la pila al apilar un elemento sobre ella.");
+//   pa2m_afirmar(pila != NULL, "Se apila exitosamente sobre una pila vacia.");
+//   pa2m_afirmar(pila!= NULL && pila->cantidad == 1, "La cantidad de elementos de la pila aumenta en 1.");
+
+//   size_t cantidad_auxiliar = pila->cantidad;
+//   pila  = pila_apilar(pila, &elemento_prueba_2);
+//   pa2m_afirmar(pila!= NULL && pila->cantidad == cantidad_auxiliar + 1, 
+//                "Se apila exitosamente sobre una pila con al menos un elemento.");
+
+//   pila = pila_apilar(pila, NULL);
+//   pa2m_afirmar(pila != NULL, "Se apila un elemento NULL sobre la pila.");
+
+//   pila_destruir(pila);
+// }
+
+
+// // Se realizan las pruebas sobre la funcion pila_desapilar
+// void pila_probar_desapilar()
+// {
+
+// }
+
+
+// // Se realizan las pruebas sobre la funcion pila_tope
+// void pila_probar_tope()
+// {
+
+// }
+
+
+// // Se realizan las pruebas sobre la funcion pila_tamanio
+// void pila_probar_tamanio()
+// {
+
+// }
 
 
 
+// // Se realizan las pruebas sobre la funcion pila_vacia
+// void pila_probar_vacia()
+// {
+
+// }
 
 
+// // Se realizan las pruebas sobre la funcion pila_destruir
+// void pila_probar_destruir()
+// {
+
+// }
 
 
-
-// Se realizan las pruebas sobre la funcion pila_crear 
-/* void pila_probar_creacion()
-{
-  pa2m_nuevo_grupo("Creación de una pila");
-
-  lista_t *pila = pila_crear();
-  pa2m_afirmar(pila != NULL, "Se crea la pila exitosamente.");
-  pa2m_afirmar(pila != NULL && pila->nodo_inicio == NULL, "El tope de la pila está inicializado en NULL.");
-  pa2m_afirmar(pila != NULL && pila->cantidad == 0, "La cantidad de elementos de la pila se inicializa en 0.");
-
-  pila_destruir(pila);
-}
+// // Se realizan las pruebas sobre las operaciones de una pila 
+// void pruebas_pila()
+// {
+//   pila_probar_creacion();
+//   pila_probar_apilar();
+//   pila_probar_desapilar();
+//   pila_probar_tope();
+//   pila_probar_tamanio();
+//   pila_probar_vacia();
+//   pila_probar_destruir();
+// }
 
 
-// Se realizan las pruebas sobre la funcion pila_apilar
-void pila_probar_apilar()
-{
-  pa2m_nuevo_grupo("Apilar un elemento en una pila");
-
-  lista_t *pila = pila_crear();
-
-  int elemento_prueba_1 = 5;
-  char elemento_prueba_2 = 'l';
-
-  pa2m_afirmar(pila_apilar(NULL, &elemento_prueba_1) == NULL, "No se apila sobre una pila NULL.");
-
-  pila = pila_apilar(pila, &elemento_prueba_1);
-  pa2m_afirmar(pila != NULL, "Se retorna la pila al apilar un elemento sobre ella.");
-  pa2m_afirmar(pila != NULL, "Se apila exitosamente sobre una pila vacia.");
-  pa2m_afirmar(pila!= NULL && pila->cantidad == 1, "La cantidad de elementos de la pila aumenta en 1.");
-
-  size_t cantidad_auxiliar = pila->cantidad;
-  pila  = pila_apilar(pila, &elemento_prueba_2);
-  pa2m_afirmar(pila!= NULL && pila->cantidad == cantidad_auxiliar + 1, 
-               "Se apila exitosamente sobre una pila con al menos un elemento.");
-
-  pila = pila_apilar(pila, NULL);
-  pa2m_afirmar(pila != NULL, "Se apila un elemento NULL sobre la pila.");
-
-  pila_destruir(pila);
-}
-
-
-// Se realizan las pruebas sobre la funcion pila_desapilar
-void pila_probar_desapilar()
-{
-
-}
-
-
-// Se realizan las pruebas sobre la funcion pila_tope
-void pila_probar_tope()
-{
-
-}
-
-
-// Se realizan las pruebas sobre la funcion pila_tamanio
-void pila_probar_tamanio()
-{
-
-}
-
-
-
-// Se realizan las pruebas sobre la funcion pila_vacia
-void pila_probar_vacia()
-{
-
-}
-
-
-// Se realizan las pruebas sobre la funcion pila_destruir
-void pila_probar_destruir()
-{
-
-}
-*/
-
-// Se realizan las pruebas sobre las operaciones de una pila 
-/*void pruebas_pila()
-{
-  pila_probar_creacion();
-  pila_probar_apilar();
-  pila_probar_desapilar();
-  pila_probar_tope();
-  pila_probar_tamanio();
-  pila_probar_vacia();
-  pila_probar_destruir();
-}*/
-
-
-// Se realizan las pruebas sobre las operaciones de una cola
-/*void pruebas_cola()
-{
-  cola_probar_creacion();
-  cola_probar_encolar();
-  cola_probar_desencolar();
-  cola_probar_frente();
-  cola_probar_tamanio();
-  cola_probar_vacia();
-  cola_probar_destruir();
-}*/
+// // Se realizan las pruebas sobre las operaciones de una cola
+// void pruebas_cola()
+// {
+//   cola_probar_creacion();
+//   cola_probar_encolar();
+//   cola_probar_desencolar();
+//   cola_probar_frente();
+//   cola_probar_tamanio();
+//   cola_probar_vacia();
+//   cola_probar_destruir();
+// }
 
 
 int main() {  
