@@ -784,40 +784,68 @@ void pila_probar_creacion()
 }
 
 
-// // Se realizan las pruebas sobre la funcion pila_apilar
-// void pila_probar_apilar()
-// {
-//   pa2m_nuevo_grupo("Apilar un elemento en una pila");
+// Se realizan las pruebas sobre la funcion pila_apilar
+void pila_probar_apilar()
+{
+  pa2m_nuevo_grupo("Apilar un elemento en una pila");
 
-//   lista_t *pila = pila_crear();
+  pila_t *pila = pila_crear();
 
-//   int elemento_prueba_1 = 5;
-//   char elemento_prueba_2 = 'l';
+  int elemento_prueba_1 = 5;
+  char elemento_prueba_2 = 'l';
 
-//   pa2m_afirmar(pila_apilar(NULL, &elemento_prueba_1) == NULL, "No se apila sobre una pila NULL.");
+  pa2m_afirmar(pila_apilar(NULL, &elemento_prueba_1) == NULL, "No se apila sobre una pila NULL.");
 
-//   pila = pila_apilar(pila, &elemento_prueba_1);
-//   pa2m_afirmar(pila != NULL, "Se retorna la pila al apilar un elemento sobre ella.");
-//   pa2m_afirmar(pila != NULL, "Se apila exitosamente sobre una pila vacia.");
-//   pa2m_afirmar(pila!= NULL && pila->cantidad == 1, "La cantidad de elementos de la pila aumenta en 1.");
+  pila = pila_apilar(pila, &elemento_prueba_1);
+  pa2m_afirmar(pila != NULL, "Se retorna la pila al apilar un elemento sobre ella.");
+  pa2m_afirmar(pila != NULL, "Se apila exitosamente sobre una pila vacia.");
+  pa2m_afirmar(pila!= NULL && pila_tamanio(pila) == 1, "La cantidad de elementos de la pila aumenta en 1.");
 
-//   size_t cantidad_auxiliar = pila->cantidad;
-//   pila  = pila_apilar(pila, &elemento_prueba_2);
-//   pa2m_afirmar(pila!= NULL && pila->cantidad == cantidad_auxiliar + 1, 
-//                "Se apila exitosamente sobre una pila con al menos un elemento.");
+  size_t cantidad_auxiliar = pila_tamanio(pila);
+  pila  = pila_apilar(pila, &elemento_prueba_2);
+  pa2m_afirmar(pila!= NULL && pila_tamanio(pila) == cantidad_auxiliar + 1, 
+               "Se apila exitosamente sobre una pila con al menos un elemento.");
 
-//   pila = pila_apilar(pila, NULL);
-//   pa2m_afirmar(pila != NULL, "Se apila un elemento NULL sobre la pila.");
+  pila = pila_apilar(pila, NULL);
+  pa2m_afirmar(pila != NULL, "Se apila un elemento NULL sobre la pila.");
 
-//   pila_destruir(pila);
-// }
+  pila_destruir(pila);
+}
 
 
-// // Se realizan las pruebas sobre la funcion pila_desapilar
-// void pila_probar_desapilar()
-// {
+// Se realizan las pruebas sobre la funcion pila_desapilar
+void pila_probar_desapilar()
+{
+  pa2m_nuevo_grupo("Desapilar un elemento en una pila");
 
-// }
+  pila_t *pila = pila_crear();
+
+  int elemento_prueba_1 = 1;
+  int elemento_prueba_2 = 88;
+
+  pila = pila_apilar(pila, &elemento_prueba_2);
+  pila = pila_apilar(pila, NULL);
+  pila = pila_apilar(pila, &elemento_prueba_1);
+
+  pa2m_afirmar(pila_desapilar(NULL) == NULL, "No se apila sobre una pila NULL.");
+
+  pila_t *pila_vacia = pila_crear();
+  void *elemento_eliminado = pila_desapilar(pila_vacia);
+  pa2m_afirmar(elemento_eliminado == NULL, "No se puede desapilar sobre una pila vacia.");
+
+  size_t cantidad_auxiliar = pila_tamanio(pila);
+  elemento_eliminado = pila_desapilar(pila);
+  pa2m_afirmar(elemento_eliminado != NULL, "Se desapila un elemento no NULL de la pila.");
+  pa2m_afirmar(elemento_eliminado != NULL, "Se devuelve el elemento eliminado.");
+  pa2m_afirmar(pila!= NULL && pila_tamanio(pila) == cantidad_auxiliar - 1, 
+               "La cantidad de elementos de la pila se reduce en 1");
+
+  elemento_eliminado = pila_desapilar(pila);
+  pa2m_afirmar(elemento_eliminado == NULL, "Se desapila un elemento NULL de la pila.");
+
+  pila_destruir(pila_vacia);
+  pila_destruir(pila);
+}
 
 
 // Se realizan las pruebas sobre la funcion pila_tope
@@ -936,9 +964,9 @@ void pila_probar_destruir()
 // Se realizan las pruebas sobre las operaciones de una pila 
 void pruebas_pila()
 {
-  pila_probar_creacion();/*
+  pila_probar_creacion();
   pila_probar_apilar();
-  pila_probar_desapilar();*/
+  pila_probar_desapilar();
   pila_probar_tope();
   pila_probar_tamanio();
   pila_probar_vacia();
@@ -946,23 +974,72 @@ void pruebas_pila()
 }
 
 
-// // Se realizan las pruebas sobre las operaciones de una cola
-// void pruebas_cola()
-// {
-//   cola_probar_creacion();
-//   cola_probar_encolar();
-//   cola_probar_desencolar();
-//   cola_probar_frente();
-//   cola_probar_tamanio();
-//   cola_probar_vacia();
-//   cola_probar_destruir();
-// }
+// Se realizan las pruebas sobre la funcion
+void cola_probar_creacion()
+{
+
+}
+
+
+// Se realizan las pruebas sobre la funcion
+void cola_probar_encolar()
+{
+  
+}
+
+
+// Se realizan las pruebas sobre la funcion
+void cola_probar_desencolar()
+{
+  
+}
+
+
+// Se realizan las pruebas sobre la funcion
+void cola_probar_frente()
+{
+  
+}
+
+
+// Se realizan las pruebas sobre la funcion
+void cola_probar_tamanio()
+{
+  
+}
+
+
+// Se realizan las pruebas sobre la funcion
+void cola_probar_vacia()
+{
+  
+}
+
+
+// Se realizan las pruebas sobre la funcion
+void cola_probar_destruir()
+{
+  
+}
+
+
+// Se realizan las pruebas sobre las operaciones de una cola
+void pruebas_cola()
+{
+  cola_probar_creacion();
+  cola_probar_encolar();
+  cola_probar_desencolar();
+  cola_probar_frente();
+  cola_probar_tamanio();
+  cola_probar_vacia();
+  cola_probar_destruir();
+}
 
 
 int main() {  
   pruebas_lista();
   pruebas_pila();
-//  pruebas_cola();
+  pruebas_cola();
 
   return pa2m_mostrar_reporte();
 }

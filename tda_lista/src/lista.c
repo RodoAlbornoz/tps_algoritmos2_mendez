@@ -130,14 +130,17 @@ void *ultimo_elemento_eliminado(lista_t *lista)
 	}
 
 	nodo_t *nodo_aux = lista->nodo_fin;
-	lista->nodo_fin = lista->nodo_inicio;
-	while (lista->nodo_fin->siguiente != nodo_aux)
-		lista->nodo_fin = lista->nodo_fin->siguiente;
+	
+	if (lista->cantidad != 1) {
+		lista->nodo_fin = lista->nodo_inicio;
+		while (lista->nodo_fin->siguiente != nodo_aux)
+			lista->nodo_fin = lista->nodo_fin->siguiente;
+	}
 
 	void *elemento_eliminado_lista = nodo_aux->elemento;
 	free(nodo_aux);
-	lista->nodo_fin->siguiente = NULL;
 
+	lista->cantidad--;
 	return elemento_eliminado_lista;
 }
 
@@ -152,7 +155,6 @@ void *lista_quitar(lista_t *lista)
 	if (lista_vacia(lista))
 		return NULL;
 
-	lista->cantidad--;
 	return ultimo_elemento_eliminado(lista);
 }
 
@@ -176,6 +178,7 @@ void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 		lista->nodo_inicio = lista->nodo_inicio->siguiente;
 		nodo_a_eliminar->siguiente = NULL;
 		free(nodo_a_eliminar);
+		lista->cantidad--;
 	} else if (posicion == lista->cantidad - 1) {
 		elemento_eliminado = ultimo_elemento_eliminado(lista);
 	} else {
@@ -192,9 +195,9 @@ void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 		elemento_eliminado = nodo_a_eliminar->elemento;
 		nodo_a_eliminar->siguiente = NULL;
 		free(nodo_a_eliminar);
+		lista->cantidad--;
 	}
 
-	lista->cantidad--;
 	return elemento_eliminado;
 }
 
