@@ -339,7 +339,6 @@ void lista_probar_obtener_ultimo_elemento()
   ultimo_elemento = lista_ultimo(lista_vacia);
   pa2m_afirmar(lista != NULL, "En una lista de un solo elemento, se devuelve su único elemento como ultimo.");
 
-
   lista = lista_insertar(lista, &elemento_prueba_2);
   ultimo_elemento = lista_ultimo(lista_vacia);
   pa2m_afirmar(lista != NULL, "Se retorna el ultimo elemento de una lista con mas de un elemento.");
@@ -974,52 +973,196 @@ void pruebas_pila()
 }
 
 
-// Se realizan las pruebas sobre la funcion
+// Se realizan las pruebas sobre la funcion cola_crear
 void cola_probar_creacion()
 {
+  pa2m_nuevo_grupo("Creación de una cola");
 
+  cola_t *cola = cola_crear();
+  pa2m_afirmar(cola != NULL, "Se crea la cola exitosamente.");
+  pa2m_afirmar(cola != NULL && cola_frente(cola) == NULL, "El frente de la cola está inicializado en NULL.");
+  pa2m_afirmar(cola != NULL && cola_vacia(cola), "La cantidad de elementos de la cola se inicializa en 0.");
+
+  cola_destruir(cola);
 }
 
 
-// Se realizan las pruebas sobre la funcion
+// Se realizan las pruebas sobre la funcion cola_encolar
 void cola_probar_encolar()
 {
+  pa2m_nuevo_grupo("Encolar elemento en una cola");
+
+  cola_t *cola = cola_crear();
+
+  int elemento_prueba_1 = 7;
+  char elemento_prueba_2 = '*';
+
+  pa2m_afirmar(cola_encolar(NULL, &elemento_prueba_1) == NULL, "No se encola sobre una cola NULL.");
+
+  cola = cola_encolar(cola, &elemento_prueba_1);
+  pa2m_afirmar(cola != NULL, "Se retorna la cola al encolar un elemento sobre ella.");
+  pa2m_afirmar(cola != NULL, "Se encola exitosamente sobre una cola acia.");
+  pa2m_afirmar(cola != NULL && cola_tamanio(cola) == 1, "La cantidad de elementos de la cola aumenta en 1.");
+
+  size_t cantidad_auxiliar = cola_tamanio(cola);
+  cola = cola_encolar(cola, &elemento_prueba_2);
+  pa2m_afirmar(cola != NULL && cola_tamanio(cola) == cantidad_auxiliar + 1, 
+               "Se encola exitosamente sobre una cola con al menos un elemento.");
+
+  cola = cola_encolar(cola, NULL);
+  pa2m_afirmar(cola != NULL, "Se encola un elemento NULL a la cola.");
   
+  cola_destruir(cola);  
 }
 
 
-// Se realizan las pruebas sobre la funcion
+// Se realizan las pruebas sobre la funcion cola_desencolar
 void cola_probar_desencolar()
 {
-  
+  pa2m_nuevo_grupo("Desencolar un elemento de una cola");
+
+  cola_t *cola = cola_crear();
+
+  char elemento_prueba_1 = 'j';
+  char elemento_prueba_2 = 'k';
+
+  pa2m_afirmar(cola_desencolar(NULL) == NULL, "No se desencola sobre una cola NULL.");
+
+  cola = cola_encolar(cola, &elemento_prueba_1);
+  cola = cola_encolar(cola, NULL);
+  cola = cola_encolar(cola, &elemento_prueba_2);
+
+  cola_t *cola_vacia = cola_crear();
+  void *elemento_eliminado = cola_desencolar(cola_vacia);
+  pa2m_afirmar(elemento_eliminado == NULL, "No se puede desencolar sobre una cola vacia.");
+
+  size_t cantidad_auxiliar = cola_tamanio(cola);
+  elemento_eliminado = cola_desencolar(cola);
+  pa2m_afirmar(elemento_eliminado != NULL, "Se desencola un elemento no NULL de la cola.");
+  pa2m_afirmar(elemento_eliminado != NULL, "Se devuelve el elemento eliminado.");
+  pa2m_afirmar(cola != NULL && cola_tamanio(cola) == cantidad_auxiliar - 1, 
+               "La cantidad de elementos de la cola se reduce en 1");
+
+  elemento_eliminado = cola_desencolar(cola);
+  pa2m_afirmar(elemento_eliminado == NULL, "Se desencola un elemento NULL de la cola.");
+
+  cola_destruir(cola_vacia);
+  cola_destruir(cola);
 }
 
 
-// Se realizan las pruebas sobre la funcion
+// Se realizan las pruebas sobre la funcion cola_frente
 void cola_probar_frente()
 {
+  pa2m_nuevo_grupo("Obtencion de elemento en el frente de una cola");
+
+  cola_t *cola = cola_crear();
+
+  double elemento_prueba_1 = 0.9;
+  char elemento_prueba_2 = '{';
+
+  pa2m_afirmar(cola_frente(NULL) == NULL, "Se retorna NULL al buscar el frente de una cola NULL.");
   
+  void *elemento_frente_1 = cola_frente(cola);
+  pa2m_afirmar(elemento_frente_1 == NULL, "Se retorna NULL al buscar el elemento del frente de una cola vacia.");
+  
+  cola = cola_encolar(cola, NULL);
+  elemento_frente_1 = cola_frente(cola);
+  pa2m_afirmar(cola != NULL, "Se retorna el elemento dentro del frente de una cola con un solo elemento.");
+  pa2m_afirmar(elemento_frente_1 == NULL, "Se retorna un elemento NULL del frente de la cola.");
+
+  cola = cola_encolar(cola, &elemento_prueba_1);
+  void *elemento_frente_2 = cola_frente(cola);
+  pa2m_afirmar(cola != NULL && elemento_frente_2 == elemento_frente_1, 
+               "El elemento del frente de la cola no cambia al encolar un elemento en una cola de un solo elemento.");
+
+  cola = cola_encolar(cola, &elemento_prueba_2);
+  void *elemento_frente_3 = cola_frente(cola);
+  pa2m_afirmar(cola != NULL && elemento_frente_3 == elemento_frente_1, 
+               "El elemento del frente de la cola no cambia al encolar un elemento en una cola de mas de un elemento.");
+
+  cola_destruir(cola);
 }
 
 
-// Se realizan las pruebas sobre la funcion
+// Se realizan las pruebas sobre la funcion cola_tamanio
 void cola_probar_tamanio()
 {
-  
+  pa2m_nuevo_grupo("Comprobación de tamaño de una cola");
+
+  int elemento_prueba = 99;
+
+  cola_t *cola = cola_crear();
+
+  cola_t *cola_nula = NULL;
+  size_t tamanio_cola = cola_tamanio(NULL);
+  pa2m_afirmar(cola_nula == NULL && tamanio_cola == 0, "Se devuelve 0 para una cola NULL.");
+ 
+  cola_t *cola_vacia = cola_crear();
+  tamanio_cola = cola_tamanio(cola_vacia); 
+  pa2m_afirmar(cola_vacia != NULL && cola_tamanio(cola) == 0, "Se devuelve 0 para una cola vacia.");
+
+  cola = cola_encolar(cola, &elemento_prueba);
+  tamanio_cola = cola_tamanio(cola);
+  pa2m_afirmar(cola != NULL && cola_tamanio(cola) > 0, 
+               "Se devuelve la cantidad de elementos para una cola con al menos un elemento.");
+
+  cola_destruir(cola_vacia);
+  cola_destruir(cola);
 }
 
 
-// Se realizan las pruebas sobre la funcion
+// Se realizan las pruebas sobre la funcion cola_vacia
 void cola_probar_vacia()
 {
-  
+  pa2m_nuevo_grupo("Comprobación de cola vacia o no existente");
+
+  int elemento_prueba = 9;
+
+  cola_t *cola = cola_crear();
+
+  pa2m_afirmar(cola_vacia(NULL), "Se devuelve true para una cola NULL.");
+
+  cola_t *cola_sin_elementos = cola_crear();
+  bool es_vacia = cola_vacia(cola_sin_elementos);
+  pa2m_afirmar(es_vacia, "Se devuelve true para una cola vacia.");
+
+  cola = cola_encolar(cola, &elemento_prueba);
+  es_vacia = cola_vacia(cola);
+  pa2m_afirmar(!es_vacia, "Se devuelve false para una cola con al menos un elemento.");
+
+  cola_destruir(cola_sin_elementos);
+  cola_destruir(cola);
 }
 
 
-// Se realizan las pruebas sobre la funcion
+// Se realizan las pruebas sobre la funcion cola_destruir
 void cola_probar_destruir()
 {
-  
+  pa2m_nuevo_grupo("Destrucción de la cola");
+
+  int elemento_prueba_1 = 1;
+  char elemento_prueba_2 = 'Z';
+
+  cola_t *cola_inexistente = NULL;
+  cola_destruir(cola_inexistente);
+  pa2m_afirmar(cola_inexistente == NULL, "Se libera una cola NULL.");
+
+  cola_t *cola_sin_elementos = cola_crear();
+  bool es_vacia = cola_vacia(cola_sin_elementos);
+  cola_destruir(cola_sin_elementos);
+  pa2m_afirmar(es_vacia, "Se libera una cola vacia");
+
+  cola_t *cola_un_elemento = cola_crear();
+  cola_un_elemento = cola_encolar(cola_un_elemento, &elemento_prueba_1);
+  cola_destruir(cola_un_elemento);
+  pa2m_afirmar(cola_un_elemento != NULL, "Se libera una cola de un solo elemento junto con su único nodo."); 
+
+  cola_t *cola_mas_de_un_elemento = cola_crear();
+  cola_mas_de_un_elemento = cola_encolar(cola_mas_de_un_elemento, &elemento_prueba_2);
+  cola_mas_de_un_elemento = cola_encolar(cola_mas_de_un_elemento, &elemento_prueba_1);
+  cola_destruir(cola_mas_de_un_elemento);
+  pa2m_afirmar(cola_mas_de_un_elemento != NULL, "Se libera una cola de mas de un elemento junto con todos sus nodos."); 
 }
 
 
