@@ -63,7 +63,8 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 	}
 
 	bool lista_es_vacia = lista_vacia(lista);
-	if (lista_insertar_al_final(lista, elemento, lista_es_vacia) == -1)
+	int status_insercion = lista_insertar_al_final(lista, elemento, lista_es_vacia);
+	if (status_insercion == -1)
 		return NULL;
 
 	lista->cantidad++;
@@ -79,8 +80,14 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 		return NULL;
 	}
 
+	// 1. Lista vacia
+	// 2. Se inserta al final
+	// 3. Se inserta al principio
+	// 4. Se inserta al medio
+
 	bool lista_es_vacia = lista_vacia(lista);
-	if (lista_es_vacia) {
+
+	if (lista_vacia(lista)) {
 		if (lista_insertar_al_final(lista, elemento, lista_es_vacia) == -1)
 			return NULL;
 	} else if (!lista_es_vacia && posicion >= lista->cantidad) {
@@ -111,7 +118,7 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 			nodo_a_insertar->elemento = elemento; 
 		}	
 	}
-	
+
 	lista->cantidad++;
 	return lista;
 }
@@ -122,7 +129,7 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
  *
  * Se retorna el elemento del ultimo nodo de la lista, que luego es eliminado.
  */
-void *ultimo_elemento_eliminado(lista_t *lista)
+void *ultimo_elemento_lista(lista_t *lista)
 {
 	if (lista == NULL) {
 		free(lista);
@@ -155,7 +162,38 @@ void *lista_quitar(lista_t *lista)
 	if (lista_vacia(lista))
 		return NULL;
 
-	return ultimo_elemento_eliminado(lista);
+	return ultimo_elemento_lista(lista);
+}
+
+
+/*
+ * Se recibe la referencia a una lista y la posicion a partir de la cual se busca el nodo en una lista
+ * Elimina el nodo en la posicion enviada y devuelve el elemento de ese nodo.
+ */
+void *elemento_eliminado_en_posicion(lista_t *lista, size_t posicion)
+{
+	nodo_t *nodo_a_eliminar = lista->nodo_inicio;
+
+	if (posicion == 0) {
+		lista->nodo_inicio = lista->nodo_inicio->siguiente;
+	} else {
+		nodo_t *nodo_anterior;
+
+		int i = 0;
+		while (i < posicion) {
+			nodo_anterior = nodo_a_eliminar;
+			nodo_a_eliminar = nodo_a_eliminar->siguiente;
+			i++;
+		}
+		nodo_anterior->siguiente = nodo_anterior->siguiente->siguiente;
+	}	
+			
+	void *elemento_eliminado = nodo_a_eliminar->elemento;
+	nodo_a_eliminar->siguiente = NULL;
+	free(nodo_a_eliminar);
+	lista->cantidad--;
+
+	return elemento_eliminado;	
 }
 
 
@@ -166,39 +204,13 @@ void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 		return NULL;
 	}
 
-	if (lista_vacia(lista))
+	if (lista_vacia(lista) || posicion >= lista->cantidad)
 		return NULL;
 
-	void *elemento_eliminado;
-	if (posicion >= lista->cantidad) {
-		return NULL;
-	} else if (posicion == 0) {
-		nodo_t *nodo_a_eliminar = lista->nodo_inicio;
-		elemento_eliminado = nodo_a_eliminar->elemento;
-		lista->nodo_inicio = lista->nodo_inicio->siguiente;
-		nodo_a_eliminar->siguiente = NULL;
-		free(nodo_a_eliminar);
-		lista->cantidad--;
-	} else if (posicion == lista->cantidad - 1) {
-		elemento_eliminado = ultimo_elemento_eliminado(lista);
-	} else {
-		nodo_t *nodo_a_eliminar = lista->nodo_inicio;
-		nodo_t *nodo_anterior;
-
-		int i = 0;
-		while (i < posicion) {
-			nodo_anterior = nodo_a_eliminar;
-			nodo_a_eliminar = nodo_a_eliminar->siguiente;
-			i++;
-		}
-		nodo_anterior->siguiente = nodo_anterior->siguiente->siguiente;
-		elemento_eliminado = nodo_a_eliminar->elemento;
-		nodo_a_eliminar->siguiente = NULL;
-		free(nodo_a_eliminar);
-		lista->cantidad--;
-	}
-
-	return elemento_eliminado;
+	if (posicion == lista_tamanio(lista) - 1)
+		return ultimo_elemento_lista(lista);	
+	
+	return elemento_eliminado_en_posicion(lista, posicion);
 }
 
 
@@ -310,19 +322,30 @@ size_t lista_tamanio(lista_t *lista)
 }
 
 
-void lista_destruir(lista_t *lista)
+/*
+ * Se recibe la referencia a una lista, un booleano que dice si la función destructora es NULL, y la función destructora
+ * de los elementos de la lista
+ *
+ * Se retorna si se pudo destruir la lista, y en caso afirmativo, libera todos sus nodos y sus elementos si la función
+ * destructora no es NULL
+ */
+bool lista_se_puede_destruir (lista_t *lista, bool destructora_es_null, void (*destructora)(void *))
 {
 	if (lista == NULL || lista->cantidad == 0) {
 		free(lista);
-		return;
-	}
+		return false;
+	}	
 
+	nodo_t *nodo_aux = lista->nodo_inicio;
 	if (lista->cantidad == 1) {
-		free(lista->nodo_inicio);
+		if (!destructora_es_null)
+			destructora(lista->nodo_inicio->elemento);
+		free(nodo_aux);
 		lista->cantidad--;
 	} else {
-		nodo_t *nodo_aux = lista->nodo_inicio;
 		while (lista->nodo_inicio != NULL) {
+			if (!destructora_es_null)
+				destructora(lista->nodo_inicio->elemento);
 			lista->nodo_inicio = lista->nodo_inicio->siguiente;
 			free(nodo_aux);
 			nodo_aux = lista->nodo_inicio;
@@ -330,37 +353,26 @@ void lista_destruir(lista_t *lista)
 		}
 	}
 
+	return true;
+}
+
+
+void lista_destruir(lista_t *lista)
+{
+	if (!lista_se_puede_destruir(lista, true, NULL))
+		return;
 	free(lista);
 }
 
 
 void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 {
-	if (lista == NULL || lista->cantidad == 0) {
-		free(lista);
+	bool destructora_es_null = false;
+	if (funcion == NULL)
+		destructora_es_null = true;
+
+	if(!lista_se_puede_destruir(lista, destructora_es_null, funcion))
 		return;
-	}
-
-	if (funcion == NULL) {
-		lista_destruir(lista);
-		return;
-	}
-
-	if (lista->cantidad == 1) {
-		funcion(lista->nodo_inicio->elemento);
-		free(lista->nodo_inicio);
-		lista->cantidad--;
-	} else {
-		nodo_t *nodo_aux = lista->nodo_inicio;
-		while (lista->nodo_inicio != NULL) {
-			funcion(lista->nodo_inicio->elemento);
-			lista->nodo_inicio = lista->nodo_inicio->siguiente;
-			free(nodo_aux);
-			nodo_aux = lista->nodo_inicio;
-			lista->cantidad--;
-		}
-	}
-
 	free(lista);
 }
 
