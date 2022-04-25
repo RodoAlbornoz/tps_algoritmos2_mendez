@@ -25,8 +25,7 @@ lista_t *lista_crear()
  * lista tiene elementos o no
  * Se retorna la lista con el nuevo nodo insertado
  * 
- * Si ocurre un error en medio (La lista, el nuevo nodo o el elemento son NULL, o no se pudo reservar memoria), 
- * se retorna -1
+ * Si ocurre un error en medio, se retorna -1
  */
 int lista_insertar_al_final(lista_t *lista, void *elemento, bool lista_es_vacia)
 {
@@ -72,6 +71,42 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 }
 
 
+/*
+ * Se recibe la referencia a una lista, la posicion en donde se va a insertar un elemento y el elemento a insertar
+ * Se crea el elemento sobre la lista en la posicion indicada
+ * 
+ * Si ocurre un error en medio, se retorna -1
+ */
+int lista_elemento_insertado_en_posicion(lista_t *lista, size_t posicion, void *elemento)
+{
+	nodo_t *nodo_a_insertar = malloc(sizeof(nodo_t));
+	if (nodo_a_insertar == NULL) {
+		free(nodo_a_insertar);
+		free(lista);
+		return -1;
+	}
+
+	if (posicion == 0) {
+		nodo_a_insertar->siguiente = lista->nodo_inicio;
+		lista->nodo_inicio = nodo_a_insertar;
+	} else {
+		nodo_t *nodo_aux = lista->nodo_inicio;
+		int i = 0;
+
+		while (i < posicion - 1) {
+			nodo_aux = nodo_aux->siguiente;
+			i++;
+		}
+		nodo_a_insertar->siguiente = nodo_aux->siguiente;
+		nodo_aux->siguiente = nodo_a_insertar;
+	}
+
+	nodo_a_insertar->elemento = elemento; 
+
+	return 0;
+}
+
+
 lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 				    size_t posicion)
 {
@@ -80,44 +115,17 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 		return NULL;
 	}
 
-	// 1. Lista vacia
-	// 2. Se inserta al final
-	// 3. Se inserta al principio
-	// 4. Se inserta al medio
-
 	bool lista_es_vacia = lista_vacia(lista);
 
-	if (lista_vacia(lista)) {
-		if (lista_insertar_al_final(lista, elemento, lista_es_vacia) == -1)
-			return NULL;
-	} else if (!lista_es_vacia && posicion >= lista->cantidad) {
-		if (lista_insertar_al_final(lista, elemento, lista_es_vacia) == -1)
+	if (posicion >= lista->cantidad) {
+		int status_insercion_al_final = lista_insertar_al_final(lista, elemento, lista_es_vacia);
+		if (status_insercion_al_final == -1)
 			return NULL;
 	} else {
-		nodo_t *nodo_a_insertar = malloc(sizeof(nodo_t));
-		if (nodo_a_insertar == NULL) {
-			free(nodo_a_insertar);
-			free(lista);
+		int status_insercion_en_posicion = lista_elemento_insertado_en_posicion(lista, posicion, elemento);
+		if (status_insercion_en_posicion == -1)
 			return NULL;
-		}
-
-		if (posicion == 0) {
-			nodo_a_insertar->siguiente = lista->nodo_inicio;
-			lista->nodo_inicio = nodo_a_insertar;
-			nodo_a_insertar->elemento = elemento;
-		} else {
-			nodo_t *nodo_aux = lista->nodo_inicio;
-			int i = 0;
-
-			while (i < posicion - 1) {
-				nodo_aux = nodo_aux->siguiente;
-				i++;
-			}
-			nodo_a_insertar->siguiente = nodo_aux->siguiente; // VER POR QUÉ FUNCIONA ASÍ
-			nodo_aux->siguiente = nodo_a_insertar;
-			nodo_a_insertar->elemento = elemento; 
-		}	
-	}
+	}	
 
 	lista->cantidad++;
 	return lista;
@@ -138,7 +146,7 @@ void *ultimo_elemento_lista(lista_t *lista)
 
 	nodo_t *nodo_aux = lista->nodo_fin;
 	
-	if (lista->cantidad != 1) {
+	if (lista_tamanio(lista) != 1) {
 		lista->nodo_fin = lista->nodo_inicio;
 		while (lista->nodo_fin->siguiente != nodo_aux)
 			lista->nodo_fin = lista->nodo_fin->siguiente;
@@ -221,7 +229,7 @@ void *lista_elemento_en_posicion(lista_t *lista, size_t posicion)
 		return NULL;
 	}
 
-	if (posicion > lista->cantidad - 1 || lista_vacia(lista))
+	if (posicion > lista_tamanio(lista) - 1 || lista_vacia(lista))
 		return NULL;
 
 	int cantidad_nodos_recorridos = 0;
@@ -331,13 +339,13 @@ size_t lista_tamanio(lista_t *lista)
  */
 bool lista_se_puede_destruir (lista_t *lista, bool destructora_es_null, void (*destructora)(void *))
 {
-	if (lista == NULL || lista->cantidad == 0) {
+	if (lista == NULL || lista_vacia(lista)) {
 		free(lista);
 		return false;
 	}	
 
 	nodo_t *nodo_aux = lista->nodo_inicio;
-	if (lista->cantidad == 1) {
+	if (lista_tamanio(lista) == 1) {
 		if (!destructora_es_null)
 			destructora(lista->nodo_inicio->elemento);
 		free(nodo_aux);
@@ -406,10 +414,10 @@ bool lista_iterador_tiene_siguiente(lista_iterador_t *iterador)
 		return false;
 	}
 
-	if (iterador->lista->cantidad == 0) 
+	if (lista_vacia(iterador->lista)) 
 		return false;
 
-	return iterador->corriente->siguiente != NULL;
+	return iterador->corriente != NULL;
 }
 
 
@@ -420,7 +428,7 @@ bool lista_iterador_avanzar(lista_iterador_t *iterador)
 		return false;
 	}
 
-	if (iterador->lista->cantidad == 0 || iterador->corriente->siguiente == NULL) 
+	if (lista_vacia(iterador->lista) || iterador->corriente == NULL) 
 		return false;
 
 	iterador->corriente = iterador->corriente->siguiente;
@@ -435,7 +443,7 @@ void *lista_iterador_elemento_actual(lista_iterador_t *iterador)
 		return NULL;
 	}
 
-	if (iterador->corriente == iterador->lista->nodo_fin)
+	if (lista_vacia(iterador->lista)) 
 		return NULL;
 
 	return iterador->corriente->elemento;
@@ -456,7 +464,7 @@ size_t lista_con_cada_elemento(lista_t *lista, bool (*funcion)(void *, void *),
 		return 0;
 	}
 
-	if (funcion == NULL || lista->cantidad == 0)
+	if (funcion == NULL || lista_vacia(lista))
 		return 0;
 
 	nodo_t *nodo_aux = lista->nodo_inicio;

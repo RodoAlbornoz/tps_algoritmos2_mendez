@@ -529,7 +529,7 @@ void lista_probar_iterador_siguiente()
   lista_t *lista = lista_crear();
   lista = lista_insertar(lista, &elemento_prueba_2);
   lista_iterador_t *iterador1 = lista_iterador_crear(lista);
-  pa2m_afirmar(!lista_iterador_tiene_siguiente(iterador1), "No hay mas elementos para iterar en una lista con un solo elemento.");
+  pa2m_afirmar(lista_iterador_tiene_siguiente(iterador1), "Se puede iterar sobre una lista con un solo elemento.");
   lista_iterador_destruir(iterador1);
 
   lista = lista_insertar(lista, &elemento_prueba_1);
@@ -538,8 +538,8 @@ void lista_probar_iterador_siguiente()
                "Hay mas elementos para iterar cuando el elemento actual del iterador no apunta al último elemento de una lista con mas de un elemento.");
   
   lista_iterador_avanzar(iterador2);
-  pa2m_afirmar(!lista_iterador_tiene_siguiente(iterador2), 
-               "No hay mas elementos para iterar cuando el elemento actual del iterador apunta al último elemento de una lista con mas de un elemento.");
+  pa2m_afirmar(lista_iterador_tiene_siguiente(iterador2), 
+               "Se puede iterar cuando el elemento actual del iterador apunta al último elemento de una lista con mas de un elemento.");
   lista_iterador_destruir(iterador2);
 
   lista_destruir(lista_vacia);
@@ -565,7 +565,7 @@ void lista_probar_iterador_avanzar()
   lista_t *lista = lista_crear();
   lista = lista_insertar(lista, &elemento_prueba_2);
   lista_iterador_t *iterador1 = lista_iterador_crear(lista);
-  pa2m_afirmar(!lista_iterador_avanzar(iterador1), "No se puede avanzar en una lista con un solo elemento.");
+  pa2m_afirmar(lista_iterador_avanzar(iterador1), "Se puede avanzar en una lista con un solo elemento.");
   lista_iterador_destruir(iterador1);
 
   lista = lista_insertar(lista, &elemento_prueba_1);
@@ -574,8 +574,8 @@ void lista_probar_iterador_avanzar()
                "Se puede avanzar en una lista con mas de un elemento cuando el iterador no apunta a su último elemento.");
   
   lista_iterador_avanzar(iterador2);
-  pa2m_afirmar(!lista_iterador_tiene_siguiente(iterador2), 
-               "No se puede avanzar en una lista con mas de un elemento cuando el iterador apunta a su último elemento.");
+  pa2m_afirmar(lista_iterador_tiene_siguiente(iterador2), 
+               "Se puede avanzar en una lista con mas de un elemento cuando el iterador apunta a su último elemento.");
   lista_iterador_destruir(iterador2);
 
   lista_destruir(lista_vacia);
@@ -603,8 +603,8 @@ void lista_probar_iterador_elemento_actual()
   lista = lista_insertar(lista, &elemento_prueba_1);
   lista_iterador_t *iterador1 = lista_iterador_crear(lista);
   elemento_actual_iterador = lista_iterador_elemento_actual(iterador1);
-  pa2m_afirmar(elemento_actual_iterador == NULL, // ??????????????
-               "No se puede obtener el elemento actual de una lista de un elemento porque este es el primero y último."); // ??????????????
+  pa2m_afirmar(elemento_actual_iterador != NULL,
+               "El elemento actual del iterador en una lista de un elemento es el único elemento de la lista.");
   lista_iterador_destruir(iterador1);
 
   lista = lista_insertar(lista, NULL);
@@ -623,8 +623,8 @@ void lista_probar_iterador_elemento_actual()
 
   lista_iterador_avanzar(iterador2);
   elemento_actual_iterador = lista_iterador_elemento_actual(iterador2);
-  pa2m_afirmar(elemento_actual_iterador == NULL, // ??????????????
-               "El iterador apunta al ultimo elemento de la lista y se retorna NULL."); // ??????????????
+  pa2m_afirmar(elemento_actual_iterador != NULL,
+               "El elemento actual del iterador apunta al ultimo elemento de la lista y lo retorna.");
   lista_iterador_destruir(iterador2);
 
   lista_destruir(lista_vacia);
@@ -814,7 +814,7 @@ void pila_probar_desapilar()
   size_t cantidad_auxiliar = pila_tamanio(pila);
   elemento_eliminado = pila_desapilar(pila);
   pa2m_afirmar(elemento_eliminado != NULL, "Se desapila un elemento no NULL de la pila.");
-  pa2m_afirmar(elemento_eliminado != NULL, "Se devuelve el elemento eliminado.");
+  pa2m_afirmar(elemento_eliminado != NULL, "Se devuelve el elemento desapilado.");
   pa2m_afirmar(pila!= NULL && pila_tamanio(pila) == cantidad_auxiliar - 1, 
                "La cantidad de elementos de la pila se reduce en 1");
 
@@ -843,7 +843,8 @@ void pila_probar_tope()
   
   pila = pila_apilar(pila, &elemento_prueba_1);
   elemento_tope = pila_tope(pila);
-  pa2m_afirmar(pila != NULL && elemento_tope != NULL, "Se retorna el elemento dentro del tope de una pila con un solo elemento.");
+  pa2m_afirmar(pila != NULL && elemento_tope != NULL, 
+               "Se retorna el elemento dentro del tope de una pila con un solo elemento.");
 
   pila = pila_apilar(pila, &elemento_prueba_2);
   elemento_tope = pila_tope(pila);
@@ -888,7 +889,7 @@ void pila_probar_tamanio()
 // Se realizan las pruebas sobre la funcion pila_vacia
 void pila_probar_vacia()
 {
-  pa2m_nuevo_grupo("Comprobación de pila vacia o no existente");
+  pa2m_nuevo_grupo("Comprobación de pila vacia o inexistente");
 
   int elemento_prueba = 9;
 
@@ -912,7 +913,7 @@ void pila_probar_vacia()
 // Se realizan las pruebas sobre la funcion pila_destruir
 void pila_probar_destruir()
 {
-  pa2m_nuevo_grupo("Destrucción de la pila");
+  pa2m_nuevo_grupo("Destrucción de una pila");
 
   int elemento_prueba_1 = 111;
   char elemento_prueba_2 = 'K';
@@ -969,7 +970,7 @@ void cola_probar_creacion()
 // Se realizan las pruebas sobre la funcion cola_encolar
 void cola_probar_encolar()
 {
-  pa2m_nuevo_grupo("Encolar elemento en una cola");
+  pa2m_nuevo_grupo("Encolar elementos en una cola");
 
   cola_t *cola = cola_crear();
 
@@ -980,7 +981,7 @@ void cola_probar_encolar()
 
   cola = cola_encolar(cola, &elemento_prueba_1);
   pa2m_afirmar(cola != NULL, "Se retorna la cola al encolar un elemento sobre ella.");
-  pa2m_afirmar(cola != NULL, "Se encola exitosamente sobre una cola acia.");
+  pa2m_afirmar(cola != NULL, "Se encola exitosamente sobre una cola vacia.");
   pa2m_afirmar(cola != NULL && cola_tamanio(cola) == 1, "La cantidad de elementos de la cola aumenta en 1.");
 
   size_t cantidad_auxiliar = cola_tamanio(cola);
@@ -998,7 +999,7 @@ void cola_probar_encolar()
 // Se realizan las pruebas sobre la funcion cola_desencolar
 void cola_probar_desencolar()
 {
-  pa2m_nuevo_grupo("Desencolar un elemento de una cola");
+  pa2m_nuevo_grupo("Desencolar elementos de una cola");
 
   cola_t *cola = cola_crear();
 
@@ -1018,7 +1019,7 @@ void cola_probar_desencolar()
   size_t cantidad_auxiliar = cola_tamanio(cola);
   elemento_eliminado = cola_desencolar(cola);
   pa2m_afirmar(elemento_eliminado != NULL, "Se desencola un elemento no NULL de la cola.");
-  pa2m_afirmar(elemento_eliminado != NULL, "Se devuelve el elemento eliminado.");
+  pa2m_afirmar(elemento_eliminado != NULL, "Se devuelve el elemento desencolado.");
   pa2m_afirmar(cola != NULL && cola_tamanio(cola) == cantidad_auxiliar - 1, 
                "La cantidad de elementos de la cola se reduce en 1");
 
@@ -1040,7 +1041,7 @@ void cola_probar_frente()
   double elemento_prueba_1 = 0.9;
   char elemento_prueba_2 = '{';
 
-  pa2m_afirmar(cola_frente(NULL) == NULL, "Se retorna NULL al buscar el frente de una cola NULL.");
+  pa2m_afirmar(cola_frente(NULL) == NULL, "Se retorna NULL al buscar el elemento del frente de una cola NULL.");
   
   void *elemento_frente_1 = cola_frente(cola);
   pa2m_afirmar(elemento_frente_1 == NULL, "Se retorna NULL al buscar el elemento del frente de una cola vacia.");
