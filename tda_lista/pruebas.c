@@ -731,7 +731,7 @@ void pruebas_lista()
   lista_probar_insercion_en_posicion();
   lista_probar_eliminacion_en_posicion();
   lista_probar_buscar_por_posicion();
-  lista_probar_buscar_elemento(); // Volver a probar después con GDB.
+  lista_probar_buscar_elemento();
   lista_probar_obtener_primer_elemento();
   lista_probar_obtener_ultimo_elemento();
   lista_probar_vacia_o_inexistente();
@@ -781,7 +781,7 @@ void pila_probar_apilar()
 
   size_t cantidad_auxiliar = pila_tamanio(pila);
   pila  = pila_apilar(pila, &elemento_prueba_2);
-  pa2m_afirmar(pila!= NULL && pila_tamanio(pila) == cantidad_auxiliar + 1, 
+  pa2m_afirmar(pila != NULL && pila_tamanio(pila) == cantidad_auxiliar + 1, 
                "Se apila exitosamente sobre una pila con al menos un elemento.");
 
   pila = pila_apilar(pila, NULL);

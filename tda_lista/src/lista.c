@@ -146,7 +146,7 @@ void *ultimo_elemento_lista(lista_t *lista)
 
 	nodo_t *nodo_aux = lista->nodo_fin;
 	
-	if (lista_tamanio(lista) != 1) {
+	if (lista_tamanio(lista) > 1) {
 		lista->nodo_fin = lista->nodo_inicio;
 		while (lista->nodo_fin->siguiente != nodo_aux)
 			lista->nodo_fin = lista->nodo_fin->siguiente;
@@ -232,6 +232,9 @@ void *lista_elemento_en_posicion(lista_t *lista, size_t posicion)
 	if (posicion > lista_tamanio(lista) - 1 || lista_vacia(lista))
 		return NULL;
 
+	if (posicion == lista_tamanio(lista) - 1)
+		return lista->nodo_fin->elemento;
+
 	int cantidad_nodos_recorridos = 0;
 	nodo_t *nodo_aux = lista->nodo_inicio;
 
@@ -312,7 +315,7 @@ bool lista_vacia(lista_t *lista)
 		return true;
 	}
 
-	if (lista->cantidad == 0)
+	if (lista_tamanio(lista) == 0)
 		return true;
 
 	return false;
