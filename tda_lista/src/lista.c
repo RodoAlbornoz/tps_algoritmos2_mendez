@@ -473,7 +473,7 @@ size_t lista_con_cada_elemento(lista_t *lista, bool (*funcion)(void *, void *),
 	nodo_t *nodo_aux = lista->nodo_inicio;
 	size_t cant_elementos_iterados = 0;
 
-	while (cant_elementos_iterados < lista->cantidad && funcion(nodo_aux->elemento, contexto)) {
+	while (cant_elementos_iterados < lista_tamanio(lista) && funcion(nodo_aux->elemento, contexto)) {
 		cant_elementos_iterados++;
 		nodo_aux = nodo_aux->siguiente;
 	}
