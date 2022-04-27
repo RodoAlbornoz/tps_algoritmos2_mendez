@@ -144,20 +144,27 @@ void *ultimo_elemento_lista(lista_t *lista)
 		return NULL;
 	}
 
-	nodo_t *nodo_aux = lista->nodo_fin;
-	
-	if (lista_tamanio(lista) > 1) {
-		lista->nodo_fin = lista->nodo_inicio;
-		while (lista->nodo_fin->siguiente != nodo_aux)
-			lista->nodo_fin = lista->nodo_fin->siguiente;
+	nodo_t *nodo_anterior = lista->nodo_inicio;
+	nodo_t *nodo_a_eliminar = lista->nodo_inicio;
+	int i = 0;
+
+	while (i < lista_tamanio(lista) - 1) {
+		nodo_anterior = nodo_a_eliminar;
+		nodo_a_eliminar = nodo_a_eliminar->siguiente;
+		i++;
 	}
 
-	void *elemento_eliminado_lista = nodo_aux->elemento;
-	free(nodo_aux);
+	lista->nodo_fin = nodo_anterior;
+	nodo_anterior->siguiente = NULL;
+
+	void *elemento_eliminado_lista = nodo_a_eliminar->elemento;
+	nodo_anterior = nodo_a_eliminar->siguiente;
+	free(nodo_a_eliminar);
 
 	lista->cantidad--;
 	return elemento_eliminado_lista;
 }
+
 
 
 void *lista_quitar(lista_t *lista)
@@ -435,6 +442,10 @@ bool lista_iterador_avanzar(lista_iterador_t *iterador)
 		return false;
 
 	iterador->corriente = iterador->corriente->siguiente;
+
+	if (iterador->corriente == NULL)
+		return false;
+
 	return true;
 }
 
@@ -471,12 +482,15 @@ size_t lista_con_cada_elemento(lista_t *lista, bool (*funcion)(void *, void *),
 		return 0;
 
 	nodo_t *nodo_aux = lista->nodo_inicio;
-	size_t cant_elementos_iterados = 0;
+	size_t cantidad_elementos_iterados = 0;
 
-	while (cant_elementos_iterados < lista_tamanio(lista) && funcion(nodo_aux->elemento, contexto)) {
-		cant_elementos_iterados++;
+	bool seguir_iterando = true;
+	while (cantidad_elementos_iterados < lista_tamanio(lista) && seguir_iterando) {
+		if (!funcion(nodo_aux->elemento, contexto))
+			seguir_iterando = false;
+		cantidad_elementos_iterados++;
 		nodo_aux = nodo_aux->siguiente;
 	}
 
-	return cant_elementos_iterados;
+	return cantidad_elementos_iterados;
 }
