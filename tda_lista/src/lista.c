@@ -212,10 +212,10 @@ void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 		return NULL;
 	}
 
-	if (lista_vacia(lista) || posicion >= lista->cantidad)
+	if (lista_vacia(lista))
 		return NULL;
 
-	if (posicion == lista_tamanio(lista) - 1)
+	if (posicion >= lista_tamanio(lista) - 1)
 		return ultimo_elemento_lista(lista);	
 	
 	return elemento_eliminado_en_posicion(lista, posicion);
@@ -446,7 +446,7 @@ void *lista_iterador_elemento_actual(lista_iterador_t *iterador)
 		return NULL;
 	}
 
-	if (lista_vacia(iterador->lista)) 
+	if (lista_vacia(iterador->lista) || iterador->corriente == NULL) 
 		return NULL;
 
 	return iterador->corriente->elemento;
