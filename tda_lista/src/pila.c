@@ -14,7 +14,8 @@ pila_t *pila_apilar(pila_t *pila, void *elemento)
 		return NULL;
 	}
 
-	return (pila_t *) lista_insertar_en_posicion((lista_t *) pila, elemento, 0);
+	return (pila_t *) lista_insertar_en_posicion((lista_t *) pila, 
+						     elemento, 0);
 }
 
 
