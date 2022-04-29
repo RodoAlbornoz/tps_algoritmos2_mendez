@@ -357,21 +357,14 @@ bool lista_se_puede_destruir (lista_t *lista, void (*destructora)(void *))
 		return false;
 	}	
 
-	nodo_t *nodo_aux = lista->nodo_inicio;
-	if (lista_tamanio(lista) == 1) {
-		if (destructora != NULL)
+	bool destructora_null = true;
+	if (destructora != NULL)
+		destructora_null = false;
+
+	while (!lista_vacia(lista)) {
+		if (!destructora_null)
 			destructora(lista->nodo_inicio->elemento);
-		free(nodo_aux);
-		lista->cantidad--;
-	} else {
-		while (lista->nodo_inicio != NULL) {
-			if (destructora != NULL)
-				destructora(lista->nodo_inicio->elemento);
-			lista->nodo_inicio = lista->nodo_inicio->siguiente;
-			free(nodo_aux);
-			nodo_aux = lista->nodo_inicio;
-			lista->cantidad--;
-		}
+		lista_quitar_de_posicion(lista, 0);
 	}
 
 	return true;
