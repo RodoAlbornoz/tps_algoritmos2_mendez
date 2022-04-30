@@ -343,46 +343,36 @@ size_t lista_tamanio(lista_t *lista)
 }
 
 
-/*
- * Se recibe la referencia a una lista y la función destructora de los
- * elementos de la lista
- *
- * Se retorna si se pudo destruir la lista, y en caso afirmativo, libera todos
- * sus nodos y destruye sus elementos si la función destructora no es NULL
- */
-bool lista_se_puede_destruir (lista_t *lista, void (*destructora)(void *))
+void lista_destruir(lista_t *lista)
 {
 	if (lista == NULL || lista_vacia(lista)) {
 		free(lista);
-		return false;
+		return;
 	}	
 
-	bool destructora_null = true;
-	if (destructora != NULL)
-		destructora_null = false;
-
-	while (!lista_vacia(lista)) {
-		if (!destructora_null)
-			destructora(lista->nodo_inicio->elemento);
+	while (!lista_vacia(lista))
 		lista_quitar_de_posicion(lista, 0);
-	}
 
-	return true;
-}
-
-
-void lista_destruir(lista_t *lista)
-{
-	if (!lista_se_puede_destruir(lista, NULL))
-		return;
 	free(lista);
 }
 
 
 void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 {
-	if(!lista_se_puede_destruir(lista, funcion))
+	if (lista == NULL || lista_vacia(lista)) {
+		free(lista);
 		return;
+	}	
+
+	if (funcion == NULL) {
+		lista_destruir(lista);
+		return;
+	}
+
+	while (!lista_vacia(lista)) {
+		funcion(lista->nodo_inicio->elemento);
+		lista_quitar_de_posicion(lista, 0);
+	}
 	free(lista);
 }
 
