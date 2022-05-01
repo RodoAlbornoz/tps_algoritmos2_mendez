@@ -16,10 +16,8 @@ void lista_probar_creacion()
   pa2m_afirmar(lista != NULL, "Se crea una lista exitosamente.");
   pa2m_afirmar(lista != NULL && lista->nodo_inicio == NULL, 
   "El puntero al nodo inicial de la lista está inicializado en NULL.");
-
   pa2m_afirmar(lista != NULL && lista->nodo_fin == NULL, 
   "El puntero al nodo final de la lista está inicializado en NULL.");
-
   pa2m_afirmar(lista != NULL && lista_vacia(lista), 
                "La cantidad de elementos de la lista se inicializa en 0.");
 
@@ -42,8 +40,6 @@ void lista_probar_insercion_al_final()
 
   lista_t *lista = lista_crear();
   lista = lista_insertar(lista, &elemento_prueba_1);
-  pa2m_afirmar(lista != NULL, 
-  "Se retorna la lista al insertar un elemento al final de la misma.");
   pa2m_afirmar(lista != NULL, 
                "Se inserta un elemento en una lista vacia.");
   pa2m_afirmar(lista != NULL && lista_tamanio(lista) == 1, 
@@ -87,7 +83,7 @@ void lista_probar_eliminacion_al_final()
   size_t cantidad_auxiliar = lista_tamanio(lista);
   elemento_eliminado = lista_quitar(lista);
   pa2m_afirmar(elemento_eliminado != NULL, 
-               "Se elimina un elemento de la lista.");
+               "Se elimina un elemento del final de la lista.");
   pa2m_afirmar(elemento_eliminado != NULL, 
                "Se devuelve el elemento eliminado.");
   pa2m_afirmar(lista_tamanio(lista) == cantidad_auxiliar - 1, 
@@ -118,8 +114,6 @@ void lista_probar_insercion_en_posicion()
 
   lista_t *lista = lista_crear();
   lista = lista_insertar_en_posicion(lista, &elemento_prueba_3, 0);
-  pa2m_afirmar(lista != NULL, 
-               "Se retorna la lista al insertar un elemento en la misma.");
   pa2m_afirmar(lista != NULL, 
                "Se inserta un elemento en una lista vacia.");
   pa2m_afirmar(lista != NULL && lista_tamanio(lista) == 1, 
@@ -300,12 +294,11 @@ void lista_probar_buscar_elemento()
 {
   pa2m_nuevo_grupo("Buscar elementos en una lista");
 
-  lista_t *lista = lista_crear();
-
   int elemento_prueba_1 = 100;
   char elemento_prueba_2 = 'x';
   int elemento_a_buscar = 77;
 
+  lista_t *lista = lista_crear();
   lista = lista_insertar(lista, &elemento_prueba_1);
   lista = lista_insertar(lista, &elemento_prueba_2);
   lista = lista_insertar(lista, &elemento_prueba_2);
@@ -313,9 +306,8 @@ void lista_probar_buscar_elemento()
   pa2m_afirmar(lista_buscar_elemento(NULL, comparacion_enteros, 
                &elemento_prueba_1) == NULL, 
                "No se puede buscar un elemento en una lista NULL.");
-  pa2m_afirmar(lista_buscar_elemento(lista, NULL, 
-               &elemento_prueba_2) == NULL, 
-  "Si el comparador es NULL, no se puede buscar un elemento.");
+  pa2m_afirmar(lista_buscar_elemento(lista, NULL, &elemento_prueba_2) == NULL, 
+               "Si el comparador es NULL, no se puede buscar un elemento.");
 
   void *elemento_encontrado = lista_buscar_elemento(lista, comparacion_enteros, 
                                               &elemento_a_buscar);
@@ -460,21 +452,24 @@ void lista_probar_destruccion()
   char elemento_prueba_2 = 'z';
 
   lista_t *lista_inexistente = NULL;
+  bool lista_destruida = false;
   lista_destruir(lista_inexistente);
-  pa2m_afirmar(lista_inexistente == NULL, "Se libera una lista NULL.");
+  lista_destruida = true;
+  pa2m_afirmar(lista_destruida, "Se libera una lista NULL.");
 
   lista_t *lista_sin_elementos = lista_crear();
-  bool lista_es_vacia = lista_vacia(lista_sin_elementos);
+  lista_destruida = false;
   lista_destruir(lista_sin_elementos);
-  pa2m_afirmar(lista_es_vacia, "Se libera una lista vacia");
+  lista_destruida = true;
+  pa2m_afirmar(lista_destruida, "Se libera una lista vacia");
 
   lista_t *lista = lista_crear();
-  bool lista_eliminada = false;
+  lista_destruida = false;
   lista = lista_insertar(lista, &elemento_prueba_2);
   lista = lista_insertar(lista, &elemento_prueba_1);
   lista_destruir(lista);
-  lista_eliminada = true;
-  pa2m_afirmar(lista_eliminada, "Se libera una lista de al menos un\n\
+  lista_destruida = true;
+  pa2m_afirmar(lista_destruida, "Se libera una lista de al menos un\n\
   elemento.");
 }
 
@@ -491,14 +486,13 @@ void lista_probar_destruccion_total()
   int *elemento_prueba_3 = malloc(sizeof(int));
   int *elemento_prueba_4 = malloc(sizeof(int));
 
-  lista_t *lista_sin_elementos = lista_crear();
-
   lista_t *lista_inexistente = NULL;
   bool lista_destruida = false;
   lista_destruir_todo(lista_inexistente, free);
   lista_destruida = true;
   pa2m_afirmar(lista_destruida, "Se libera una lista NULL.");
 
+  lista_t *lista_sin_elementos = lista_crear();
   lista_destruida = false;
   lista_destruir_todo(lista_sin_elementos, free);
   lista_destruida = true;
@@ -576,7 +570,7 @@ void lista_probar_creacion_iterador()
  */ 
 void lista_probar_iterador_siguiente()
 {
-  pa2m_nuevo_grupo("Seguir iterando sobre el iterador externo");
+  pa2m_nuevo_grupo("Seguir iterando sobre un iterador externo");
 
   char elemento_prueba_1 = 'T';
   char elemento_prueba_2 = '9';
@@ -713,7 +707,7 @@ void lista_probar_destruccion_iterador()
   iterador_destruido = false;
   lista_iterador_destruir(iterador);
   iterador_destruido = true;
-  pa2m_afirmar(iterador != NULL, "Se libera un iterador no NULL.");
+  pa2m_afirmar(iterador_destruido, "Se libera un iterador no NULL.");
 
   lista_destruir(lista);
 }
@@ -849,17 +843,14 @@ void pila_probar_apilar()
 {
   pa2m_nuevo_grupo("Apilar sobre una pila");
 
-  pila_t *pila = pila_crear();
-
   int elemento_prueba_1 = 5;
   char elemento_prueba_2 = 'l';
 
   pa2m_afirmar(pila_apilar(NULL, &elemento_prueba_1) == NULL, 
                "No se apila sobre una pila NULL.");
 
+  pila_t *pila = pila_crear();
   pila = pila_apilar(pila, &elemento_prueba_1);
-  pa2m_afirmar(pila != NULL, 
-               "Se retorna la pila al apilar un elemento sobre ella.");
   pa2m_afirmar(pila != NULL, "Se apila exitosamente sobre una pila vacia.");
   pa2m_afirmar(pila!= NULL && pila_tamanio(pila) == 1, 
                "La cantidad de elementos de la pila aumenta en 1.");
@@ -883,14 +874,8 @@ void pila_probar_desapilar()
 {
   pa2m_nuevo_grupo("Desapilar sobre una pila");
 
-  pila_t *pila = pila_crear();
-
   int elemento_prueba_1 = 1;
   int elemento_prueba_2 = 88;
-
-  pila = pila_apilar(pila, &elemento_prueba_2);
-  pila = pila_apilar(pila, NULL);
-  pila = pila_apilar(pila, &elemento_prueba_1);
 
   pa2m_afirmar(pila_desapilar(NULL) == NULL, 
                "No se apila sobre una pila NULL.");
@@ -900,6 +885,10 @@ void pila_probar_desapilar()
   pa2m_afirmar(elemento_eliminado == NULL, 
                "No se puede desapilar sobre una pila vacia.");
 
+  pila_t *pila = pila_crear();
+  pila = pila_apilar(pila, &elemento_prueba_2);
+  pila = pila_apilar(pila, NULL);
+  pila = pila_apilar(pila, &elemento_prueba_1);
   size_t cantidad_auxiliar = pila_tamanio(pila);
   elemento_eliminado = pila_desapilar(pila);
 
@@ -926,14 +915,13 @@ void pila_probar_tope()
 {
   pa2m_nuevo_grupo("Tope de una pila");
 
-  pila_t *pila = pila_crear();
-
   char elemento_prueba_1 = '|';
   char elemento_prueba_2 = '_';
 
   pa2m_afirmar(pila_tope(NULL) == NULL, 
                "Se retorna NULL al buscar el tope de una pila NULL.");
   
+  pila_t *pila = pila_crear();
   void *elemento_tope = pila_tope(pila);
   pa2m_afirmar(elemento_tope == NULL, 
                "Se retorna NULL al buscar el tope de una pila vacia.");
@@ -963,8 +951,6 @@ void pila_probar_tamanio()
 
   int elemento_prueba = 11;
 
-  pila_t *pila = pila_crear();
-
   size_t tamanio_pila = pila_tamanio(NULL);
   pa2m_afirmar(tamanio_pila == 0, "Se devuelven 0 elementos para una pila\n\
   NULL.");
@@ -974,6 +960,7 @@ void pila_probar_tamanio()
   pa2m_afirmar(pila_vacia != NULL && tamanio_pila == 0, 
                "Se devuelven 0 elementos para una pila vacia.");
 
+  pila_t *pila = pila_crear();
   pila = pila_apilar(pila, &elemento_prueba);
   tamanio_pila = pila_tamanio(pila); 
   pa2m_afirmar(pila != NULL && pila_tamanio(pila) > 0, 
@@ -994,14 +981,13 @@ void pila_probar_vacia()
 
   int elemento_prueba = 9;
 
-  pila_t *pila = pila_crear();
-
   pa2m_afirmar(pila_vacia(NULL), "Se devuelve true para una pila NULL.");
 
   pila_t *pila_sin_elementos = pila_crear();
   bool es_vacia = pila_vacia(pila_sin_elementos);
   pa2m_afirmar(es_vacia, "Se devuelve true para una pila vacia.");
 
+  pila_t *pila = pila_crear();
   pila = pila_apilar(pila, &elemento_prueba);
   es_vacia = pila_vacia(pila);
   pa2m_afirmar(!es_vacia, 
@@ -1037,8 +1023,10 @@ void pila_probar_destruir()
   pila_t *pila = pila_crear();
   pila = pila_apilar(pila, &elemento_prueba_1);
   pila = pila_apilar(pila, &elemento_prueba_2);
+  pila_eliminada = false;
   pila_destruir(pila);
-  pa2m_afirmar(pila != NULL, 
+  pila_eliminada = true;
+  pa2m_afirmar(pila_eliminada, 
   "Se libera una pila de al menos un elemento junto con todos sus nodos.");
 }
 
@@ -1083,16 +1071,14 @@ void cola_probar_encolar()
 {
   pa2m_nuevo_grupo("Encolar sobre una cola");
 
-  cola_t *cola = cola_crear();
-
   int elemento_prueba_1 = 7;
   char elemento_prueba_2 = '*';
 
   pa2m_afirmar(cola_encolar(NULL, &elemento_prueba_1) == NULL, 
                "No se encola sobre una cola NULL.");
 
+  cola_t *cola = cola_crear();
   cola = cola_encolar(cola, &elemento_prueba_1);
-  pa2m_afirmar(cola != NULL, "Se retorna la cola al encolar sobre ella.");
   pa2m_afirmar(cola != NULL, "Se encola sobre una cola vacia.");
   pa2m_afirmar(cola_tamanio(cola) == 1, "La cantidad de elementos de la cola\n\
   aumenta en 1.");
@@ -1116,14 +1102,13 @@ void cola_probar_desencolar()
 {
   pa2m_nuevo_grupo("Desencolar sobre una cola");
 
-  cola_t *cola = cola_crear();
-
   char elemento_prueba_1 = 'j';
   char elemento_prueba_2 = 'k';
 
   pa2m_afirmar(cola_desencolar(NULL) == NULL, 
                "No se desencola sobre una cola NULL.");
 
+  cola_t *cola = cola_crear();
   cola = cola_encolar(cola, &elemento_prueba_1);
   cola = cola_encolar(cola, NULL);
   cola = cola_encolar(cola, &elemento_prueba_2);
@@ -1158,13 +1143,12 @@ void cola_probar_frente()
 {
   pa2m_nuevo_grupo("Frente de una cola");
 
-  cola_t *cola = cola_crear();
-
   char elemento_prueba = '{';
 
   pa2m_afirmar(cola_frente(NULL) == NULL, 
   "Se retorna NULL al buscar el elemento del frente de una cola NULL.");
   
+  cola_t *cola = cola_crear();
   void *elemento_frente_1 = cola_frente(cola);
   pa2m_afirmar(elemento_frente_1 == NULL, 
   "Se retorna NULL al buscar el elemento del frente de una cola vacia.");
@@ -1193,17 +1177,16 @@ void cola_probar_tamanio()
 
   int elemento_prueba = 99;
 
-  cola_t *cola = cola_crear();
-
   size_t tamanio_cola = cola_tamanio(NULL);
   pa2m_afirmar(tamanio_cola == 0, 
   "Se devuelve 0 elementos para una cola NULL.");
  
   cola_t *cola_vacia = cola_crear();
   tamanio_cola = cola_tamanio(cola_vacia); 
-  pa2m_afirmar(cola_vacia != NULL && cola_tamanio(cola) == 0, 
+  pa2m_afirmar(cola_vacia != NULL && cola_tamanio(cola_vacia) == 0, 
   "Se devuelve 0 elementos para una cola vacia.");
 
+  cola_t *cola = cola_crear();
   cola = cola_encolar(cola, &elemento_prueba);
   tamanio_cola = cola_tamanio(cola);
   pa2m_afirmar(cola != NULL && cola_tamanio(cola) > 0, 
@@ -1224,14 +1207,13 @@ void cola_probar_vacia()
 
   int elemento_prueba = 9;
 
-  cola_t *cola = cola_crear();
-
   pa2m_afirmar(cola_vacia(NULL), "Se devuelve true para una cola NULL.");
 
   cola_t *cola_sin_elementos = cola_crear();
   bool es_vacia = cola_vacia(cola_sin_elementos);
   pa2m_afirmar(es_vacia, "Se devuelve true para una cola vacia.");
 
+  cola_t *cola = cola_crear();
   cola = cola_encolar(cola, &elemento_prueba);
   es_vacia = cola_vacia(cola);
   pa2m_afirmar(!es_vacia, 
