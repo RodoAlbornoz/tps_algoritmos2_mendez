@@ -20,44 +20,66 @@ abb_t *abb_crear(abb_comparador comparador)
 	return abb;
 }
 
+
 abb_t *abb_insertar(abb_t *arbol, void *elemento)
 {
 	return arbol;
 }
+
 
 void *abb_quitar(abb_t *arbol, void *elemento)
 {
 	return NULL;
 }
 
+
 void *abb_buscar(abb_t *arbol, void *elemento)
 {
 	return NULL;
 }
 
+
 bool abb_vacio(abb_t *arbol)
 {
-	return true;
+	if (arbol == NULL) {
+		free(arbol);
+		return true;
+	}
+
+	if (arbol->tamanio == 0)
+		return true;
+
+	return false;
 }
+
 
 size_t abb_tamanio(abb_t *arbol)
 {
-	return 0;
+	if (arbol == NULL) {
+		free(arbol);
+		return 0;
+	}
+
+	return arbol->tamanio;
 }
+
 
 void abb_destruir(abb_t *arbol)
 {
 }
 
+
 void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 {
 }
+
 
 size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 			     bool (*funcion)(void *, void *), void *aux)
 {
 	return 0;
 }
+
 
 size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 		    size_t tamanio_array)

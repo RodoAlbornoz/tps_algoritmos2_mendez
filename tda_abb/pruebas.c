@@ -11,17 +11,68 @@ void abb_probar_creacion()
 {
   pa2m_nuevo_grupo("Creacion de un ABB");
 
-  abb_t *abb1 = abb_crear(comparador_enteros);
+  abb_t *abb1 = abb_crear(comparador);
   abb_t *abb2 = abb_crear(NULL);
 
   pa2m_afirmar(abb1 != NULL, "Se crea un ABB con funcion de comparacion no NULL.");
-  pa2m_afirmar(abb2 == NULL, "Se devuelve NULL al intentar crear un ABB con función de comparación NULL.");
+  pa2m_afirmar(abb2 == NULL, "Se devuelve NULL al intentar crear un ABB con función de comparación NULL."); 
   pa2m_afirmar(abb1->nodo_raiz = NULL, "La raiz del ABB está inicializada en NULL.");
   pa2m_afirmar(abb1->comparador == comparador_enteros, "La función comparador del ABB es igual a la enviada a la funcion.");
-  pa2m_afirmar(abb1->tamanio == 0, "El tamaño del ABB se inicializa en 0.");
+  pa2m_afirmar(abb1->tamanio == 0, "El tamaño del ABB se inicializa en 0."); 
 
   abb_destruir(abb1);
   abb_destruir(abb2);
+}
+
+
+
+
+
+
+
+
+
+/*
+ * Se realizan las pruebas sobre la funcion abb_vacio
+ */
+void abb_probar_vacio()
+{
+  pa2m_nuevo_grupo("ABB vacio");
+
+  pa2m_afirmar(abb_vacio(NULL), "Se devuelve true para un ABB NULL.");
+  
+  abb_t *abb_sin_elementos = abb_crear(comparador);
+  pa2m_afirmar(abb_vacio(abb_sin_elementos), "Se devuelve true para un ABB vacio.");
+
+  abb_t *abb = abb_crear(comparador);
+  abb = abb_insertar(abb, elemento);
+  pa2m_afirmar(!abb_vacio(abb), "Se devuelve false para un ABB con al menos un elemento.");
+
+  abb_destruir(abb_sin_elementos);
+  abb_destruir(abb);
+}
+
+
+/*
+ * Se realizan las pruebas sobre la funcion abb_amanio
+ */
+void abb_probar_tamanio()
+{
+  pa2m_nuevo_grupo("Tamaño de un ABB");
+
+  pa2m_afirmar(abb_tamanio(NULL), "Se devuelve 0 elementos para un ABB NULL.");
+
+  abb_t *abb_sin_elementos = abb_crear(comparador);
+  size_t tamanio_abb = abb_tamanio(abb_sin_elementos);
+  pa2m_afirmar(tamanio_abb == 0, "Se devuelve 0 elementos para un ABB vacio.");
+
+  abb_t *abb = abb_crear(comparador);
+  abb = abb_insertar(abb, elemento);
+  tamanio_abb = abb_tamanio(abb);
+  pa2m_afirmar(tamanio_abb > 0, "Se devuelve la cantidad de elementos para un ABB con al menos un elemento.");
+
+  abb_destruir(abb_sin_elementos);
+  abb_destruir(abb);
 }
 
 
@@ -29,6 +80,9 @@ int main()
 {
   abb_probar_creacion();
 
+
+  abb_probar_vacio();
+  abb_probar_tamanio();
 
 
   pa2m_nuevo_grupo("Insercion en un ABB");
@@ -65,17 +119,8 @@ int main()
 
 
 
-  pa2m_nuevo_grupo("ABB vacio");
-  pa2m_afirmar(true, "Se devuelve true para un ABB NULL.");
-  pa2m_afirmar(true, "Se devuelve true para un ABB vacio.");
-  pa2m_afirmar(true, "Se devuelve false para un ABB con al menos un elemento.");
 
 
-
-  pa2m_nuevo_grupo("Tamaño de un ABB");
-  pa2m_afirmar(true, "Se devuelve 0 elementos para un ABB NULL.");
-  pa2m_afirmar(true, "Se devuelve 0 elementos para un ABB vacio.");
-  pa2m_afirmar(true, "Se devuelve la cantidad de elementos para un ABB con al menos un elemento.");
 
 
 
