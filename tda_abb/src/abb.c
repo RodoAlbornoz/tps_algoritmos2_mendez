@@ -4,7 +4,20 @@
 
 abb_t *abb_crear(abb_comparador comparador)
 {
-	return NULL;
+	if (comparador == NULL)
+		return NULL;
+
+	abb_t *abb = malloc(sizeof(abb_t));
+	if (abb == NULL) {
+		free(abb);
+		return NULL;
+	}
+
+	abb->nodo_raiz = NULL;
+	abb->comparador = comparador;
+	abb->tamanio = 0;
+
+	return abb;
 }
 
 abb_t *abb_insertar(abb_t *arbol, void *elemento)

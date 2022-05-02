@@ -3,13 +3,31 @@
 #include "pa2mm.h"
 #include "string.h"
 
+
+/*
+ * Se realizan las pruebas sobre la funcion abb_crear
+ */
+void abb_probar_creacion()
+{
+  pa2m_nuevo_grupo("Creacion de un ABB");
+
+  abb_t *abb1 = abb_crear(comparador_enteros);
+  abb_t *abb2 = abb_crear(NULL);
+
+  pa2m_afirmar(abb1 != NULL, "Se crea un ABB con funcion de comparacion no NULL.");
+  pa2m_afirmar(abb2 == NULL, "Se devuelve NULL al intentar crear un ABB con función de comparación NULL.");
+  pa2m_afirmar(abb1->nodo_raiz = NULL, "La raiz del ABB está inicializada en NULL.");
+  pa2m_afirmar(abb1->comparador == comparador_enteros, "La función comparador del ABB es igual a la enviada a la funcion.");
+  pa2m_afirmar(abb1->tamanio == 0, "El tamaño del ABB se inicializa en 0.");
+
+  abb_destruir(abb1);
+  abb_destruir(abb2);
+}
+
+
 int main()
 {
-  pa2m_nuevo_grupo("Creacion de ABB");
-  pa2m_afirmar(true, "Se crea un ABB exitosamente con una funcion de comparacion no NULL.");
-  pa2m_afirmar(true, "No se puede crear un ABB con una función de comparación NULL, y se devuelve NULL.");
-  pa2m_afirmar(true, "La raiz del arbol está inicializada en NULL.");
-  pa2m_afirmar(true, "El tamaño del arbol inicialmente es 0.");
+  abb_probar_creacion();
 
 
 
