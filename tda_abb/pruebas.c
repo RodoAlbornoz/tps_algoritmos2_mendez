@@ -9,12 +9,7 @@ int comparar_enteros(void *elemento1, void *elemento2)
   int *entero1 = (int *) elemento1;
   int *entero2 = (int *) elemento2;
 
-  if (*entero1 == *entero2)
-    return 0;
-  else if (*entero1 > *entero2)
-    return *entero1 - *entero2;
-  else
-    return *entero2 - *entero1;
+  return *entero1 - *entero2;
 }
 
 
@@ -23,17 +18,17 @@ int comparar_enteros(void *elemento1, void *elemento2)
  */
 void abb_probar_creacion()
 {
-  abb_comparador comparador = comparar_enteros;
-
   pa2m_nuevo_grupo("Creacion de un ABB");
+
+  abb_comparador comparador = comparar_enteros;
 
   abb_t *abb1 = abb_crear(comparador);
   abb_t *abb2 = abb_crear(NULL);
 
-  pa2m_afirmar(abb1 != NULL, "Se crea un ABB con funcion de comparacion no NULL.");
   pa2m_afirmar(abb2 == NULL, "Se devuelve NULL al intentar crear un ABB con función de comparación NULL."); 
+  pa2m_afirmar(abb1 != NULL, "Se crea un ABB con funcion de comparacion no NULL.");
   pa2m_afirmar(abb1->nodo_raiz == NULL, "La raiz del ABB está inicializada en NULL.");
-  pa2m_afirmar(abb1->comparador == comparador, "La función comparador del ABB es igual a la enviada a la funcion.");
+  pa2m_afirmar(abb1->comparador == comparador, "La función comparador del ABB es igual a la enviada a la funcion de creación.");
   pa2m_afirmar(abb1->tamanio == 0, "El tamaño del ABB se inicializa en 0."); 
 
   free(abb1);
@@ -50,12 +45,24 @@ void abb_probar_insercion()
 {
   pa2m_nuevo_grupo("Insercion en un ABB");
 
-  pa2m_afirmar(true, "No se pueden insertar elementos sobre un ABB NULL.");
-  pa2m_afirmar(true, "Se inserta un elemento en un arbol vacio.");
-  pa2m_afirmar(true, "Se inserta un elemento en un arbol con al menos un elemento.");
-  pa2m_afirmar(true, "Se devuelve el arbol al insertar un elemento.");
-  pa2m_afirmar(true, "El tamaño del arbol se incrementa en 1.");
-  pa2m_afirmar(true, "Se inserta un elemento repetido en el arbol.");
+  int elemento_prueba_1 = 2;
+  int elemento_prueba_2 = 99;
+  abb_comparador comparador = comparar_enteros;
+
+  pa2m_afirmar(abb_insertar(NULL, &elemento_prueba_1) == NULL, "No se pueden insertar elementos sobre un ABB NULL.");
+
+  abb_t *abb = abb_crear(comparador);
+  abb = abb_insertar(abb, &elemento_prueba_2);
+
+  pa2m_afirmar(abb != NULL, "Se inserta un elemento en un arbol vacio.");
+  pa2m_afirmar(abb != NULL, "Se devuelve el arbol al insertar un elemento.");
+  pa2m_afirmar(abb_tamanio(abb) == 1, "El tamaño del arbol se incrementa en 1.");
+  
+//  abb = abb_insertar(abb, &elemento_prueba_1);
+// pa2m_afirmar(abb != NULL, "Se inserta un elemento en un arbol con al menos un elemento.");
+
+
+//  pa2m_afirmar(true, "Se inserta un elemento repetido en el arbol.");
 }
 
 
@@ -172,7 +179,7 @@ void abb_probar_guardado_en_vector()
 {
   pa2m_nuevo_grupo("Recorrido y almacenamiento de un ABB en un vector");
 
-  pa2m_afirmar(true, "No se puede recorrer y almacenar un ABB NULL.");
+  pa2m_afirmar(true, "No se puede recorrer y almacenar los elementos de un ABB NULL.");
   pa2m_afirmar(true, "Se recorre el ABB inorden y se devuelve la cantidad de elementos almacenados.");
   pa2m_afirmar(true, "Se recorre el ABB inorden y se guardan los elementos en un vector.");
   pa2m_afirmar(true, "Se recorre el ABB postorden y se devuelve la cantidad de elementos almacenados.");
@@ -214,8 +221,8 @@ void abb_probar_destruir_todo()
 
 int main()
 {
-  abb_probar_creacion();/*
-  abb_probar_insercion();
+  abb_probar_creacion();
+  abb_probar_insercion();/*
   abb_probar_quitar();
   abb_probar_buscar();*/
   abb_probar_vacio();
