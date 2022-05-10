@@ -13,28 +13,49 @@ int comparar_enteros(void *elemento1, void *elemento2)
 }
 
 
+void dada_una_funcion_de_comparacion_null_no_se_puede_crear_el_abb()
+{
+  abb_t *abb = abb_crear(NULL);
+  pa2m_afirmar(abb == NULL, "Se devuelve NULL al intentar crear un ABB con \n\
+  función de comparación NULL."); 
+
+  abb_destruir(abb);
+}
+
+
+void dada_una_funcion_de_comparacion_no_null_se_crea_el_abb(abb_t *abb)
+{
+  pa2m_afirmar(abb != NULL, 
+              "Se crea un ABB con funcion de comparacion no NULL.");
+}
+
+
+void dado_un_abb_no_null_se_inicializan_sus_campos(abb_t *abb, 
+                                                   abb_comparador comparador)
+{
+  pa2m_afirmar(abb->nodo_raiz == NULL, 
+               "La raiz del ABB está inicializada en NULL.");
+  pa2m_afirmar(abb->comparador == comparador, 
+  "La función comparador del ABB es igual a la enviada a la funcion \n\
+  de creación.");
+  pa2m_afirmar(abb_vacio(abb), "El tamaño del ABB se inicializa en 0."); 
+
+  abb_destruir(abb);
+}
+
+
 /*
  * Se realizan las pruebas sobre la funcion abb_crear
  */
-void abb_probar_creacion()
+void abb_probar_creacion(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Creacion de un ABB");
 
-  abb_comparador comparador = comparar_enteros;
+  dada_una_funcion_de_comparacion_null_no_se_puede_crear_el_abb();
 
-  abb_t *abb1 = abb_crear(comparador);
-  abb_t *abb2 = abb_crear(NULL);
-
-  pa2m_afirmar(abb2 == NULL, "Se devuelve NULL al intentar crear un ABB con función de comparación NULL."); 
-  pa2m_afirmar(abb1 != NULL, "Se crea un ABB con funcion de comparacion no NULL.");
-  pa2m_afirmar(abb1->nodo_raiz == NULL, "La raiz del ABB está inicializada en NULL.");
-  pa2m_afirmar(abb1->comparador == comparador, "La función comparador del ABB es igual a la enviada a la funcion de creación.");
-  pa2m_afirmar(abb1->tamanio == 0, "El tamaño del ABB se inicializa en 0."); 
-
-  free(abb1);
-  free(abb2);
-//  abb_destruir(abb1);
-//  abb_destruir(abb2);
+  abb_t *abb = abb_crear(comparador);
+  dada_una_funcion_de_comparacion_no_null_se_crea_el_abb(abb);
+  dado_un_abb_no_null_se_inicializan_sus_campos(abb, comparador);
 }
 
 
@@ -58,11 +79,13 @@ void abb_probar_insercion()
   pa2m_afirmar(abb != NULL, "Se devuelve el arbol al insertar un elemento.");
   pa2m_afirmar(abb_tamanio(abb) == 1, "El tamaño del arbol se incrementa en 1.");
   
-//  abb = abb_insertar(abb, &elemento_prueba_1);
-// pa2m_afirmar(abb != NULL, "Se inserta un elemento en un arbol con al menos un elemento.");
-
+  abb = abb_insertar(abb, &elemento_prueba_1);
+  pa2m_afirmar(abb != NULL, "Se inserta un elemento en un arbol con al menos un elemento.");
 
 //  pa2m_afirmar(true, "Se inserta un elemento repetido en el arbol.");
+//  pa2m_afirmar(true, "Se inserta un nodo en la raiz de un ABB de al menos 1 elemento.");
+
+  free(abb);
 }
 
 
@@ -103,55 +126,93 @@ void abb_probar_buscar()
 }
 
 
+void dado_un_abb_null_se_considera_vacio()
+{
+  pa2m_afirmar(abb_vacio(NULL), "Se devuelve true para un ABB NULL.");
+}
+
+
+void dado_un_abb_vacio_se_considera_vacio(abb_comparador comparador)
+{
+  abb_t *abb_sin_elementos = abb_crear(comparador);
+  pa2m_afirmar(abb_vacio(abb_sin_elementos), 
+               "Se devuelve true para un ABB vacio.");
+
+  abb_destruir(abb_sin_elementos);
+}
+
+
+/*
+void dado_un_abb_no_vacio_no_se_considera_vacio(abb_comparador comparador)
+{
+  int elemento_prueba = 9;
+
+  abb_t *abb = abb_crear(comparador);
+  abb = abb_insertar(abb, &elemento_prueba);
+  pa2m_afirmar(!abb_vacio(abb), 
+               "Se devuelve false para un ABB con al menos un elemento.");
+  
+  abb_destruir(abb);
+}
+*/
+
+
 /*
  * Se realizan las pruebas sobre la funcion abb_vacio
  */
-void abb_probar_vacio()
+void abb_probar_vacio(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("ABB vacio");
 
-//  int elemento_prueba_1 = 9;
-  abb_comparador comparador = comparar_enteros;
+  dado_un_abb_null_se_considera_vacio();
+  dado_un_abb_vacio_se_considera_vacio(comparador);
+//dado_un_abb_no_vacio_no_se_considera_vacio(comparador);
+}
 
-  pa2m_afirmar(abb_vacio(NULL), "Se devuelve true para un ABB NULL.");
+
+void dado_un_abb_null_se_devuelven_0_elementos()
+{
+  pa2m_afirmar(abb_tamanio(NULL) == 0, 
+               "Se devuelve 0 elementos para un ABB NULL.");
+}
+
+
+void dado_un_abb_vacio_se_devuelven_0_elementos(abb_comparador comparador)
+{
+  abb_t *abb_vacio = abb_crear(comparador);
+  size_t tamanio_abb = abb_tamanio(abb_vacio);
+  pa2m_afirmar(tamanio_abb == 0, "Se devuelve 0 elementos para un ABB vacio.");
+
+  abb_destruir(abb_vacio);
+}
+
+
+/*
+void dado_un_abb_no_vacio_se_devuelve_su_tamanio(abb_comparador comparador)
+{
+  int elemento_prueba_1 = 9;
   
-  abb_t *abb_sin_elementos = abb_crear(comparador);
-  pa2m_afirmar(abb_vacio(abb_sin_elementos), "Se devuelve true para un ABB vacio.");
-  /*
   abb_t *abb = abb_crear(comparador);
   abb = abb_insertar(abb, &elemento_prueba_1);
-  pa2m_afirmar(!abb_vacio(abb), "Se devuelve false para un ABB con al menos un elemento.");*/
+  size_t tamanio_abb = abb_tamanio(abb);
+  pa2m_afirmar(tamanio_abb == 1, "Se devuelve la cantidad de elementos \n\
+               para un ABB con al menos un elemento.");
   
-  free(abb_sin_elementos);
-  // abb_destruir(abb_sin_elementos);
-  // abb_destruir(abb);
+  abb_destruir(abb);
 }
+*/
 
 
 /*
  * Se realizan las pruebas sobre la funcion abb_amanio
  */
-void abb_probar_tamanio()
+void abb_probar_tamanio(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Tamaño de un ABB");
 
-//  int elemento_prueba_1 = 1;
-  abb_comparador comparador = comparar_enteros;
-
-  pa2m_afirmar(abb_tamanio(NULL) == 0, "Se devuelve 0 elementos para un ABB NULL.");
-  
-  abb_t *abb_sin_elementos = abb_crear(comparador);
-  size_t tamanio_abb = abb_tamanio(abb_sin_elementos);
-  pa2m_afirmar(tamanio_abb == 0, "Se devuelve 0 elementos para un ABB vacio.");
-  /*
-  abb_t *abb = abb_crear(comparador);
-  abb = abb_insertar(abb, &elemento_prueba_1);
-  tamanio_abb = abb_tamanio(abb);
-  pa2m_afirmar(tamanio_abb > 0, "Se devuelve la cantidad de elementos para un ABB con al menos un elemento.");*/
-  
-  free(abb_sin_elementos);
-  // abb_destruir(abb_sin_elementos);
-  // abb_destruir(abb);
+  dado_un_abb_null_se_devuelven_0_elementos();
+  dado_un_abb_vacio_se_devuelven_0_elementos(comparador);
+//dado_un_abb_no_vacio_se_devuelve_su_tamanio(comparador);
 }
 
 
@@ -221,12 +282,14 @@ void abb_probar_destruir_todo()
 
 int main()
 {
-  abb_probar_creacion();
-  abb_probar_insercion();/*
+  abb_comparador comparador = comparar_enteros;
+
+  abb_probar_creacion(comparador);/*
+  abb_probar_insercion(); // CORREGIR
   abb_probar_quitar();
   abb_probar_buscar();*/
-  abb_probar_vacio();
-  abb_probar_tamanio();/*
+  abb_probar_vacio(comparador);
+  abb_probar_tamanio(comparador);/*
   abb_probar_iterar();
   abb_probar_guardado_en_vector();
   abb_probar_destruir();
