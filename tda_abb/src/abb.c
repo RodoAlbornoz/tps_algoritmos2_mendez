@@ -20,23 +20,46 @@ abb_t *abb_crear(abb_comparador comparador)
 
 
 /*
- * Se recibe la referencia a un arbol y un puntero genérico a un elemento de
- * cualquier tipo de dato
- * 
- * Se inserta un nodo, reservando memoria, dentro del arbol.
+ * Se recibe un puntero a un elemento genérico de cualquier tipo de dato
+ *
+ * Se crea nodo hoja, reservando memoria, cuyo elemento es el enviado a la 
+ * función. Se devuelve ese nodo hoja.
  */
-abb_t *insertar_en_arbol(abb_t *arbol, void *elemento)
+nodo_abb_t *crear_nodo_hoja(void *elemento)
 {
-	arbol->nodo_raiz = malloc(sizeof(nodo_abb_t));
-	if (arbol->nodo_raiz == NULL)
+	nodo_abb_t *nodo_hoja = malloc(sizeof(nodo_abb_t));
+	if (nodo_hoja == NULL)
 		return NULL;
 
-	arbol->nodo_raiz->elemento = elemento;
-	arbol->nodo_raiz->izquierda = NULL;
-	arbol->nodo_raiz->derecha = NULL;
+	nodo_hoja->elemento = elemento;
+	nodo_hoja->izquierda = NULL;
+	nodo_hoja->derecha = NULL;
 
-	arbol->tamanio++;
-	return arbol;
+	return nodo_hoja;
+}
+
+
+/*
+ * Se recibe un puntero a un nodo raiz, un comparador y un puntero a un
+ * elemento genérico de cualquier tipo de dato
+ * 
+ * Se inserta un nodo dentro del arbol, usando recursividad.
+ */
+nodo_abb_t *abb_insertar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
+				   void *elemento)
+{
+	if (raiz == NULL)
+		return crear_nodo_hoja(elemento);
+
+	int comparacion = comparador(elemento, raiz->elemento);
+	if (comparacion <= 0)
+		raiz->izquierda = abb_insertar_recursivo(raiz->izquierda, 
+							 comparador, elemento);
+	else 
+		raiz->derecha = abb_insertar_recursivo(raiz->derecha, 
+						       comparador, elemento);
+
+	return raiz;
 }
 
 
@@ -45,15 +68,10 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 	if (arbol == NULL)
 		return NULL;
 
-	if (arbol->nodo_raiz == NULL)
-		return insertar_en_arbol(arbol, elemento);
+	arbol->nodo_raiz = abb_insertar_recursivo(arbol->nodo_raiz, 
+						  arbol->comparador, elemento);
 
-	int comparacion = arbol->comparador(elemento, arbol->nodo_raiz->elemento);
-	if (comparacion > 0)
-		return abb_insertar((abb_t *) arbol->nodo_raiz->derecha, elemento);
-	else
-		return abb_insertar((abb_t *) arbol->nodo_raiz->izquierda, elemento);
-
+	arbol->tamanio++;
 	return arbol;
 }
 

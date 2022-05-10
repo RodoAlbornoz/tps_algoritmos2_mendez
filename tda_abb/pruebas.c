@@ -39,12 +39,12 @@ void dado_un_abb_no_null_se_inicializan_sus_campos(abb_t *abb,
   "La función comparador del ABB es igual a la enviada a la funcion \n\
   de creación.");
   pa2m_afirmar(abb_vacio(abb), "El tamaño del ABB se inicializa en 0."); 
-
-  abb_destruir(abb);
 }
 
 
 /*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_crear
  */
 void abb_probar_creacion(abb_comparador comparador)
@@ -56,36 +56,63 @@ void abb_probar_creacion(abb_comparador comparador)
   abb_t *abb = abb_crear(comparador);
   dada_una_funcion_de_comparacion_no_null_se_crea_el_abb(abb);
   dado_un_abb_no_null_se_inicializan_sus_campos(abb, comparador);
+  abb_destruir(abb);
+}
+
+
+void dado_un_abb_null_no_se_puede_insertar_dentro_de_el(int elemento_prueba)
+{
+  pa2m_afirmar(abb_insertar(NULL, &elemento_prueba) == NULL, 
+               "No se pueden insertar elementos sobre un ABB NULL.");
+}
+
+
+void dado_un_abb_vacio_se_inserta_dentro_de_el(abb_t *abb, 
+                                               int elemento_insertado)
+{
+  // Corregir abb != NULL por abb_buscar(arbol, elemento_insertado) == &elemento_insertado
+  pa2m_afirmar(abb != NULL, 
+               "Se inserta un elemento en un arbol vacio.");
+  pa2m_afirmar(abb_tamanio(abb) == 1, 
+               "El tamaño del arbol se incrementa en 1.");
+}
+
+
+void dado_un_abb_con_un_elemento_se_inserta_un_elemento_repetido(abb_t *abb, 
+                                                     int elemento_insertado)
+{
+  // Corregir abb != NULL por abb_buscar(arbol, elemento_insertado) == &elemento_insertado
+  pa2m_afirmar(abb != NULL, 
+               "Se inserta un elemento en un arbol con al menos un elemento.");
+  pa2m_afirmar(abb->nodo_raiz->izquierda->elemento == abb->nodo_raiz->elemento, 
+               "Se inserta un elemento repetido en el arbol.");
 }
 
 
 /*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_insertar
  */
-void abb_probar_insercion()
+void abb_probar_insercion(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Insercion en un ABB");
 
-  int elemento_prueba_1 = 2;
-  int elemento_prueba_2 = 99;
-  abb_comparador comparador = comparar_enteros;
+  int elemento_prueba = 2;
 
-  pa2m_afirmar(abb_insertar(NULL, &elemento_prueba_1) == NULL, "No se pueden insertar elementos sobre un ABB NULL.");
+  dado_un_abb_null_no_se_puede_insertar_dentro_de_el(elemento_prueba);
 
   abb_t *abb = abb_crear(comparador);
-  abb = abb_insertar(abb, &elemento_prueba_2);
+  abb = abb_insertar(abb, &elemento_prueba);
+  dado_un_abb_vacio_se_inserta_dentro_de_el(abb, elemento_prueba);
 
-  pa2m_afirmar(abb != NULL, "Se inserta un elemento en un arbol vacio.");
-  pa2m_afirmar(abb != NULL, "Se devuelve el arbol al insertar un elemento.");
-  pa2m_afirmar(abb_tamanio(abb) == 1, "El tamaño del arbol se incrementa en 1.");
-  
-  abb = abb_insertar(abb, &elemento_prueba_1);
-  pa2m_afirmar(abb != NULL, "Se inserta un elemento en un arbol con al menos un elemento.");
+  abb = abb_insertar(abb, &elemento_prueba);
+  dado_un_abb_con_un_elemento_se_inserta_un_elemento_repetido(abb, 
+                                                              elemento_prueba);
 
-//  pa2m_afirmar(true, "Se inserta un elemento repetido en el arbol.");
-//  pa2m_afirmar(true, "Se inserta un nodo en la raiz de un ABB de al menos 1 elemento.");
-
-  free(abb);
+  free(abb->nodo_raiz->izquierda); // CORREGIR
+  free(abb->nodo_raiz); // CORREGIR
+  abb_destruir(abb);
 }
 
 
@@ -111,9 +138,11 @@ void abb_probar_quitar()
 
 
 /*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_buscar
  */
-void abb_probar_buscar()
+void abb_probar_buscar(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Buscar en un ABB");
 
@@ -142,7 +171,6 @@ void dado_un_abb_vacio_se_considera_vacio(abb_comparador comparador)
 }
 
 
-/*
 void dado_un_abb_no_vacio_no_se_considera_vacio(abb_comparador comparador)
 {
   int elemento_prueba = 9;
@@ -152,12 +180,14 @@ void dado_un_abb_no_vacio_no_se_considera_vacio(abb_comparador comparador)
   pa2m_afirmar(!abb_vacio(abb), 
                "Se devuelve false para un ABB con al menos un elemento.");
   
+  free(abb->nodo_raiz); // CORREGIR
   abb_destruir(abb);
 }
-*/
 
 
 /*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_vacio
  */
 void abb_probar_vacio(abb_comparador comparador)
@@ -166,7 +196,7 @@ void abb_probar_vacio(abb_comparador comparador)
 
   dado_un_abb_null_se_considera_vacio();
   dado_un_abb_vacio_se_considera_vacio(comparador);
-//dado_un_abb_no_vacio_no_se_considera_vacio(comparador);
+  dado_un_abb_no_vacio_no_se_considera_vacio(comparador);
 }
 
 
@@ -187,23 +217,27 @@ void dado_un_abb_vacio_se_devuelven_0_elementos(abb_comparador comparador)
 }
 
 
-/*
 void dado_un_abb_no_vacio_se_devuelve_su_tamanio(abb_comparador comparador)
 {
   int elemento_prueba_1 = 9;
+  int elemento_prueba_2 = 17;
   
   abb_t *abb = abb_crear(comparador);
   abb = abb_insertar(abb, &elemento_prueba_1);
+  abb = abb_insertar(abb, &elemento_prueba_2);
   size_t tamanio_abb = abb_tamanio(abb);
-  pa2m_afirmar(tamanio_abb == 1, "Se devuelve la cantidad de elementos \n\
+  pa2m_afirmar(tamanio_abb == 2, "Se devuelve la cantidad de elementos \n\
                para un ABB con al menos un elemento.");
   
+  free(abb->nodo_raiz->derecha);
+  free(abb->nodo_raiz);
   abb_destruir(abb);
 }
-*/
 
 
 /*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_amanio
  */
 void abb_probar_tamanio(abb_comparador comparador)
@@ -212,7 +246,7 @@ void abb_probar_tamanio(abb_comparador comparador)
 
   dado_un_abb_null_se_devuelven_0_elementos();
   dado_un_abb_vacio_se_devuelven_0_elementos(comparador);
-//dado_un_abb_no_vacio_se_devuelve_su_tamanio(comparador);
+  dado_un_abb_no_vacio_se_devuelve_su_tamanio(comparador);
 }
 
 
@@ -284,10 +318,10 @@ int main()
 {
   abb_comparador comparador = comparar_enteros;
 
-  abb_probar_creacion(comparador);/*
-  abb_probar_insercion(); // CORREGIR
-  abb_probar_quitar();
-  abb_probar_buscar();*/
+  abb_probar_creacion(comparador);
+  abb_probar_insercion(comparador); 
+//abb_probar_quitar();
+  abb_probar_buscar(comparador);
   abb_probar_vacio(comparador);
   abb_probar_tamanio(comparador);/*
   abb_probar_iterar();
