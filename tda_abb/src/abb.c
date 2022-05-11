@@ -46,18 +46,18 @@ nodo_abb_t *crear_nodo_hoja(void *elemento)
  * Se inserta un nodo dentro del arbol, usando recursividad.
  */
 nodo_abb_t *abb_insertar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
-				   void *elemento)
+				   void *elemento_a_insertar)
 {
 	if (raiz == NULL)
-		return crear_nodo_hoja(elemento);
+		return crear_nodo_hoja(elemento_a_insertar);
 
-	int comparacion = comparador(elemento, raiz->elemento);
+	int comparacion = comparador(elemento_a_insertar, raiz->elemento);
 	if (comparacion <= 0)
 		raiz->izquierda = abb_insertar_recursivo(raiz->izquierda, 
-							 comparador, elemento);
+					comparador, elemento_a_insertar);
 	else 
 		raiz->derecha = abb_insertar_recursivo(raiz->derecha, 
-						       comparador, elemento);
+				    comparador, elemento_a_insertar);
 
 	return raiz;
 }
@@ -85,21 +85,37 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 }
 
 
+/*
+ * Se recibe un puntero a un nodo raiz, un comparador y un puntero a un
+ * elemento genérico de cualquier tipo de dato
+ * 
+ * Se inserta busca un elemento dentro del arbol, usando recursividad.
+ */
+void *abb_buscar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
+			   void *elemento_a_buscar)
+{
+	if (raiz == NULL)
+		return NULL;
+		
+	int comparacion = comparador(elemento_a_buscar, raiz->elemento);
+	if (comparacion == 0)
+		return raiz->elemento;
+	if (comparacion < 0)
+		return abb_buscar_recursivo(raiz->izquierda, comparador,
+					    elemento_a_buscar);
+
+	return abb_buscar_recursivo(raiz->derecha, comparador, 
+				    elemento_a_buscar);
+}
+
+
 void *abb_buscar(abb_t *arbol, void *elemento)
 {
-	if (arbol == NULL || abb_vacio(arbol))
+	if (arbol == NULL)
 		return NULL;
 
-	/*
-	int comparacion = arbol->comparador(elemento, arbol->nodo_raiz->elemento);
-	
-	if (comparacion > 0)
-		
-	else if (comparacion < 0)
-
-	else
-	*/
-	return NULL;
+	return abb_buscar_recursivo(arbol->nodo_raiz, arbol->comparador, 
+				    elemento);
 }
 
 
