@@ -4,12 +4,36 @@
 #include "string.h"
 
 
+/*
+ * Se reciben 2 punteros genéricos que apuntan a cualquier tipo de dato
+ *
+ * Se devuelve un entero de la comparacion de 2 enteros (=0 si 
+ * elemento1 = elemento2, <0 si elemento1 < elemento2 y >0 si 
+ * elemento1 > elemento2)
+ */
 int comparar_enteros(void *elemento1, void *elemento2)
 {
   int *entero1 = (int *) elemento1;
   int *entero2 = (int *) elemento2;
 
   return *entero1 - *entero2;
+}
+
+
+/*
+ * Se reciben 2 punteros genéricos que apuntan a cualquier tipo de dato
+ *
+ * Se devuelve un entero de la comparacion de 2 punteros a memoria (= 0 si
+ * el tamaño de elemento1 es igual al de elemento2, >0 si el tamaño de
+ * elemento1 es mayor al de elemento2, y <0 si el tamaño de elemento2 es
+ * mayor al elemento1
+ */
+int comparar_punteros_a_memoria(void *elemento1, void *elemento2)
+{
+  int bytes_en_memoria1 = sizeof(elemento1);
+  int bytes_en_memoria2 = sizeof(elemento2);
+
+  return bytes_en_memoria1 - bytes_en_memoria2;
 }
 
 
@@ -72,8 +96,7 @@ void dado_un_abb_vacio_se_inserta_dentro_de_el(abb_t *abb,
                                                int elemento_a_insertar)
 {
   abb = abb_insertar(abb, &elemento_a_insertar);
-  // Corregir abb != NULL por abb_buscar(arbol, elemento_a_insertar) == &elemento_insertado
-  pa2m_afirmar(abb != NULL, 
+  pa2m_afirmar(abb_buscar(abb, &elemento_a_insertar) == &elemento_a_insertar, 
                "Se inserta un elemento en un arbol vacio.");
   pa2m_afirmar(abb_tamanio(abb) == 1, 
                "El tamaño del arbol se incrementa en 1.");
@@ -84,10 +107,9 @@ void dado_un_abb_con_un_elemento_se_inserta_un_elemento_repetido(abb_t *abb,
                                                      int elemento_a_insertar)
 {
   abb = abb_insertar(abb, &elemento_a_insertar);
-  // Corregir abb != NULL por abb_buscar(arbol, elemento_insertado) == &elemento_insertado
-  pa2m_afirmar(abb != NULL, 
+  pa2m_afirmar(abb_buscar(abb, &elemento_a_insertar) == &elemento_a_insertar,
                "Se inserta un elemento en un arbol con al menos un elemento.");
-  pa2m_afirmar(abb->nodo_raiz->izquierda->elemento == abb->nodo_raiz->elemento, 
+  pa2m_afirmar(abb_buscar(abb, &elemento_a_insertar) == &elemento_a_insertar, 
                "Se inserta un elemento repetido en el arbol.");
 }
 
@@ -109,8 +131,6 @@ void abb_probar_insercion(abb_comparador comparador)
   dado_un_abb_con_un_elemento_se_inserta_un_elemento_repetido(abb, 
                                                               elemento_prueba);
 
-  free(abb->nodo_raiz->izquierda); // CORREGIR
-  free(abb->nodo_raiz); // CORREGIR
   abb_destruir(abb);
 }
 
@@ -198,8 +218,6 @@ void abb_probar_buscar(abb_comparador comparador)
   dado_un_abb_no_vacio_se_encuentra_un_elemento_repetido(abb, 
                                                          elemento_prueba_2);
 
-  free(abb->nodo_raiz->izquierda); // CORREGIR
-  free(abb->nodo_raiz); // CORREGIR
   abb_destruir(abb);
 }
 
@@ -243,7 +261,6 @@ void abb_probar_vacio(abb_comparador comparador)
   dado_un_abb_vacio_se_considera_vacio(abb, comparador);
   dado_un_abb_no_vacio_no_se_considera_vacio(abb, comparador);
 
-  free(abb->nodo_raiz); // CORREGIR
   abb_destruir(abb);
 }
 
@@ -291,8 +308,6 @@ void abb_probar_tamanio(abb_comparador comparador)
   dado_un_abb_vacio_se_devuelven_0_elementos(abb, comparador);
   dado_un_abb_no_vacio_se_devuelve_su_tamanio(abb, comparador);
 
-  free(abb->nodo_raiz->derecha); // CORREGIR
-  free(abb->nodo_raiz); // CORREGIR
   abb_destruir(abb);
 }
 
@@ -334,30 +349,142 @@ void abb_probar_guardado_en_vector()
 }
 
 
-/*
- * Se realizan las pruebas sobre la funcion abb_destruir
- */
-void abb_probar_destruir()
+void dado_un_abb_null_se_destruye()
 {
-  pa2m_nuevo_grupo("Destruccion de un ABB");
+  bool abb_destruido = false;
+  abb_destruir(NULL);
+  abb_destruido = true;
 
-  pa2m_afirmar(true, "Se libera un ABB NULL.");
-  pa2m_afirmar(true, "Se libera un ABB vacio.");
-  pa2m_afirmar(true, "Se libera un ABB junto con todos sus elementos.");
+  pa2m_afirmar(abb_destruido, "Se libera un ABB NULL.");
+}
+
+
+void dado_un_abb_vacio_se_destruye(abb_comparador comparador)
+{
+  abb_t *abb = abb_crear(comparador);
+
+  bool abb_destruido = false;
+  abb_destruir(abb);
+  abb_destruido = true;
+
+  pa2m_afirmar(abb_destruido, "Se libera un ABB vacio.");
+}
+
+
+void dado_un_abb_no_vacio_se_destruye_junto_a_sus_nodos(abb_comparador 
+                                                        comparador)
+{
+  int elemento_prueba_1 = 7;
+  int elemento_prueba_2 = 15;
+  int elemento_prueba_3 = 1;
+  abb_t *abb = abb_crear(comparador);
+
+  abb = abb_insertar(abb, &elemento_prueba_1);
+  abb = abb_insertar(abb, &elemento_prueba_2);
+  abb = abb_insertar(abb, &elemento_prueba_3);
+
+  bool abb_destruido = false;
+  abb_destruir(abb);
+  abb_destruido = true;
+
+  pa2m_afirmar(abb_destruido, "Se libera un ABB junto con todos sus nodos.");
 }
 
 
 /*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
+ * Se realizan las pruebas sobre la funcion abb_destruir
+ */
+void abb_probar_destruir(abb_comparador comparador)
+{
+  pa2m_nuevo_grupo("Destruccion de un ABB");
+
+  dado_un_abb_null_se_destruye();
+  dado_un_abb_vacio_se_destruye(comparador);
+  dado_un_abb_no_vacio_se_destruye_junto_a_sus_nodos(comparador);
+}
+
+
+void dado_un_abb_null_se_destruye_con_destruir_todo()
+{
+  bool abb_destruido = false;
+  abb_destruir_todo(NULL, NULL);
+  abb_destruido = true;
+
+  pa2m_afirmar(abb_destruido, "Se libera un ABB NULL.");
+}
+
+
+void dado_un_abb_vacio_se_destruye_con_destruir_todo(abb_comparador comparador)
+{
+  abb_t *abb = abb_crear(comparador);
+
+  bool abb_destruido = false;
+  abb_destruir_todo(abb, NULL);
+  abb_destruido = true;
+
+  pa2m_afirmar(abb_destruido, "Se libera un ABB vacio.");
+}
+
+
+void dado_un_destructor_null_no_se_liberan_elementos_del_abb(abb_comparador 
+                                                             comparador)
+{
+  int elemento_prueba_1 = 8;
+  int elemento_prueba_2 = 4;
+  int elemento_prueba_3 = 5;
+  abb_t *abb = abb_crear(comparador);
+
+  abb = abb_insertar(abb, &elemento_prueba_1);
+  abb = abb_insertar(abb, &elemento_prueba_2);
+  abb = abb_insertar(abb, &elemento_prueba_3);
+
+  bool abb_destruido = false;
+  abb_destruir_todo(abb, NULL);
+  abb_destruido = true;
+
+  pa2m_afirmar(abb_destruido, "Si la funcion destructora es NULL, solo se \n\
+  destruye el ABB y sus nodos.");
+}
+
+
+void dado_un_destructor_no_null_se_liberan_elementos_del_abb(abb_comparador 
+                                                             comparador)
+{
+  int *elemento_prueba_1 = malloc(8);
+  int *elemento_prueba_2 = malloc(15);
+  int *elemento_prueba_3 = malloc(2);
+  abb_t *abb = abb_crear(comparador);
+
+  abb = abb_insertar(abb, elemento_prueba_1);
+  abb = abb_insertar(abb, elemento_prueba_2);
+  abb = abb_insertar(abb, elemento_prueba_3);
+
+  bool abb_destruido = false;
+  abb_destruir_todo(abb, free);
+  abb_destruido = true;
+
+  pa2m_afirmar(abb_destruido, "Con funcion destructora no NULL, se destruye \n\
+  el ABB junto a todos sus nodos y elementos.");
+}
+
+
+/*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_destruir_todo
  */
-void abb_probar_destruir_todo()
+void abb_probar_destruir_todo(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Destruccion de un ABB y de sus elementos");
-  pa2m_afirmar(true, "Se libera un ABB NULL.");
-  pa2m_afirmar(true, "Se libera un ABB vacio.");
-  pa2m_afirmar(true, "Se libera un ABB junto con todos sus elementos.");
-  pa2m_afirmar(true, "Solo se destruye el ABB y sus nodos enviando una funcion destructora NULL.");
-  pa2m_afirmar(true, "Se destruye el ABB junto a todos sus nodos y elementos con una funcion destructora no NULL.");
+
+  dado_un_abb_null_se_destruye_con_destruir_todo();
+  dado_un_abb_vacio_se_destruye_con_destruir_todo(comparador);
+  dado_un_destructor_null_no_se_liberan_elementos_del_abb(comparador);
+
+  abb_comparador nuevo_comparador = comparar_punteros_a_memoria;
+  dado_un_destructor_no_null_se_liberan_elementos_del_abb(nuevo_comparador);
 }
 
 
@@ -372,9 +499,9 @@ int main()
   abb_probar_vacio(comparador);
   abb_probar_tamanio(comparador);/*
   abb_probar_iterar();
-  abb_probar_guardado_en_vector();
-  abb_probar_destruir();
-  abb_probar_destruir_todo();*/
+  abb_probar_guardado_en_vector();*/
+  abb_probar_destruir(comparador);
+  abb_probar_destruir_todo(comparador);
 
   return pa2m_mostrar_reporte();
 }

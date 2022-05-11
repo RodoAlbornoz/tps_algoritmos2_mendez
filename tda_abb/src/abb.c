@@ -142,7 +142,28 @@ void abb_destruir(abb_t *arbol)
 	if (arbol == NULL)
 		return;
 
-	free(arbol);
+	abb_destruir_todo(arbol, NULL);
+}
+
+
+/*
+ * Se recibe el puntero a la raiz de un arbol y un puntero a una funcion
+ *
+ * Se destruyen los nodos, el arbol y sus elementos (Si la funcion destructora
+ * no es NULL), usando recursividad
+ */
+void abb_destruir_todo_recursivo(nodo_abb_t *raiz, void (*destructor)(void *))
+{
+	if (raiz == NULL)
+		return;
+
+	abb_destruir_todo_recursivo(raiz->izquierda, destructor);
+	abb_destruir_todo_recursivo(raiz->derecha, destructor);
+	
+	if (destructor != NULL)
+		destructor(raiz->elemento);
+	// VER SI SE PUEDE MEJORAR USANDO ABB_QUITAR
+	free(raiz);
 }
 
 
@@ -151,6 +172,7 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 	if (arbol == NULL)
 		return;
 
+	abb_destruir_todo_recursivo(arbol->nodo_raiz, destructor);
 	free(arbol);
 }
 
