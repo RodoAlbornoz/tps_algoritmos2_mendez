@@ -70,7 +70,6 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 
 	arbol->nodo_raiz = abb_insertar_recursivo(arbol->nodo_raiz, 
 						  arbol->comparador, elemento);
-
 	arbol->tamanio++;
 	return arbol;
 }
@@ -177,20 +176,114 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 }
 
 
-size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
-			     bool (*funcion)(void *, void *), void *aux)
+/*
+ * Se recibe el puntero a una raiz, un puntero a funcion que devuelve un
+ * booleano, un puntero a un elemento genérico de cualquier tipo de dato y
+ * un puntero a un numero que cuenta las veces que se invocó a la función
+ *
+ * Se recorre el arbol en forma inorden y se devuelve la cantidad de veces
+ * que se invocó a la función
+ */
+void recorrer_inorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
+			void *aux, size_t *cantidad_invocaciones)
 {
-	if (arbol == NULL)
-		return 0;
+	if (raiz == NULL)
+		return;
 
-	return 0;
+	recorrer_inorden(raiz->izquierda, funcion, aux, cantidad_invocaciones);
+
+	(*cantidad_invocaciones)++;
+	if (!funcion(raiz->elemento, aux))
+		return;
+
+	recorrer_inorden(raiz->derecha, funcion, aux, cantidad_invocaciones);
 }
 
 
+/*
+ * Se recibe el puntero a una raiz, un puntero a funcion que devuelve un
+ * booleano, un puntero a un elemento genérico de cualquier tipo de dato y
+ * un puntero a un numero que cuenta las veces que se invocó a la función
+ *
+ * Se recorre el arbol en forma postorden y se devuelve la cantidad de veces
+ * que se invocó a la función
+ */
+void recorrer_postorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
+			  void *aux, size_t *cantidad_invocaciones)
+{
+	if (raiz == NULL)
+		return;
+
+	recorrer_postorden(raiz->izquierda, funcion, aux, 
+			   cantidad_invocaciones);
+	recorrer_postorden(raiz->derecha, funcion, aux, cantidad_invocaciones);
+
+	(*cantidad_invocaciones)++;
+	if (!funcion(raiz->elemento, aux)) 
+		return;
+}
+
+
+/*
+ * Se recibe el puntero a una raiz, un puntero a funcion que devuelve un
+ * booleano, un puntero a un elemento genérico de cualquier tipo de dato y
+ * un puntero a un numero que cuenta las veces que se invocó a la función
+ *
+ * Se recorre el arbol en forma preorden y se devuelve la cantidad de veces
+ * que se invocó a la función
+ */
+void recorrer_preorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
+			 void *aux, size_t *cantidad_invocaciones)
+{
+	if (raiz == NULL)
+		return;
+
+	(*cantidad_invocaciones)++;
+	if (!funcion(raiz->elemento, aux))
+		return;
+
+	recorrer_preorden(raiz->izquierda, funcion, aux, 
+			  cantidad_invocaciones);
+	recorrer_preorden(raiz->derecha, funcion, aux, cantidad_invocaciones);
+}
+
+
+size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
+			     bool (*funcion)(void *, void *), void *aux)
+{
+	if (arbol == NULL || funcion == NULL)
+		return 0;
+
+	size_t cantidad_invocaciones = 0;
+
+	if (recorrido == POSTORDEN)
+		recorrer_postorden(arbol->nodo_raiz, funcion, aux, 
+					  &cantidad_invocaciones);
+	else if (recorrido == INORDEN)
+		recorrer_inorden(arbol->nodo_raiz, funcion, aux, 
+					&cantidad_invocaciones);
+	else 
+		recorrer_preorden(arbol->nodo_raiz, funcion, aux, 
+					 &cantidad_invocaciones);
+
+	return cantidad_invocaciones;
+}
+
+
+/**
+ * Recorre el arbol según el recorrido especificado y va almacenando los
+ * elementos en el array hasta completar el recorrido o quedarse sin espacio en
+ * el array.
+ *
+ * El array tiene un tamaño maximo especificado por tamanio_array.
+ *
+ * Devuelve la cantidad de elementos que fueron almacenados exitosamente en el
+ * array.
+ */
 size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 		    size_t tamanio_array)
 {
-	if (arbol == NULL)
+	if (arbol == NULL || array == NULL)
 		return 0;
 
 	return 0;

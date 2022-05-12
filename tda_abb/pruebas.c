@@ -313,19 +313,121 @@ void abb_probar_tamanio(abb_comparador comparador)
 
 
 /*
+ * Se reciben punteros a elementos genéricos de cualquier tipo de dato
+ *
+ * Se devuelve si ese numero es par o no
+ */
+bool elemento_es_par(void *numero, void *extra)
+{
+  int *entero = (int *) numero;
+	return (((*entero) % 2) == 0);
+}
+
+
+void dado_un_abb_null_se_recorren_0_elementos()
+{
+  size_t cantidad_invocaciones = abb_con_cada_elemento(NULL, INORDEN, 
+                                                    elemento_es_par, NULL);
+
+  pa2m_afirmar(cantidad_invocaciones == 0, 
+               "Para un ABB NULL, no se recorren elementos.");
+}
+
+
+void dado_un_abb_vacio_se_recorren_0_elementos(abb_t *abb)
+{
+  int elemento_extra = 1;
+
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, PREORDEN, 
+                                            elemento_es_par, &elemento_extra);
+  pa2m_afirmar(cantidad_invocaciones == 0, 
+              "No se recorren elemento en un ABB vacio.");
+}
+
+
+void dada_una_funcion_null_se_recorren_0_elementos(abb_t *abb)
+{
+  int elemento_extra = 7;
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
+                                                    NULL, &elemento_extra);
+  pa2m_afirmar(cantidad_invocaciones == 0, 
+              "Se envia una funcion NULL y no se recorren elementos del ABB.");
+}
+
+
+//////////////////////////////////////
+void dado_un_abb_no_vacio_no_se_recorren_elementos(abb_t *abb)
+{
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, INORDEN, 
+                                                       elemento_es_par, NULL);
+
+  pa2m_afirmar(cantidad_invocaciones == 1, 
+               "No se recorre ningun elemento del ABB con la funcion dada.");
+}
+
+/*
+void dado_un_abb_no_vacio_se_recorre_un_elemento(abb_t *abb)
+{
+  int elemento_extra = 6;
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
+                                                    NULL, &elemento_extra);
+  pa2m_afirmar(true, "No se recorre ningun elemento del ABB con la funcion dada.");
+}
+
+
+void dado_un_abb_no_vacio_se_recorre_al_menos_un_elementos(abb_t *abb)
+{
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
+                                                    NULL, NULL);
+  pa2m_afirmar(true, "Se recorre al menos un elemento del ABB con la funcion dada.");
+}
+
+
+void dado_un_abb_no_vacio_se_recorren_todos_sus_elementos(abb_t *abb)
+{
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
+                                                    NULL, NULL);
+  pa2m_afirmar(true, "Se recorren todos los elementos del ABB con la funcion dada.");
+}
+*/
+
+/*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_con_cada_elemento
  */
-void abb_probar_iterar()
+void abb_probar_iterar(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Iterador interno y recorridos en un ABB");
-  pa2m_afirmar(true, "No se puede recorrer un ABB NULL.");
+
+  int elemento_prueba_1 = 7;
+  int elemento_prueba_2 = 10;
+  int elemento_prueba_3 = 1;
+  int elemento_prueba_4 = 8;
+  int elemento_prueba_5 = 4;
+
+  abb_t *abb = abb_crear(comparador);
+  dado_un_abb_null_se_recorren_0_elementos();
+  dado_un_abb_vacio_se_recorren_0_elementos(abb);
+
+  abb = abb_insertar(abb, &elemento_prueba_1);
+  abb = abb_insertar(abb, &elemento_prueba_4);
+  abb = abb_insertar(abb, &elemento_prueba_2);
+  abb = abb_insertar(abb, &elemento_prueba_3);
+  abb = abb_insertar(abb, &elemento_prueba_5);
+
+  dada_una_funcion_null_se_recorren_0_elementos(abb);
+  dado_un_abb_no_vacio_no_se_recorren_elementos(abb); // CORREGIR A PARTIR DE ACA
+  /*
+  dado_un_abb_no_vacio_se_recorre_un_elemento(abb);
+  dado_un_abb_no_vacio_se_recorre_al_menos_un_elementos(abb);
+  dado_un_abb_no_vacio_se_recorren_todos_sus_elementos(abb);*/
+  /*
   pa2m_afirmar(true, "Se recorre el ABB inorden y se devuelve la cantidad de elementos recorridos.");
   pa2m_afirmar(true, "Se recorre el ABB postorden y se devuelve la cantidad de elementos recorridos.");
   pa2m_afirmar(true, "Se recorre el ABB preorden y se devuelve la cantidad de elementos recorridos.");
-  pa2m_afirmar(true, "La funcion enviada es NULL y no se recorre el ABB.");
-  pa2m_afirmar(true, "No se recorre ningun elemento del ABB con la funcion dada.");
-  pa2m_afirmar(true, "Se recorre mas de un elemento del ABB con la funcion dada.");
-  pa2m_afirmar(true, "Se recorren todos los elementos del ABB con la funcion dada.");
+  */
+  abb_destruir(abb);
 }
 
 
@@ -497,9 +599,9 @@ int main()
 //abb_probar_quitar();
   abb_probar_buscar(comparador);
   abb_probar_vacio(comparador);
-  abb_probar_tamanio(comparador);/*
-  abb_probar_iterar();
-  abb_probar_guardado_en_vector();*/
+  abb_probar_tamanio(comparador);
+  abb_probar_iterar(comparador);
+//abb_probar_guardado_en_vector();
   abb_probar_destruir(comparador);
   abb_probar_destruir_todo(comparador);
 
