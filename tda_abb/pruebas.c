@@ -355,41 +355,86 @@ void dada_una_funcion_null_se_recorren_0_elementos(abb_t *abb)
 }
 
 
-//////////////////////////////////////
-void dado_un_abb_no_vacio_no_se_recorren_elementos(abb_t *abb)
+void dado_un_abb_no_vacio_no_se_recorren_elementos_postorden(abb_t *abb)
 {
-  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, INORDEN, 
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
                                                        elemento_es_par, NULL);
 
   pa2m_afirmar(cantidad_invocaciones == 1, 
-               "No se recorre ningun elemento del ABB con la funcion dada.");
+  "No se recorre en forma postorden ningun elemento del ABB con la funcion \n\
+  dada.");
 }
 
-/*
-void dado_un_abb_no_vacio_se_recorre_un_elemento(abb_t *abb)
+
+void dado_un_abb_no_vacio_no_se_recorren_elementos_preorden(abb_t *abb)
 {
-  int elemento_extra = 6;
-  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
-                                                    NULL, &elemento_extra);
-  pa2m_afirmar(true, "No se recorre ningun elemento del ABB con la funcion dada.");
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, PREORDEN,
+                                                       elemento_es_par, NULL);
+
+  pa2m_afirmar(cantidad_invocaciones == 1, 
+  "No se recorre en forma preorden ningun elemento del ABB con la funcion \n\
+  dada.");
 }
 
 
-void dado_un_abb_no_vacio_se_recorre_al_menos_un_elementos(abb_t *abb)
+void dado_un_abb_no_vacio_no_se_recorren_elementos_inorden(abb_t *abb)
+{
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, INORDEN,
+                                                       elemento_es_par, NULL);
+
+  pa2m_afirmar(cantidad_invocaciones == 1, 
+  "No se recorre en forma inorden ningun elemento del ABB con la funcion \n\
+  dada.");
+}
+
+
+void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_postorden(abb) 
+{
+pa2m_afirmar(true, "Se recorre al menos un elemento con el ABB postorden y se devuelve la cantidad de elementos recorridos con la funcion dada.");
+}
+
+
+void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_preorden(abb) 
+{
+pa2m_afirmar(true, "Se recorre al menos un elemento con el el ABB preorden y se devuelve la cantidad de elementos recorridos con la funcion dada.");
+}
+
+
+void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_inorden(abb)
+{
+  pa2m_afirmar(true, "Se recorre al menos un elemento con el ABB inorden y se devuelve la cantidad de elementos recorridos con la funcion dada.");
+}
+
+
+void dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_preorden(abb_t *abb)
+{
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, PREORDEN, 
+                                                    elemento_es_par, NULL);
+  pa2m_afirmar(cantidad_invocaciones == abb_tamanio(abb), 
+  "Se recorren en forma preorden todos los elementos del ABB con la funcion \n\
+  dada.");
+}
+
+
+void dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_postorden(abb_t *abb)
 {
   size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
-                                                    NULL, NULL);
-  pa2m_afirmar(true, "Se recorre al menos un elemento del ABB con la funcion dada.");
+                                                    elemento_es_par, NULL);
+  pa2m_afirmar(cantidad_invocaciones == abb_tamanio(abb), 
+  "Se recorren en forma postorden todos los elementos del ABB con la \n\
+  funcion dada.");
 }
 
 
-void dado_un_abb_no_vacio_se_recorren_todos_sus_elementos(abb_t *abb)
+void dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_inorden(abb_t *abb)
 {
-  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, POSTORDEN, 
-                                                    NULL, NULL);
-  pa2m_afirmar(true, "Se recorren todos los elementos del ABB con la funcion dada.");
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, INORDEN, 
+                                                    elemento_es_par, NULL);
+  pa2m_afirmar(cantidad_invocaciones == abb_tamanio(abb), 
+  "Se recorren en forma inorden todos los elementos del ABB con la funcion \n\
+  dada.");
 }
-*/
+
 
 /*
  * Se recibe una función para comparar los elementos dentro del arbol
@@ -405,9 +450,11 @@ void abb_probar_iterar(abb_comparador comparador)
   int elemento_prueba_3 = 1;
   int elemento_prueba_4 = 8;
   int elemento_prueba_5 = 4;
+  int elemento_prueba_6 = 16;
+
+  dado_un_abb_null_se_recorren_0_elementos();
 
   abb_t *abb = abb_crear(comparador);
-  dado_un_abb_null_se_recorren_0_elementos();
   dado_un_abb_vacio_se_recorren_0_elementos(abb);
 
   abb = abb_insertar(abb, &elemento_prueba_1);
@@ -417,16 +464,31 @@ void abb_probar_iterar(abb_comparador comparador)
   abb = abb_insertar(abb, &elemento_prueba_5);
 
   dada_una_funcion_null_se_recorren_0_elementos(abb);
-  dado_un_abb_no_vacio_no_se_recorren_elementos(abb); // CORREGIR A PARTIR DE ACA
-  /*
-  dado_un_abb_no_vacio_se_recorre_un_elemento(abb);
-  dado_un_abb_no_vacio_se_recorre_al_menos_un_elementos(abb);
-  dado_un_abb_no_vacio_se_recorren_todos_sus_elementos(abb);*/
-  /*
-  pa2m_afirmar(true, "Se recorre el ABB inorden y se devuelve la cantidad de elementos recorridos.");
-  pa2m_afirmar(true, "Se recorre el ABB postorden y se devuelve la cantidad de elementos recorridos.");
-  pa2m_afirmar(true, "Se recorre el ABB preorden y se devuelve la cantidad de elementos recorridos.");
-  */
+
+  ///////////////////////////// CORREGIR A PARTIR DE ACA
+  dado_un_abb_no_vacio_no_se_recorren_elementos_postorden(abb);
+  dado_un_abb_no_vacio_no_se_recorren_elementos_preorden(abb); // ESTE NO
+  dado_un_abb_no_vacio_no_se_recorren_elementos_inorden(abb);
+
+  dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_postorden(abb);
+  dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_preorden(abb);
+  dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_inorden(abb);
+  /////////////////////////////
+
+  abb_t *abb_elementos_pares = abb_crear(comparador);
+  abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_4);
+  abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_5);
+  abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_2);
+  abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_6);
+
+  dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_preorden(
+                                                          abb_elementos_pares);
+  dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_postorden(
+                                                          abb_elementos_pares);
+  dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_inorden(
+                                                          abb_elementos_pares);
+  
+  abb_destruir(abb_elementos_pares);
   abb_destruir(abb);
 }
 
