@@ -2,8 +2,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include <stdio.h>
-
 abb_t *abb_crear(abb_comparador comparador)
 {
 	if (comparador == NULL)
@@ -78,62 +76,59 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 
 
 /*
-struct abb *extraer_mas_izquierdo(struct abb *raiz, struct abb **extraido)
+ *
+ *
+ */
+nodo_abb_t *buscar_predecesor_inorden(nodo_abb_t *raiz, nodo_abb_t **extraido)
 {
-	if (raiz-izquierda == NULL) {
+	if (raiz->derecha == NULL) {
 		*extraido = raiz;
-		return raiz->derecha;
+		return raiz->izquierda;
 	}
 		
-	raiz->izquierda = extraer_mas_izquierd(raiz->izquierda, extraido);
-	return raiz;	
+	raiz->derecha = buscar_predecesor_inorden(raiz->derecha, extraido);
+	return raiz;
 }
-*/
 
 
 /*
  *
  *
  */
-void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
-			   void *elemento_a_quitar)
+nodo_abb_t *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
+			   void *elemento, void **elemento_a_quitar)
 {
 	if (raiz == NULL)
 		return NULL;
 
-	int comparacion = comparador(elemento_a_quitar, raiz->elemento);
+	int comparacion = comparador(elemento, raiz->elemento);
 
-	if (comparacion == 0) {
-		/*
+	if (comparacion == 0) {	
 		nodo_abb_t *nodo_derecho = raiz->derecha;
 		nodo_abb_t *nodo_izquierda = raiz->izquierda;
+		*elemento_a_quitar = raiz->elemento;
 
 		if (nodo_derecho != NULL && nodo_izquierda != NULL) {
-			struct abb *extraido = NULL;
-			raiz->derecha = extraer_mas_izquierdo(raiz->derecha, &extraido);
+			nodo_abb_t *extraido = NULL;
+			raiz->izquierda = buscar_predecesor_inorden(raiz->izquierda, &extraido);
 			raiz->elemento = extraido->elemento;
+			free(extraido);
 			return raiz;
 		}
-
+		
+		free(raiz);
 		if (nodo_derecho != NULL)
 			return nodo_derecho;
-		
 		return nodo_izquierda;
-		
-		*/
-		nodo_abb_t *nodo_aux = raiz;
-		void *elemento_eliminado = raiz->elemento;
-		raiz = NULL;
-		free(nodo_aux);
-		return elemento_eliminado;
-	} else if (comparacion < 0)
-		elemento_a_quitar = abb_quitar_recursivo(raiz->izquierda, 
-						comparador, elemento_a_quitar);
-	
-	elemento_a_quitar = abb_quitar_recursivo(raiz->derecha, 
-				    comparador, elemento_a_quitar);
+	} else if (comparacion < 0) {
+		raiz->izquierda = abb_quitar_recursivo(raiz->izquierda, 
+			comparador, elemento, elemento_a_quitar);
+	} else {
+		raiz->derecha = abb_quitar_recursivo(raiz->derecha,
+			comparador, elemento, elemento_a_quitar);
+	}
 
-	return elemento_a_quitar;
+	return raiz;
 }
 
 
@@ -142,8 +137,15 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 	if (arbol == NULL)
 		return NULL;
 
-	return abb_quitar_recursivo(arbol->nodo_raiz, arbol->comparador, 
-				    elemento);
+	void *elemento_a_eliminar = NULL;
+
+	arbol->nodo_raiz = abb_quitar_recursivo(arbol->nodo_raiz, arbol->comparador, 
+				    elemento, &elemento_a_eliminar);
+
+	if (elemento_a_eliminar != NULL)
+		arbol->tamanio--;
+
+	return elemento_a_eliminar;
 }
 
 
@@ -247,37 +249,36 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
  * Se recorre el arbol en forma inorden y se devuelve la cantidad de veces
  * que se invocó a la función
  */
-size_t recorrer_inorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
-		void *aux, size_t *cantidad_invocaciones)
-{
-	if (raiz == NULL || !funcion(raiz->elemento, aux))
-		return *cantidad_invocaciones;
-
-	*cantidad_invocaciones = recorrer_inorden(raiz->izquierda, funcion, 
-				aux, cantidad_invocaciones);
-
-	(*cantidad_invocaciones)++;
-	printf("%i \n", *(int *) raiz->elemento);
-	if (!funcion(raiz->elemento, aux))
-		return *cantidad_invocaciones;
-
-	*cantidad_invocaciones = recorrer_inorden(raiz->derecha, funcion, aux, 
-					cantidad_invocaciones); 
-
-	return *cantidad_invocaciones;
-}
-
-
-size_t recorrer_postorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
+size_t recorrer_abb_inorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
 		void *aux, size_t *cantidad_invocaciones)
 {
 	if (raiz == NULL)
 		return *cantidad_invocaciones;
 
-	*cantidad_invocaciones = recorrer_postorden(raiz->izquierda, funcion, 
+	*cantidad_invocaciones = recorrer_abb_inorden(raiz->izquierda, funcion, 
 				aux, cantidad_invocaciones);
-	*cantidad_invocaciones = recorrer_postorden(raiz->derecha, funcion, 
-				aux, cantidad_invocaciones);
+
+	(*cantidad_invocaciones)++;
+	if (!funcion(raiz->elemento, aux))
+		return *cantidad_invocaciones;
+
+	*cantidad_invocaciones = recorrer_abb_inorden(raiz->derecha, funcion,
+					aux, cantidad_invocaciones); 
+
+	return *cantidad_invocaciones;
+}
+
+
+size_t recorrer_abb_postorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
+		void *aux, size_t *cantidad_invocaciones)
+{
+	if (raiz == NULL)
+		return *cantidad_invocaciones;
+
+	*cantidad_invocaciones = recorrer_abb_postorden(raiz->izquierda, 
+				funcion, aux, cantidad_invocaciones);
+	*cantidad_invocaciones = recorrer_abb_postorden(raiz->derecha, funcion, 
+						aux, cantidad_invocaciones);
 
 	(*cantidad_invocaciones)++;
 	if (!funcion(raiz->elemento, aux)) 
@@ -295,7 +296,7 @@ size_t recorrer_postorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *),
  * Se recorre el arbol en forma preorden y se devuelve la cantidad de veces
  * que se invocó a la función
  */
-size_t recorrer_preorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
+size_t recorrer_abb_preorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *), 
 			 void *aux, size_t *cantidad_invocaciones)
 {
 	if (raiz == NULL)
@@ -305,59 +306,114 @@ size_t recorrer_preorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *),
 	if (!funcion(raiz->elemento, aux))
 		return *cantidad_invocaciones;
 
-	*cantidad_invocaciones = recorrer_preorden(raiz->izquierda, funcion, 
-						  aux, cantidad_invocaciones);
-	*cantidad_invocaciones = recorrer_preorden(raiz->derecha, funcion, aux, 
-						  cantidad_invocaciones);
+	*cantidad_invocaciones = recorrer_abb_preorden(raiz->izquierda, 
+					funcion, aux, cantidad_invocaciones);
+	*cantidad_invocaciones = recorrer_abb_preorden(raiz->derecha, funcion, 
+						aux, cantidad_invocaciones);
 
 	return *cantidad_invocaciones;
 }
 
 
-/*
- * Invoca la funcion con cada elemento almacenado en el mismo
- * como primer parámetro. El puntero aux se pasa como segundo parámetro a la
- * función. Si la función devuelve false, se finaliza el recorrido aun si quedan
- * elementos por recorrer. Si devuelve true se sigue recorriendo mientras queden
- * elementos.
 
- * Devuelve la cantidad de veces que fue invocada la función.
-*/
 size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 			     bool (*funcion)(void *, void *), void *aux)
-{
+{/*
 	if (arbol == NULL || funcion == NULL)
 		return 0;
-
+	
 	size_t cantidad_invocaciones = 0;
 
 	if (recorrido == POSTORDEN)
-		return recorrer_postorden(arbol->nodo_raiz, funcion, aux, 
+		return recorrer_abb_postorden(arbol->nodo_raiz, funcion, aux, 
 					  &cantidad_invocaciones);
 	else if (recorrido == INORDEN)
-		return recorrer_inorden(arbol->nodo_raiz, funcion, aux, 
+		return recorrer_abb_inorden(arbol->nodo_raiz, funcion, aux, 
 					&cantidad_invocaciones);
 	
-	return recorrer_preorden(arbol->nodo_raiz, funcion, aux, 
-				 &cantidad_invocaciones);
+	return recorrer_abb_preorden(arbol->nodo_raiz, funcion, aux, 
+				 &cantidad_invocaciones);*/
+	return 0;
+}
+/*
+// Va almacenando los elementos en el array hasta completar el recorrido o quedarse sin espacio en el array.
+// Devuelve la cantidad de elementos que fueron almacenados exitosamente en el array.
+size_t guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max, 
+				   size_t *cantidad_almacenados, void ***array)
+{
+	if (raiz == NULL)
+		return *cantidad_almacenados;
+
+	*cantidad_almacenados = guardar_elementos_postorden(raiz->izquierda, 
+				tamanio_max, cantidad_almacenados, array);
+	*cantidad_almacenados = guardar_elementos_postorden(raiz->derecha, 
+				tamanio_max, cantidad_almacenados, array);
+
+	(*cantidad_almacenados)++;
+	if (cantidad_almacenados == tamanio_max)
+		return *cantidad_almacenados;
+	array[*cantidad_almacenados] = raiz->elemento;
+
+	return *cantidad_almacenados;
 }
 
 
-/**
- * Recorre el arbol según el recorrido especificado y va almacenando los
- * elementos en el array hasta completar el recorrido o quedarse sin espacio en
- * el array.
- *
- * El array tiene un tamaño maximo especificado por tamanio_array.
- *
- * Devuelve la cantidad de elementos que fueron almacenados exitosamente en el
- * array.
- */
+size_t guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max, 
+				 size_t *cantidad_almacenados, void ***array)
+{
+	if (raiz == NULL)
+		return *cantidad_almacenados;
+
+	*cantidad_almacenados = guardar_elementos_postorden(raiz->izquierda, 
+				tamanio_max, cantidad_almacenados, array);
+
+	(*cantidad_almacenados)++;
+	if (cantidad_almacenados == tamanio_max)
+		return *cantidad_almacenados;
+	array[*cantidad_almacenados] = raiz->elemento;
+
+	*cantidad_almacenados = guardar_elementos_postorden(raiz->derecha, 
+				tamanio_max, cantidad_almacenados, array);
+
+	return *cantidad_almacenados;
+}
+
+
+size_t guardar_elementos_preorden(nodo_abb_t *raiz, size_t tamanio_max, 
+				  size_t *cantidad_almacenados, void ***array)
+{
+	if (raiz == NULL)
+		return *cantidad_almacenados;
+
+	(*cantidad_almacenados)++;
+	if (cantidad_almacenados == tamanio_max)
+		return *cantidad_almacenados;
+	array[*cantidad_almacenados] = raiz->elemento;
+
+	*cantidad_almacenados = guardar_elementos_postorden(raiz->izquierda, 
+				tamanio_max, cantidad_almacenados, array);
+
+	*cantidad_almacenados = guardar_elementos_postorden(raiz->derecha, 
+				tamanio_max, cantidad_almacenados, array);
+
+	return *cantidad_almacenados;
+}
+*/
+
 size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 		    size_t tamanio_array)
-{
+{	/*
 	if (arbol == NULL || array == NULL)
 		return 0;
 
+	if (recorrido == POSTORDEN)
+		return guardar_elementos_preorden(arbol->nodo_raiz, 
+						  tamanio_array, 0, &array);
+	else if (recorrido == INORDEN)
+		return guardar_elementos_inorden(arbol->nodo_raiz, 
+						 tamanio_array, 0, &array);
+	
+	return guardar_elementos_postorden(arbol->nodo_raiz, tamanio_array, 0,
+					   &array);*/
 	return 0;
 }

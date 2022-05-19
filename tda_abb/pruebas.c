@@ -135,24 +135,154 @@ void abb_probar_insercion(abb_comparador comparador)
 }
 
 
+void dado_un_abb_null_no_se_pueden_eliminar_elementos()
+{
+  int elemento_prueba = 2;
+
+  pa2m_afirmar(abb_quitar(NULL, &elemento_prueba) == NULL, 
+               "No se pueden eliminar elementos sobre un ABB NULL.");
+}
+
+
+void dado_un_abb_vacio_no_hay_elementos_para_eliminar(abb_t *abb)
+{
+  int elemento_prueba = 4;
+  pa2m_afirmar(abb_quitar(abb, &elemento_prueba) == NULL, 
+               "No hay elementos para quitar en un ABB vacio.");
+}
+
+
+void dado_un_abb_no_vacio_no_se_encuentra_el_elemento_a_eliminar(abb_t *abb)
+{
+  int elemento_prueba = 99;
+  pa2m_afirmar(abb_quitar(abb, &elemento_prueba) == NULL, 
+               "No se encuentra el elemento a eliminar en el arbol.");
+}
+
+
+void dado_un_abb_no_vacio_se_elimina_un_elemento_sin_hijos(abb_t *abb, 
+                                                 int *elemento_a_eliminar)
+{
+  // Busco el nodo directamente en el arbol para ver si tiene hijos o no.
+  nodo_abb_t *nodo_a_eliminar = abb->nodo_raiz->derecha->derecha->derecha->
+                                derecha;
+  nodo_abb_t *nodo_a_eliminar_izquierda = nodo_a_eliminar->izquierda;
+  nodo_abb_t *nodo_a_eliminar_derecha = nodo_a_eliminar->derecha;
+
+  size_t tamanio_original_abb = abb_tamanio(abb);
+  void *elemento_eliminado = abb_quitar(abb, elemento_a_eliminar);
+
+  pa2m_afirmar(elemento_eliminado == elemento_a_eliminar, 
+               "Se elimina un elemento del arbol y se lo devuelve.");
+  pa2m_afirmar(abb_tamanio(abb) == tamanio_original_abb - 1, 
+               "La cantidad de elementos del arbol se reduce en 1.");
+  pa2m_afirmar(nodo_a_eliminar_izquierda == NULL && 
+               nodo_a_eliminar_derecha == NULL, 
+               "Se elimina un nodo sin hijos del arbol.");
+}
+
+
+void dado_un_abb_no_vacio_se_elimina_un_elemento_con_un_hijo(abb_t *abb,
+                                                int *elemento_a_eliminar)
+{
+  // Busco el nodo directamente en el arbol para ver si tiene hijos o no.
+  nodo_abb_t *nodo_a_eliminar = abb->nodo_raiz->derecha->derecha;
+  nodo_abb_t *nodo_a_eliminar_izquierda = nodo_a_eliminar->izquierda;
+  nodo_abb_t *nodo_a_eliminar_derecha = nodo_a_eliminar->derecha;
+
+  void *elemento_eliminado = abb_quitar(abb, elemento_a_eliminar);
+
+  pa2m_afirmar(elemento_eliminado == elemento_a_eliminar &&
+               nodo_a_eliminar_derecha != NULL && 
+               nodo_a_eliminar_izquierda == NULL,
+              "Se elimina un nodo con un solo hijo del arbol.");
+}
+
+
+void dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_sin_hijo
+                                        (abb_t *abb, int *elemento_a_eliminar)
+{ 
+  // Busco el nodo directamente en el arbol para ver si tiene hijos o no.
+  nodo_abb_t *nodo_a_eliminar = abb->nodo_raiz;
+  nodo_abb_t *nodo_a_eliminar_izquierda = nodo_a_eliminar->izquierda;
+  nodo_abb_t *nodo_a_eliminar_derecha = nodo_a_eliminar->derecha;
+
+  void *elemento_eliminado = abb_quitar(abb, elemento_a_eliminar);
+
+  pa2m_afirmar(elemento_eliminado == elemento_a_eliminar &&
+               nodo_a_eliminar_izquierda != NULL && 
+               nodo_a_eliminar_derecha != NULL,
+               "Se elimina un nodo con 2 hijos del arbol y con predecesor \n\
+               inorden sin hijo.");
+}
+
+
+void dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_con_un_hijo
+                                        (abb_t *abb, int *elemento_a_eliminar)
+{ 
+  // Busco el nodo directamente en el arbol para ver si tiene hijos o no.
+  nodo_abb_t *nodo_a_eliminar = abb->nodo_raiz->derecha;
+  nodo_abb_t *nodo_a_eliminar_izquierda = nodo_a_eliminar->izquierda;
+  nodo_abb_t *nodo_a_eliminar_derecha = nodo_a_eliminar->derecha;
+
+  void *elemento_eliminado = abb_quitar(abb, elemento_a_eliminar);
+
+  pa2m_afirmar(elemento_eliminado == elemento_a_eliminar &&
+               nodo_a_eliminar_izquierda != NULL && 
+               nodo_a_eliminar_derecha != NULL,
+               "Se elimina un nodo con 2 hijos del arbol y con predecesor \n\
+               inorden con un hijo.");
+}
+
+
 /*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
  * Se realizan las pruebas sobre la funcion abb_quitar
  */
-void abb_probar_quitar()
+void abb_probar_quitar(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Eliminación en un ABB");
 
-  pa2m_afirmar(true, "No se pueden eliminar elementos sobre un ABB NULL.");
-  pa2m_afirmar(true, "No hay elementos para quitar en un ABB vacio.");
-  pa2m_afirmar(true, "No se encuentra el elemento a eliminar en el arbol.");
-  pa2m_afirmar(true, "Se encuentra el elemento a eliminar en el arbol.");
-  pa2m_afirmar(true, "Se devuelve el elemento eliminado del arbol.");
-  pa2m_afirmar(true, "La cantidad de elementos del arbol se reduce en 1.");
-  pa2m_afirmar(true, "Dado un elemento repetido en el arbol, se elimina el primero encontrado"); // ??
-  pa2m_afirmar(true, "Se elimina un nodo sin hijos del arbol.");
-  pa2m_afirmar(true, "Se elimina un nodo con un solo hijo del arbol.");
-  pa2m_afirmar(true, "Se elimina un nodo con 2 hijos del arbol.");
-  pa2m_afirmar(true, "Se reemplaza el nodo eliminado con su predecesor inorden.");
+  dado_un_abb_null_no_se_pueden_eliminar_elementos();
+
+  int elemento_prueba_1 = 2;
+  int elemento_prueba_2 = 1;
+  int elemento_prueba_3 = 11;
+  int elemento_prueba_4 = 13;
+  int elemento_prueba_5 = 4;
+  int elemento_prueba_6 = 8;
+  int elemento_prueba_7 = 10;
+  int elemento_prueba_8 = 9;
+  int elemento_prueba_9 = 15;
+  int elemento_prueba_10 = 18;
+
+  abb_t *abb = abb_crear(comparador);
+
+  dado_un_abb_vacio_no_hay_elementos_para_eliminar(abb);
+
+  abb = abb_insertar(abb, &elemento_prueba_1);
+  abb = abb_insertar(abb, &elemento_prueba_2);
+  abb = abb_insertar(abb, &elemento_prueba_3);
+  abb = abb_insertar(abb, &elemento_prueba_4);
+  abb = abb_insertar(abb, &elemento_prueba_5);
+  abb = abb_insertar(abb, &elemento_prueba_6);
+  abb = abb_insertar(abb, &elemento_prueba_7);
+  abb = abb_insertar(abb, &elemento_prueba_8);
+  abb = abb_insertar(abb, &elemento_prueba_9);
+  abb = abb_insertar(abb, &elemento_prueba_10);
+  
+  dado_un_abb_no_vacio_no_se_encuentra_el_elemento_a_eliminar(abb);
+  dado_un_abb_no_vacio_se_elimina_un_elemento_sin_hijos(abb, 
+                                                        &elemento_prueba_10);
+  dado_un_abb_no_vacio_se_elimina_un_elemento_con_un_hijo(abb, 
+                                                          &elemento_prueba_4);
+  dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_sin_hijo
+                                                      (abb, &elemento_prueba_1);
+  dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_con_un_hijo
+                                                      (abb, &elemento_prueba_3);  
+  
+  abb_destruir(abb);
 }
 
 
@@ -324,6 +454,18 @@ bool elemento_es_par(void *numero, void *extra)
 }
 
 
+/*
+ * Se reciben punteros a elementos genéricos de cualquier tipo de dato
+ *
+ * Se devuelve si ese numero es impar o no
+ */
+bool elemento_es_impar(void *numero, void *extra)
+{
+  int *entero = (int *) numero;
+	return (((*entero) % 2) != 0);
+}
+
+
 void dado_un_abb_null_se_recorren_0_elementos()
 {
   size_t cantidad_invocaciones = abb_con_cada_elemento(NULL, INORDEN, 
@@ -388,19 +530,24 @@ void dado_un_abb_no_vacio_no_se_recorren_elementos_inorden(abb_t *abb)
 }
 
 
-void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_postorden(abb) 
+void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_postorden(abb_t *abb) 
 {
 pa2m_afirmar(true, "Se recorre al menos un elemento con el ABB postorden y se devuelve la cantidad de elementos recorridos con la funcion dada.");
 }
 
 
-void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_preorden(abb) 
+void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_preorden(abb_t *abb) 
 {
-pa2m_afirmar(true, "Se recorre al menos un elemento con el el ABB preorden y se devuelve la cantidad de elementos recorridos con la funcion dada.");
+  size_t cantidad_invocaciones = abb_con_cada_elemento(abb, PREORDEN,
+                                                      elemento_es_impar, NULL);
+
+  printf("%li", cantidad_invocaciones);
+
+  pa2m_afirmar(cantidad_invocaciones == 3, "Se recorre al menos un elemento con el el ABB preorden y se devuelve la cantidad de elementos recorridos con la funcion dada.");
 }
 
 
-void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_inorden(abb)
+void dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_inorden(abb_t *abb)
 {
   pa2m_afirmar(true, "Se recorre al menos un elemento con el ABB inorden y se devuelve la cantidad de elementos recorridos con la funcion dada.");
 }
@@ -487,7 +634,7 @@ void abb_probar_iterar(abb_comparador comparador)
                                                           abb_elementos_pares);
   dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_inorden(
                                                           abb_elementos_pares);
-  
+
   abb_destruir(abb_elementos_pares);
   abb_destruir(abb);
 }
@@ -658,11 +805,11 @@ int main()
 
   abb_probar_creacion(comparador);
   abb_probar_insercion(comparador); 
-//abb_probar_quitar();
+  abb_probar_quitar(comparador);
   abb_probar_buscar(comparador);
   abb_probar_vacio(comparador);
   abb_probar_tamanio(comparador);
-  abb_probar_iterar(comparador);
+//abb_probar_iterar(comparador);
 //abb_probar_guardado_en_vector();
   abb_probar_destruir(comparador);
   abb_probar_destruir_todo(comparador);
