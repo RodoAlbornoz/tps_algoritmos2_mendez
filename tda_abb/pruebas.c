@@ -605,13 +605,13 @@ void abb_probar_iterar(abb_comparador comparador)
 
   dado_un_abb_null_se_recorren_0_elementos();
   dado_un_abb_vacio_se_recorren_0_elementos(abb);
-
+/*-------------------------------------------------------------------------------------------------------- REVISAR */   
   abb = abb_insertar(abb, &elemento_prueba_1);
   abb = abb_insertar(abb, &elemento_prueba_4);
   abb = abb_insertar(abb, &elemento_prueba_2);
   abb = abb_insertar(abb, &elemento_prueba_3);
   abb = abb_insertar(abb, &elemento_prueba_5);
-
+/*-------------------------------------------------------------------------------------------------------- REVISAR */   
   dada_una_funcion_null_se_recorren_0_elementos(abb);
   
   dado_un_abb_no_vacio_no_se_recorren_elementos_postorden(abb);
@@ -620,13 +620,13 @@ void abb_probar_iterar(abb_comparador comparador)
   dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_postorden(abb);
   dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_preorden(abb);
   dado_un_abb_no_vacio_se_recorre_al_menos_un_elemento_inorden(abb);
-  
+  /*-------------------------------------------------------------------------------------------------------- REVISAR */   
   abb_t *abb_elementos_pares = abb_crear(comparador);
   abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_4);
   abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_5);
   abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_2);
   abb_elementos_pares = abb_insertar(abb_elementos_pares, &elemento_prueba_6);
-
+  /*-------------------------------------------------------------------------------------------------------- REVISAR */   
   dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_preorden(
                                                           abb_elementos_pares);                                                    
   dado_un_abb_no_vacio_se_recorren_todos_sus_elementos_postorden(
@@ -638,26 +638,151 @@ void abb_probar_iterar(abb_comparador comparador)
   abb_destruir(abb);
 }
 
-//////////////////////////////////////////////////////////////////////////// REVISAR
-/*
- * Se realizan las pruebas sobre la funcion abb_recorrer
- */
-void abb_probar_guardado_en_vector()
-{
-  pa2m_nuevo_grupo("Recorrido y almacenamiento de un ABB en un vector");
 
-  pa2m_afirmar(true, "No se puede recorrer y almacenar los elementos de un ABB NULL.");
+void dado_un_abb_null_no_se_almacenan_elementos()
+{
+  size_t cantidad_almacenados = abb_recorrer(NULL, PREORDEN, NULL, 5);
+  pa2m_afirmar(cantidad_almacenados == 0, "No se pueden almacenar elementos en un ABB NULL.");
+}
+
+
+void dado_un_array_null_no_se_almacenan_elementos(abb_t *abb)
+{
+  size_t cantidad_almacenados = abb_recorrer(abb, PREORDEN, NULL, 2);
+  pa2m_afirmar(cantidad_almacenados == 0, "No se almacenan elementos con un array NULL.");
+}
+
+
+void dado_un_tamanio_0_no_se_almacenan_elementos_recorriendo_postorden(abb_t *abb)
+{
+  void **arreglo = malloc(sizeof(int *) * 2);
+  size_t cantidad_almacenados = abb_recorrer(abb, POSTORDEN, arreglo, 0);
+
+  pa2m_afirmar(cantidad_almacenados == 0, 
+  "En un recorrido postorden, con un array de tamaño 0, no se almacenan elementos.");
+
+  free(arreglo);
+}
+
+
+void dado_un_tamanio_0_no_se_almacenan_elementos_recorriendo_preorden(abb_t *abb)
+{
+  void **arreglo = malloc(sizeof(int *) * 2);
+  size_t cantidad_almacenados = abb_recorrer(abb, PREORDEN, arreglo, 0);
+
+  pa2m_afirmar(cantidad_almacenados == 0, 
+  "En un recorrido preorden, con un array de tamaño 0, no se almacenan elementos.");
+
+  free(arreglo);
+}
+
+
+void dado_un_tamanio_0_no_se_almacenan_elementos_recorriendo_inorden(abb_t *abb)
+{
+  void **arreglo = malloc(sizeof(int *) * 2);
+  size_t cantidad_almacenados = abb_recorrer(abb, INORDEN, arreglo, 0);
+
+  pa2m_afirmar(cantidad_almacenados == 0, 
+  "En un recorrido inorden, con un array de tamaño 0, no se almacenan elementos.");
+
+  free(arreglo);
+}
+
+//////////////////////////////////////////////////////////////////////////// REVISAR
+void dado_un_abb_y_array_no_null_se_recorre_el_abb_inorden_y_se_almacenan_todos_sus_elementos(abb_t *abb)
+{
+  void **arreglo = malloc(sizeof(int *) * abb_tamanio(abb));
+  size_t cantidad_almacenados = abb_recorrer(abb, INORDEN, arreglo, abb_tamanio(abb));
+
+  pa2m_afirmar(cantidad_almacenados == abb_tamanio(abb), 
+  "EXITO");
+
+  free(arreglo);
   pa2m_afirmar(true, "Se recorre el ABB inorden y se devuelve la cantidad de elementos almacenados.");
   pa2m_afirmar(true, "Se recorre el ABB inorden y se guardan los elementos en un vector.");
+}
+
+
+void dado_un_abb_y_array_no_null_se_recorre_el_abb_postorden_y_se_almacenan_todos_sus_elementos(abb_t *abb)
+{
+  void **arreglo = malloc(sizeof(int *) * abb_tamanio(abb));
+  size_t cantidad_almacenados = abb_recorrer(abb, POSTORDEN, arreglo, abb_tamanio(abb));
+
+  pa2m_afirmar(cantidad_almacenados == abb_tamanio(abb), 
+  "EXITO");
+
+  free(arreglo);
   pa2m_afirmar(true, "Se recorre el ABB postorden y se devuelve la cantidad de elementos almacenados.");
   pa2m_afirmar(true, "Se recorre el ABB postorden y se guardan los elementos en un vector.");
-  pa2m_afirmar(true, "Se recorre el ABB preorden y se devuelve la cantidad de elementos ralmacenados.");
+}
+
+
+void dado_un_abb_y_array_no_null_se_recorre_el_abb_preorden_y_se_almacenan_todos_sus_elementos(abb_t *abb)
+{
+  void **arreglo = malloc(sizeof(int *) * abb_tamanio(abb));
+  size_t cantidad_almacenados = abb_recorrer(abb, PREORDEN, arreglo, abb_tamanio(abb));
+
+  pa2m_afirmar(cantidad_almacenados == abb_tamanio(abb), 
+  "EXITO");
+
+  free(arreglo);
+  pa2m_afirmar(true, "Se recorre el ABB preorden y se devuelve la cantidad de elementos almacenados.");
   pa2m_afirmar(true, "Se recorre el ABB preorden y se guardan los elementos en un vector.");
-  pa2m_afirmar(true, "tamanio array es 0 y no se almacenan elementos en el array ni se recorre el ABB.");
-  pa2m_afirmar(true, "Se recibe un array NULL.");
+}
+
+
+void dado_un_abb_y_array_no_null_se_supera_la_capacidad_del_array(abb_t *abb)
+{
+  void **arreglo = malloc(sizeof(int *) * 10);
+  size_t cantidad_almacenados = abb_recorrer(abb, INORDEN, arreglo, abb_tamanio(abb));
+
+  pa2m_afirmar(cantidad_almacenados == 0, 
+  "En un recorrido inorden, con un array de tamaño 0, no se almacenan elementos.");
+
+  free(arreglo);
   pa2m_afirmar(true, "Se recorre el ABB y se guardan elementos en el array, pero este se queda sin espacio.");
 }
 //////////////////////////////////////////////////////////////////////////// REVISAR
+
+/*
+ * Se recibe una función para comparar los elementos dentro del arbol
+ *
+ * Se realizan las pruebas sobre la funcion abb_recorrer
+ */
+void abb_probar_guardado_en_vector(abb_comparador comparador)
+{
+  pa2m_nuevo_grupo("Recorrido y almacenamiento de un ABB en un vector");
+
+  int elemento_prueba_1 = 7;
+  int elemento_prueba_2 = 10;
+  int elemento_prueba_3 = 1;
+  int elemento_prueba_4 = 8;
+  int elemento_prueba_5 = 4;
+  abb_t *abb = abb_crear(comparador);
+
+  abb = abb_insertar(abb, &elemento_prueba_1);
+  abb = abb_insertar(abb, &elemento_prueba_4);
+  abb = abb_insertar(abb, &elemento_prueba_2);
+  abb = abb_insertar(abb, &elemento_prueba_3);
+  abb = abb_insertar(abb, &elemento_prueba_5);
+
+  dado_un_abb_null_no_se_almacenan_elementos();
+  dado_un_array_null_no_se_almacenan_elementos(abb);
+
+  dado_un_tamanio_0_no_se_almacenan_elementos_recorriendo_postorden(abb);
+  dado_un_tamanio_0_no_se_almacenan_elementos_recorriendo_preorden(abb);
+  dado_un_tamanio_0_no_se_almacenan_elementos_recorriendo_inorden(abb);
+
+//////////////////////////////////////////////////////////////////////////// REVISAR
+  dado_un_abb_y_array_no_null_se_recorre_el_abb_inorden_y_se_almacenan_todos_sus_elementos(abb);/*
+  dado_un_abb_y_array_no_null_se_recorre_el_abb_postorden_y_se_almacenan_todos_sus_elementos(abb);
+  dado_un_abb_y_array_no_null_se_recorre_el_abb_preorden_y_se_almacenan_todos_sus_elementos(abb);
+  dado_un_abb_y_array_no_null_se_supera_la_capacidad_del_array(abb);*/
+//////////////////////////////////////////////////////////////////////////// REVISAR
+
+  abb_destruir(abb);
+}
+
 
 void dado_un_abb_null_se_destruye()
 {
@@ -809,7 +934,7 @@ int main()
   abb_probar_vacio(comparador);
   abb_probar_tamanio(comparador);
   abb_probar_iterar(comparador);
-//abb_probar_guardado_en_vector();
+  abb_probar_guardado_en_vector(comparador);
   abb_probar_destruir(comparador);
   abb_probar_destruir_todo(comparador);
 

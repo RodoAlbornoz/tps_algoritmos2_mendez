@@ -263,7 +263,7 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 	free(arbol);
 }
 
-//////////////////////////////////////////////////////////////////////////// REVISAR
+
 /*
  *
  *
@@ -372,25 +372,25 @@ size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 	return cantidad_invocaciones;
 }
 
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 /*
  *
  *
  */
-nodo_abb_t *guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max, 
+nodo_abb_t *guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
 				   size_t *cantidad_almacenados, void ***array)
 {
 	if (raiz == NULL)
 		return raiz;
 
 	raiz->izquierda = guardar_elementos_postorden(raiz->izquierda, 
-				tamanio_max, cantidad_almacenados, array);
+				tamanio_max_array, cantidad_almacenados, array);
 	raiz->derecha = guardar_elementos_postorden(raiz->derecha, 
-				tamanio_max, cantidad_almacenados, array);
+				tamanio_max_array, cantidad_almacenados, array);
 
-	if (*cantidad_almacenados == tamanio_max)
+	if (*cantidad_almacenados == tamanio_max_array)
 		return raiz;
-	*array[*cantidad_almacenados] = raiz->elemento;
+	*array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
 	(*cantidad_almacenados)++;
 
 	return raiz;
@@ -401,22 +401,22 @@ nodo_abb_t *guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max,
  *
  *
  */
-nodo_abb_t *guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max, 
-				 size_t *cantidad_almacenados, void ***array)
+nodo_abb_t *guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
+				 size_t *cantidad_almacenados, void ***array) // 1;
 {
 	if (raiz == NULL)
 		return raiz;
 
 	raiz->izquierda = guardar_elementos_inorden(raiz->izquierda, 
-				tamanio_max, cantidad_almacenados, array);
+				tamanio_max_array, cantidad_almacenados, array); // 2; 3 (NULL); 5 (NULL)
 
-	if (*cantidad_almacenados == tamanio_max)
+	if (*cantidad_almacenados == tamanio_max_array)
 		return raiz;
-	*array[*cantidad_almacenados] = raiz->elemento;
+	*array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
 	(*cantidad_almacenados)++;
 
 	raiz->derecha = guardar_elementos_inorden(raiz->derecha, 
-				tamanio_max, cantidad_almacenados, array);
+				tamanio_max_array, cantidad_almacenados, array); // 4;
 
 	return raiz;
 }
@@ -426,22 +426,22 @@ nodo_abb_t *guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max,
  *
  *
  */
-nodo_abb_t *guardar_elementos_preorden(nodo_abb_t *raiz, size_t tamanio_max, 
+nodo_abb_t *guardar_elementos_preorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
 				  size_t *cantidad_almacenados, void ***array)
 {
 	if (raiz == NULL)
 		return raiz;
 
-	if (*cantidad_almacenados == tamanio_max)
+	if (*cantidad_almacenados == tamanio_max_array)
 		return raiz;
-	*array[*cantidad_almacenados] = raiz->elemento;
+	*array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
 	(*cantidad_almacenados)++;
 
 	raiz->izquierda = guardar_elementos_preorden(raiz->izquierda, 
-				tamanio_max, cantidad_almacenados, array);
+				tamanio_max_array, cantidad_almacenados, array);
 
 	raiz->derecha = guardar_elementos_preorden(raiz->derecha, 
-				tamanio_max, cantidad_almacenados, array);
+				tamanio_max_array, cantidad_almacenados, array);
 
 	return raiz;
 }
