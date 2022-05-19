@@ -74,10 +74,13 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 	return arbol;
 }
 
-//////////////////////////////////////////////////////////////////////////// REVISAR
+
 /*
+ * Se recibe un puntero a un nodo raiz, y un doble puntero a un nodo, que es el
+ * que se va a eliminar del arbol
  *
- *
+ * Dentro del arbol, se busca el nodo que es el predecesor inorden del padre
+ * del nodo enviado a la funcion
  */
 nodo_abb_t *buscar_predecesor_inorden(nodo_abb_t *raiz, nodo_abb_t **extraido)
 {
@@ -92,8 +95,41 @@ nodo_abb_t *buscar_predecesor_inorden(nodo_abb_t *raiz, nodo_abb_t **extraido)
 
 
 /*
+ * Se recibe un puntero a un nodo raiz y un doble puntero a un elemento 
+ * genérico que contiene al elemento que se va a quitar del arbol
  *
+ * Se elimina el nodo que contiene el elemento a quitar (Segun si tiene o no
+ * hijos)
+ */
+nodo_abb_t *eliminar_nodo(nodo_abb_t *raiz, void **elemento_a_quitar)
+{
+	nodo_abb_t *nodo_derecho = raiz->derecha;
+	nodo_abb_t *nodo_izquierda = raiz->izquierda;
+	*elemento_a_quitar = raiz->elemento;
+
+	if (nodo_derecho != NULL && nodo_izquierda != NULL) {
+		nodo_abb_t *extraido = NULL;
+		raiz->izquierda = buscar_predecesor_inorden(raiz->izquierda, 
+							    &extraido);
+		raiz->elemento = extraido->elemento;
+		free(extraido);
+		return raiz;
+	}
+		
+	free(raiz);
+	if (nodo_derecho != NULL)
+		return nodo_derecho;
+	return nodo_izquierda;
+}
+
+
+/*
+ * Se recibe un puntero a un nodo raiz, un comparador, un puntero a un elemento
+ * genérico de cualquier tipo de dato y un doble puntero a un elemento genérico
+ * que contiene al elemento que se va a quitar del arbol
  *
+ * Se busca el nodo que contiene el elemento a quitar para borrarlo, usando
+ * recursividad.
  */
 nodo_abb_t *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
 			   void *elemento, void **elemento_a_quitar)
@@ -102,31 +138,14 @@ nodo_abb_t *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador,
 		return NULL;
 
 	int comparacion = comparador(elemento, raiz->elemento);
-
-	if (comparacion == 0) {	
-		nodo_abb_t *nodo_derecho = raiz->derecha;
-		nodo_abb_t *nodo_izquierda = raiz->izquierda;
-		*elemento_a_quitar = raiz->elemento;
-
-		if (nodo_derecho != NULL && nodo_izquierda != NULL) {
-			nodo_abb_t *extraido = NULL;
-			raiz->izquierda = buscar_predecesor_inorden(raiz->izquierda, &extraido);
-			raiz->elemento = extraido->elemento;
-			free(extraido);
-			return raiz;
-		}
-		
-		free(raiz);
-		if (nodo_derecho != NULL)
-			return nodo_derecho;
-		return nodo_izquierda;
-	} else if (comparacion < 0) {
+	if (comparacion == 0)
+		return eliminar_nodo(raiz, elemento_a_quitar);
+	else if (comparacion < 0)
 		raiz->izquierda = abb_quitar_recursivo(raiz->izquierda, 
 			comparador, elemento, elemento_a_quitar);
-	} else {
-		raiz->derecha = abb_quitar_recursivo(raiz->derecha,
+		
+	raiz->derecha = abb_quitar_recursivo(raiz->derecha,
 			comparador, elemento, elemento_a_quitar);
-	}
 
 	return raiz;
 }
@@ -139,15 +158,15 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 
 	void *elemento_a_eliminar = NULL;
 
-	arbol->nodo_raiz = abb_quitar_recursivo(arbol->nodo_raiz, arbol->comparador, 
-				    elemento, &elemento_a_eliminar);
+	arbol->nodo_raiz = abb_quitar_recursivo(arbol->nodo_raiz, 
+			arbol->comparador, elemento, &elemento_a_eliminar);
 
 	if (elemento_a_eliminar != NULL)
 		arbol->tamanio--;
 
 	return elemento_a_eliminar;
 }
-//////////////////////////////////////////////////////////////////////////// REVISAR
+
 
 /*
  * Se recibe un puntero a un nodo raiz, un comparador y un puntero a un
@@ -317,7 +336,7 @@ size_t recorrer_abb_preorden(nodo_abb_t* raiz, bool (*funcion)(void *, void *),
 
 size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 			     bool (*funcion)(void *, void *), void *aux)
-{/*
+{
 	if (arbol == NULL || funcion == NULL)
 		return 0;
 	
@@ -331,8 +350,7 @@ size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 					&cantidad_invocaciones);
 	
 	return recorrer_abb_preorden(arbol->nodo_raiz, funcion, aux, 
-				 &cantidad_invocaciones);*/
-	return 0;
+				 &cantidad_invocaciones);
 }
 /*
 // Va almacenando los elementos en el array hasta completar el recorrido o quedarse sin espacio en el array.

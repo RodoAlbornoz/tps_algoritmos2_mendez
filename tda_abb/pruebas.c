@@ -156,7 +156,7 @@ void abb_probar_insercion(abb_comparador comparador)
   abb_destruir(abb);
 }
 
-//////////////////////////////////////////////////////////////////////////// REVISAR
+
 void dado_un_abb_null_no_se_pueden_eliminar_elementos()
 {
   int elemento_prueba = 2;
@@ -220,7 +220,7 @@ void dado_un_abb_no_vacio_se_elimina_un_elemento_con_un_hijo(abb_t *abb,
               "Se elimina un nodo con un solo hijo del arbol.");
 }
 
-
+/*************************************************************************** REVISAR
 void dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_sin_hijo
                                         (abb_t *abb, int *elemento_a_eliminar)
 { 
@@ -255,7 +255,7 @@ void dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_con_
                "Se elimina un nodo con 2 hijos del arbol y con predecesor \n\
                inorden con un hijo.");
 }
-
+***************************************************************************/ 
 
 /*
  * Se recibe una función para comparar los elementos dentro del arbol
@@ -265,8 +265,6 @@ void dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_con_
 void abb_probar_quitar(abb_comparador comparador)
 {
   pa2m_nuevo_grupo("Eliminación en un ABB");
-
-  dado_un_abb_null_no_se_pueden_eliminar_elementos();
 
   int elemento_prueba_1 = 2;
   int elemento_prueba_2 = 1;
@@ -278,11 +276,11 @@ void abb_probar_quitar(abb_comparador comparador)
   int elemento_prueba_8 = 9;
   int elemento_prueba_9 = 15;
   int elemento_prueba_10 = 18;
-
   abb_t *abb = abb_crear(comparador);
 
+  dado_un_abb_null_no_se_pueden_eliminar_elementos();
   dado_un_abb_vacio_no_hay_elementos_para_eliminar(abb);
-
+/*************************************************************************** REVISAR
   abb = abb_insertar(abb, &elemento_prueba_1);
   abb = abb_insertar(abb, &elemento_prueba_2);
   abb = abb_insertar(abb, &elemento_prueba_3);
@@ -293,20 +291,21 @@ void abb_probar_quitar(abb_comparador comparador)
   abb = abb_insertar(abb, &elemento_prueba_8);
   abb = abb_insertar(abb, &elemento_prueba_9);
   abb = abb_insertar(abb, &elemento_prueba_10);
-  
+***************************************************************************/ 
   dado_un_abb_no_vacio_no_se_encuentra_el_elemento_a_eliminar(abb);
   dado_un_abb_no_vacio_se_elimina_un_elemento_sin_hijos(abb, 
                                                         &elemento_prueba_10);
   dado_un_abb_no_vacio_se_elimina_un_elemento_con_un_hijo(abb, 
                                                           &elemento_prueba_4);
+/*************************************************************************** REVISAR                                                   
   dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_sin_hijo
                                                       (abb, &elemento_prueba_1);
   dado_un_abb_no_vacio_se_elimina_un_elemento_con_dos_hijos_y_predecesor_con_un_hijo
-                                                      (abb, &elemento_prueba_3);  
-  
+                                                      (abb, &elemento_prueba_3);
+***************************************************************************/
   abb_destruir(abb);
 }
-//////////////////////////////////////////////////////////////////////////// REVISAR
+
 
 void dado_un_abb_null_no_se_pueden_buscar_elementos(int elemento_prueba)
 {
