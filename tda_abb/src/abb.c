@@ -22,7 +22,7 @@ abb_t *abb_crear(abb_comparador comparador)
 /*
  * Se recibe un puntero a un elemento genérico de cualquier tipo de dato
  *
- * Se crea nodo hoja, reservando memoria, cuyo elemento es el enviado a la 
+ * Se crea un nodo hoja, reservando memoria, cuyo elemento es el enviado a la 
  * función. Se devuelve ese nodo hoja.
  */
 nodo_abb_t *crear_nodo_hoja(void *elemento)
@@ -74,7 +74,7 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 	return arbol;
 }
 
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 /*
  *
  *
@@ -147,13 +147,13 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 
 	return elemento_a_eliminar;
 }
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 
 /*
  * Se recibe un puntero a un nodo raiz, un comparador y un puntero a un
  * elemento genérico de cualquier tipo de dato
  * 
- * Se inserta busca un elemento dentro del arbol, usando recursividad.
+ * Se busca un elemento dentro del arbol, usando recursividad.
  */
 void *abb_buscar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
 			   void *elemento_a_buscar)
@@ -226,7 +226,6 @@ void abb_destruir_todo_recursivo(nodo_abb_t *raiz, void (*destructor)(void *))
 	
 	if (destructor != NULL)
 		destructor(raiz->elemento);
-	// VER SI SE PUEDE MEJORAR USANDO ABB_QUITAR
 	free(raiz);
 }
 
@@ -240,7 +239,7 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 	free(arbol);
 }
 
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 /*
  * Se recibe el puntero a una raiz, un puntero a funcion que devuelve un
  * booleano, un puntero a un elemento genérico de cualquier tipo de dato y
@@ -417,3 +416,4 @@ size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 					   &array);*/
 	return 0;
 }
+//////////////////////////////////////////////////////////////////////////// REVISAR

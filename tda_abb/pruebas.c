@@ -37,6 +37,30 @@ int comparar_punteros_a_memoria(void *elemento1, void *elemento2)
 }
 
 
+/*
+ * Se reciben punteros a elementos genéricos de cualquier tipo de dato
+ *
+ * Se devuelve si ese numero es par o no
+ */
+bool elemento_es_par(void *numero, void *extra)
+{
+  int *entero = (int *) numero;
+	return (((*entero) % 2) == 0);
+}
+
+
+/*
+ * Se reciben punteros a elementos genéricos de cualquier tipo de dato
+ *
+ * Se devuelve si ese numero es impar o no
+ */
+bool elemento_es_impar(void *numero, void *extra)
+{
+  int *entero = (int *) numero;
+	return (((*entero) % 2) != 0);
+}
+
+
 void dada_una_funcion_de_comparacion_null_no_se_puede_crear_el_abb()
 {
   abb_t *abb = abb_crear(NULL);
@@ -54,14 +78,12 @@ void dada_una_funcion_de_comparacion_no_null_se_crea_el_abb(abb_t *abb)
 }
 
 
-void dado_un_abb_no_null_se_inicializan_sus_campos(abb_t *abb, 
-                                                   abb_comparador comparador)
+void dado_un_abb_no_null_se_inicializan_sus_campos(abb_t *abb)
 {
   pa2m_afirmar(abb->nodo_raiz == NULL, 
                "La raiz del ABB está inicializada en NULL.");
-  pa2m_afirmar(abb->comparador == comparador, 
-  "La función comparador del ABB es igual a la enviada a la funcion \n\
-  de creación.");
+  pa2m_afirmar(abb->comparador != NULL,
+               "La función comparador del ABB no es NULL.");
   pa2m_afirmar(abb_vacio(abb), "El tamaño del ABB se inicializa en 0."); 
 }
 
@@ -79,7 +101,7 @@ void abb_probar_creacion(abb_comparador comparador)
 
   dada_una_funcion_de_comparacion_null_no_se_puede_crear_el_abb();
   dada_una_funcion_de_comparacion_no_null_se_crea_el_abb(abb);
-  dado_un_abb_no_null_se_inicializan_sus_campos(abb, comparador);
+  dado_un_abb_no_null_se_inicializan_sus_campos(abb);
 
   abb_destruir(abb);
 }
@@ -134,7 +156,7 @@ void abb_probar_insercion(abb_comparador comparador)
   abb_destruir(abb);
 }
 
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 void dado_un_abb_null_no_se_pueden_eliminar_elementos()
 {
   int elemento_prueba = 2;
@@ -284,7 +306,7 @@ void abb_probar_quitar(abb_comparador comparador)
   
   abb_destruir(abb);
 }
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 
 void dado_un_abb_null_no_se_pueden_buscar_elementos(int elemento_prueba)
 {
@@ -358,15 +380,13 @@ void dado_un_abb_null_se_considera_vacio()
 }
 
 
-void dado_un_abb_vacio_se_considera_vacio(abb_t *abb, 
-                                          abb_comparador comparador)
+void dado_un_abb_vacio_se_considera_vacio(abb_t *abb)
 {
   pa2m_afirmar(abb_vacio(abb), "Se devuelve true para un ABB vacio.");
 }
 
 
-void dado_un_abb_no_vacio_no_se_considera_vacio(abb_t *abb, 
-                                                abb_comparador comparador)
+void dado_un_abb_no_vacio_no_se_considera_vacio(abb_t *abb)
 {
   int elemento_prueba = 9;
   
@@ -388,8 +408,8 @@ void abb_probar_vacio(abb_comparador comparador)
   abb_t *abb = abb_crear(comparador);
 
   dado_un_abb_null_se_considera_vacio();
-  dado_un_abb_vacio_se_considera_vacio(abb, comparador);
-  dado_un_abb_no_vacio_no_se_considera_vacio(abb, comparador);
+  dado_un_abb_vacio_se_considera_vacio(abb);
+  dado_un_abb_no_vacio_no_se_considera_vacio(abb);
 
   abb_destruir(abb);
 }
@@ -402,16 +422,14 @@ void dado_un_abb_null_se_devuelven_0_elementos()
 }
 
 
-void dado_un_abb_vacio_se_devuelven_0_elementos(abb_t *abb, 
-                                                abb_comparador comparador)
+void dado_un_abb_vacio_se_devuelven_0_elementos(abb_t *abb)
 {
   pa2m_afirmar(abb_tamanio(abb) == 0, 
                "Se devuelve 0 elementos para un ABB vacio.");
 }
 
 
-void dado_un_abb_no_vacio_se_devuelve_su_tamanio(abb_t *abb, 
-                                                 abb_comparador comparador)
+void dado_un_abb_no_vacio_se_devuelve_su_tamanio(abb_t *abb)
 {
   int elemento_prueba_1 = 9;
   int elemento_prueba_2 = 17;
@@ -435,37 +453,13 @@ void abb_probar_tamanio(abb_comparador comparador)
   abb_t *abb = abb_crear(comparador);
 
   dado_un_abb_null_se_devuelven_0_elementos();
-  dado_un_abb_vacio_se_devuelven_0_elementos(abb, comparador);
-  dado_un_abb_no_vacio_se_devuelve_su_tamanio(abb, comparador);
+  dado_un_abb_vacio_se_devuelven_0_elementos(abb);
+  dado_un_abb_no_vacio_se_devuelve_su_tamanio(abb);
 
   abb_destruir(abb);
 }
 
-
-/*
- * Se reciben punteros a elementos genéricos de cualquier tipo de dato
- *
- * Se devuelve si ese numero es par o no
- */
-bool elemento_es_par(void *numero, void *extra)
-{
-  int *entero = (int *) numero;
-	return (((*entero) % 2) == 0);
-}
-
-
-/*
- * Se reciben punteros a elementos genéricos de cualquier tipo de dato
- *
- * Se devuelve si ese numero es impar o no
- */
-bool elemento_es_impar(void *numero, void *extra)
-{
-  int *entero = (int *) numero;
-	return (((*entero) % 2) != 0);
-}
-
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 void dado_un_abb_null_se_recorren_0_elementos()
 {
   size_t cantidad_invocaciones = abb_con_cada_elemento(NULL, INORDEN, 
@@ -658,7 +652,7 @@ void abb_probar_guardado_en_vector()
   pa2m_afirmar(true, "Se recibe un array NULL.");
   pa2m_afirmar(true, "Se recorre el ABB y se guardan elementos en el array, pero este se queda sin espacio.");
 }
-
+//////////////////////////////////////////////////////////////////////////// REVISAR
 
 void dado_un_abb_null_se_destruye()
 {
