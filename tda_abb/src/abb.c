@@ -1,7 +1,6 @@
 #include "abb.h"
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #define SEGUIR_RECORRIENDO 1
 #define DEJAR_DE_RECORRER 0
@@ -75,11 +74,12 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 
 	arbol->nodo_raiz = abb_insertar_recursivo(arbol->nodo_raiz, 
 						  arbol->comparador, elemento);
+
 	arbol->tamanio++;
 	return arbol;
 }
 
-
+/************************************************************************ SEGUIR ACA ABAJO*/ 
 /*
  * Se recibe un puntero a un nodo raiz, y un doble puntero a un nodo, que es el
  * que se va a eliminar del arbol
@@ -158,7 +158,7 @@ nodo_abb_t *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador,
 	return raiz;
 }
 
-
+//Verificar que al eliminar, solo se recorre la rama una vez
 void *abb_quitar(abb_t *arbol, void *elemento)
 {
 	if (arbol == NULL)
@@ -175,7 +175,7 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 
 	return elemento_a_eliminar;
 }
-
+/************************************************************************ SEGUIR ACA ARRIBA*/ 
 
 /*
  * Se recibe un puntero a un nodo raiz, un comparador y un puntero a un
@@ -213,7 +213,7 @@ void *abb_buscar(abb_t *arbol, void *elemento)
 
 bool abb_vacio(abb_t *arbol)
 {
-	if (arbol == NULL || /*arbol->tamanio == 0*/ arbol->nodo_raiz == NULL)
+	if (arbol == NULL || abb_tamanio(arbol) == 0)
 		return true;
 
 	return false;
@@ -237,7 +237,7 @@ void abb_destruir(abb_t *arbol)
 	abb_destruir_todo(arbol, NULL);
 }
 
-
+ 
 /*
  * Se recibe el puntero a la raiz de un arbol y un puntero a una funcion
  *
@@ -267,7 +267,7 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 	free(arbol);
 }
 
-
+/************************************************************************ SEGUIR ACA ABAJO*/
 /*
  *
  *
