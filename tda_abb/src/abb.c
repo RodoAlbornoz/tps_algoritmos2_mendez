@@ -130,27 +130,30 @@ nodo_abb_t *eliminar_nodo(nodo_abb_t *raiz, void **elemento_a_quitar)
 
 /*
  * Se recibe un puntero a un nodo raiz, un comparador, un puntero a un elemento
- * genérico de cualquier tipo de dato y un doble puntero a un elemento genérico
- * que contiene al elemento que se va a quitar del arbol
+ * genérico de cualquier tipo de dato, un doble puntero a un elemento genérico
+ * que contiene al elemento que se va a quitar del arbol y un booleano que dice
+ * si el elemento se pudo eliminar
  *
  * Se busca el nodo que contiene el elemento a quitar para borrarlo, usando
  * recursividad.
  */
 nodo_abb_t *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, 
-			   void *elemento, void **elemento_a_quitar)
+	void *elemento, void **elemento_a_quitar, bool *se_pudo_eliminar)
 {
 	if (raiz == NULL)
 		return NULL;
 
 	int comparacion = comparador(elemento, raiz->elemento);
-	if (comparacion == 0)
+	if (comparacion == 0) {
+		*se_pudo_eliminar = true;
 		return eliminar_nodo(raiz, elemento_a_quitar);
-	else if (comparacion < 0)
+	} else if (comparacion < 0) {
 		raiz->izquierda = abb_quitar_recursivo(raiz->izquierda, 
-			comparador, elemento, elemento_a_quitar);
-		
+		comparador, elemento, elemento_a_quitar, se_pudo_eliminar);
+	} else {
 	raiz->derecha = abb_quitar_recursivo(raiz->derecha,
-			comparador, elemento, elemento_a_quitar);
+		comparador, elemento, elemento_a_quitar, se_pudo_eliminar);
+	}
 
 	return raiz;
 }
@@ -162,11 +165,12 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 		return NULL;
 
 	void *elemento_a_eliminar = NULL;
+	bool se_pudo_eliminar = false;
 
 	arbol->nodo_raiz = abb_quitar_recursivo(arbol->nodo_raiz, 
-			arbol->comparador, elemento, &elemento_a_eliminar);
+	arbol->comparador, elemento, &elemento_a_eliminar, &se_pudo_eliminar);
 
-	if (elemento_a_eliminar != NULL)
+	if (se_pudo_eliminar)
 		arbol->tamanio--;
 
 	return elemento_a_eliminar;
@@ -209,7 +213,7 @@ void *abb_buscar(abb_t *arbol, void *elemento)
 
 bool abb_vacio(abb_t *arbol)
 {
-	if (arbol == NULL || arbol->tamanio == 0)
+	if (arbol == NULL || /*arbol->tamanio == 0*/ arbol->nodo_raiz == NULL)
 		return true;
 
 	return false;
@@ -378,7 +382,7 @@ size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
  *
  */
 nodo_abb_t *guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
-				   size_t *cantidad_almacenados, void ***array)
+				   size_t *cantidad_almacenados, void **array)
 {
 	if (raiz == NULL)
 		return raiz;
@@ -390,7 +394,7 @@ nodo_abb_t *guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max_arr
 
 	if (*cantidad_almacenados == tamanio_max_array)
 		return raiz;
-	*array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
+	array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
 	(*cantidad_almacenados)++;
 
 	return raiz;
@@ -402,7 +406,7 @@ nodo_abb_t *guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max_arr
  *
  */
 nodo_abb_t *guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
-				 size_t *cantidad_almacenados, void ***array) // 1;
+				 size_t *cantidad_almacenados, void **array) // 1;
 {
 	if (raiz == NULL)
 		return raiz;
@@ -412,7 +416,7 @@ nodo_abb_t *guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max_array
 
 	if (*cantidad_almacenados == tamanio_max_array)
 		return raiz;
-	*array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
+	array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
 	(*cantidad_almacenados)++;
 
 	raiz->derecha = guardar_elementos_inorden(raiz->derecha, 
@@ -427,14 +431,14 @@ nodo_abb_t *guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max_array
  *
  */
 nodo_abb_t *guardar_elementos_preorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
-				  size_t *cantidad_almacenados, void ***array)
+				  size_t *cantidad_almacenados, void **array)
 {
 	if (raiz == NULL)
 		return raiz;
 
 	if (*cantidad_almacenados == tamanio_max_array)
 		return raiz;
-	*array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
+	array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
 	(*cantidad_almacenados)++;
 
 	raiz->izquierda = guardar_elementos_preorden(raiz->izquierda, 
@@ -456,14 +460,14 @@ size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 	size_t cantidad_almacenados = 0;
 
 	if (recorrido == POSTORDEN)
-		arbol->nodo_raiz = guardar_elementos_preorden(arbol->nodo_raiz, 
-				tamanio_array, &cantidad_almacenados, &array);
+		arbol->nodo_raiz = guardar_elementos_postorden(arbol->nodo_raiz, 
+				tamanio_array, &cantidad_almacenados, array);
 	else if (recorrido == INORDEN)
 		arbol->nodo_raiz = guardar_elementos_inorden(arbol->nodo_raiz, 
-				tamanio_array, &cantidad_almacenados, &array);
+				tamanio_array, &cantidad_almacenados, array);
 	else 
-		arbol->nodo_raiz = guardar_elementos_postorden(arbol->
-		nodo_raiz, tamanio_array, &cantidad_almacenados, &array);
+		arbol->nodo_raiz = guardar_elementos_preorden(arbol->
+		nodo_raiz, tamanio_array, &cantidad_almacenados, array);
 
 	return cantidad_almacenados;
 }
