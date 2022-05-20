@@ -1,6 +1,7 @@
 #include "abb.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define SEGUIR_RECORRIENDO 1
 #define DEJAR_DE_RECORRER 0
@@ -192,7 +193,7 @@ void *abb_buscar_recursivo(nodo_abb_t *raiz, abb_comparador comparador,
 	int comparacion = comparador(elemento_a_buscar, raiz->elemento);
 	if (comparacion == 0)
 		return raiz->elemento;
-	if (comparacion < 0)
+	else if (comparacion < 0)
 		return abb_buscar_recursivo(raiz->izquierda, comparador,
 					    elemento_a_buscar);
 
