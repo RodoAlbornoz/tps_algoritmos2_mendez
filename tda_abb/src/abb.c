@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define SEGUIR_RECORRIENDO 1
-#define DEJAR_DE_RECORRER 0
-
 
 abb_t *abb_crear(abb_comparador comparador)
 {
@@ -80,13 +77,13 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 	return arbol;
 }
 
-/************************************************************************ SEGUIR ACA ABAJO*/ 
+
 /*
  * Se recibe un puntero a un nodo raiz, y un doble puntero a un nodo, que es el
  * que se va a eliminar del arbol
  *
  * Dentro del arbol, se busca el nodo que es el predecesor inorden del padre
- * del nodo enviado a la funcion
+ * del nodo enviado a la funcion y se lo trae
  */
 nodo_abb_t *buscar_predecesor_inorden(nodo_abb_t *raiz, nodo_abb_t **extraido)
 {
@@ -101,17 +98,15 @@ nodo_abb_t *buscar_predecesor_inorden(nodo_abb_t *raiz, nodo_abb_t **extraido)
 
 
 /*
- * Se recibe un puntero a un nodo raiz y un doble puntero a un elemento 
- * genérico que contiene al elemento que se va a quitar del arbol
+ * Se recibe un puntero a un nodo raiz
  *
- * Se elimina el nodo que contiene el elemento a quitar (Segun si tiene o no
- * hijos)
+ * Se elimina el nodo que contiene el elemento a quitar (Segun su cantidad
+ * de hijos)
  */
-nodo_abb_t *eliminar_nodo(nodo_abb_t *raiz, void **elemento_a_quitar)
+nodo_abb_t *eliminar_nodo(nodo_abb_t *raiz)
 {
 	nodo_abb_t *nodo_derecho = raiz->derecha;
 	nodo_abb_t *nodo_izquierda = raiz->izquierda;
-	*elemento_a_quitar = raiz->elemento;
 
 	if (nodo_derecho != NULL && nodo_izquierda != NULL) {
 		nodo_abb_t *extraido = NULL;
@@ -132,8 +127,8 @@ nodo_abb_t *eliminar_nodo(nodo_abb_t *raiz, void **elemento_a_quitar)
 /*
  * Se recibe un puntero a un nodo raiz, un comparador, un puntero a un elemento
  * genérico de cualquier tipo de dato, un doble puntero a un elemento genérico
- * que contiene al elemento que se va a quitar del arbol y un booleano que dice
- * si el elemento se pudo eliminar
+ * que contiene al elemento que se va a quitar del arbol y un puntero a un 
+ * booleano que dice si el elemento se pudo eliminar
  *
  * Se busca el nodo que contiene el elemento a quitar para borrarlo, usando
  * recursividad.
@@ -146,20 +141,22 @@ nodo_abb_t *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador,
 
 	int comparacion = comparador(elemento, raiz->elemento);
 	if (comparacion == 0) {
+		*elemento_a_quitar = raiz->elemento;
 		*se_pudo_eliminar = true;
-		return eliminar_nodo(raiz, elemento_a_quitar);
+		return eliminar_nodo(raiz);
 	} else if (comparacion < 0) {
 		raiz->izquierda = abb_quitar_recursivo(raiz->izquierda, 
 		comparador, elemento, elemento_a_quitar, se_pudo_eliminar);
 	} else {
-	raiz->derecha = abb_quitar_recursivo(raiz->derecha,
+		raiz->derecha = abb_quitar_recursivo(raiz->derecha,
 		comparador, elemento, elemento_a_quitar, se_pudo_eliminar);
 	}
 
 	return raiz;
 }
 
-//Verificar que al eliminar, solo se recorre la rama una vez
+
+
 void *abb_quitar(abb_t *arbol, void *elemento)
 {
 	if (arbol == NULL)
@@ -176,7 +173,6 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 
 	return elemento_a_eliminar;
 }
-/************************************************************************ SEGUIR ACA ARRIBA*/ 
 
 /*
  * Se recibe un puntero a un nodo raiz, un comparador y un puntero a un
@@ -275,7 +271,7 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
  */
 nodo_abb_t *recorrer_inorden(nodo_abb_t *raiz, 
 bool (*funcion)(void *, void *), void *aux, size_t *cantidad_invocaciones, 
-int *status_recorrido)
+bool *seguir_recorriendo)
 {
 	if (raiz == NULL || *status_recorrido == DEJAR_DE_RECORRER)
 		return raiz;
@@ -304,7 +300,7 @@ int *status_recorrido)
  */
 nodo_abb_t *recorrer_postorden(nodo_abb_t *raiz,
 bool (*funcion)(void *, void *), void *aux, size_t *cantidad_invocaciones, 
-int *status_recorrido)
+bool *seguir_recorriendo)
 {
 	if (raiz == NULL || *status_recorrido == DEJAR_DE_RECORRER)
 		return raiz;
@@ -332,7 +328,7 @@ int *status_recorrido)
  */
 nodo_abb_t *recorrer_preorden(nodo_abb_t *raiz, 
 bool (*funcion)(void *, void *), void *aux, size_t *cantidad_invocaciones, 
-int *status_recorrido)
+bool *seguir_recorriendo)
 {
 	if (raiz == NULL || *status_recorrido == DEJAR_DE_RECORRER)
 		return raiz;
@@ -357,22 +353,22 @@ int *status_recorrido)
 
 size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 			     bool (*funcion)(void *, void *), void *aux)
-{	// CORREGIR: RECORREN ELEMENTOS DE MAS AL NO CUMPLIRSE LA FUNCION
+{
 	if (arbol == NULL || funcion == NULL)
 		return 0;
 	
 	size_t cantidad_invocaciones = 0;
-	int status_recorrido = SEGUIR_RECORRIENDO;
+	bool seguir_recorriendo = true;
 
 	if (recorrido == POSTORDEN)
 		arbol->nodo_raiz = recorrer_postorden(arbol->nodo_raiz, 
-		funcion, aux, &cantidad_invocaciones, &status_recorrido);
+		funcion, aux, &cantidad_invocaciones, &seguir_recorriendo);
 	else if (recorrido == INORDEN)
 		arbol->nodo_raiz = recorrer_inorden(arbol->nodo_raiz, funcion,
-				aux, &cantidad_invocaciones, &status_recorrido);
+			aux, &cantidad_invocaciones, &seguir_recorriendo);
 	else 
 		arbol->nodo_raiz = recorrer_preorden(arbol->nodo_raiz, funcion,
-				aux, &cantidad_invocaciones, &status_recorrido);
+			aux, &cantidad_invocaciones, &seguir_recorriendo);
 
 	return cantidad_invocaciones;
 }
