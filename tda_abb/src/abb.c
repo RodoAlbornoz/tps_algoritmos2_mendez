@@ -264,89 +264,98 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 	free(arbol);
 }
 
-/************************************************************************ SEGUIR ACA ABAJO*/
+
 /*
+ * Se recibe un puntero a un nodo raiz, el puntero a la función que se debe
+ * cumplir para seguir recorriendo, el auxiliar que es el 2do parámetro de la
+ * funcion, un puntero a la cantidad de invocaciones realizadas y otro a una
+ * variable que dice si hay que seguir recorriendo o no
  *
- *
+ * Se recorre el ABB en forma inorden hasta que no se cumpla más la función,
+ * sumando uno a la cantidad de invocaciones cada vez que se esté parado sobre
+ * un nodo
  */
-nodo_abb_t *recorrer_inorden(nodo_abb_t *raiz, 
-bool (*funcion)(void *, void *), void *aux, size_t *cantidad_invocaciones, 
-bool *seguir_recorriendo)
+void recorrer_inorden(nodo_abb_t *raiz, bool (*funcion)(void *, void *), 
+	void *aux, size_t *cantidad_invocaciones, bool *seguir_recorriendo)
 {
-	if (raiz == NULL || *status_recorrido == DEJAR_DE_RECORRER)
-		return raiz;
+	if (raiz == NULL || !*seguir_recorriendo)
+		return;
 
-	raiz->izquierda = recorrer_inorden(raiz->izquierda, funcion, aux, 
-				cantidad_invocaciones, status_recorrido);
+	recorrer_inorden(raiz->izquierda, funcion, aux, 
+				cantidad_invocaciones, seguir_recorriendo);
 
-	if (*status_recorrido == SEGUIR_RECORRIENDO) {
+	if (*seguir_recorriendo) {
 		(*cantidad_invocaciones)++;
 		if (!funcion(raiz->elemento, aux)) {
-			*status_recorrido = DEJAR_DE_RECORRER;
-			return raiz;
+			*seguir_recorriendo = false;
+			return;
 		}
 	}
 
-	raiz->derecha = recorrer_inorden(raiz->derecha, funcion, aux, 
-				cantidad_invocaciones, status_recorrido); 
-
-	return raiz;
+	recorrer_inorden(raiz->derecha, funcion, aux, 
+				cantidad_invocaciones, seguir_recorriendo); 
 }
 
 
 /*
+ * Se recibe un puntero a un nodo raiz, el puntero a la función que se debe
+ * cumplir para seguir recorriendo, el auxiliar que es el 2do parámetro de la
+ * funcion, un puntero a la cantidad de invocaciones realizadas y otro a una
+ * variable que dice si hay que seguir recorriendo o no
  *
- *
+ * Se recorre el ABB en forma postorden, hasta que no se cumpla más la función,
+ * sumando uno a la cantidad de invocaciones cada vez que se esté parado sobre
+ * un nodo
  */
-nodo_abb_t *recorrer_postorden(nodo_abb_t *raiz,
-bool (*funcion)(void *, void *), void *aux, size_t *cantidad_invocaciones, 
-bool *seguir_recorriendo)
+void recorrer_postorden(nodo_abb_t *raiz, bool (*funcion)(void *, void *), 
+	void *aux, size_t *cantidad_invocaciones, bool *seguir_recorriendo)
 {
-	if (raiz == NULL || *status_recorrido == DEJAR_DE_RECORRER)
-		return raiz;
+	if (raiz == NULL || !*seguir_recorriendo)
+		return;
 
-	raiz->izquierda = recorrer_postorden(raiz->izquierda, funcion, aux,
-				cantidad_invocaciones, status_recorrido);
-	raiz->derecha = recorrer_postorden(raiz->derecha, funcion, aux,
-				cantidad_invocaciones, status_recorrido);
+	recorrer_postorden(raiz->izquierda, funcion, aux,
+				cantidad_invocaciones, seguir_recorriendo);
+	recorrer_postorden(raiz->derecha, funcion, aux,
+				cantidad_invocaciones, seguir_recorriendo);
 
-	if (*status_recorrido == SEGUIR_RECORRIENDO) {
+	if (*seguir_recorriendo) {
 		(*cantidad_invocaciones)++;
 		if (!funcion(raiz->elemento, aux)) {
-			*status_recorrido = DEJAR_DE_RECORRER;
-			return raiz;
+			*seguir_recorriendo = false;
+			return;
 		}
 	}
-
-	return raiz;
 }
 
 
 /*
+ * Se recibe un puntero a un nodo raiz, el puntero a la función que se debe
+ * cumplir para seguir recorriendo, el auxiliar que es el 2do parámetro de la
+ * funcion, un puntero a la cantidad de invocaciones realizadas y otro a una
+ * variable que dice si hay que seguir recorriendo o no
  *
- *
+ * Se recorre el ABB en forma preorden, hasta que no se cumpla más la función,
+ * sumando uno a la cantidad de invocaciones cada vez que se esté parado sobre
+ * un nodo
  */
-nodo_abb_t *recorrer_preorden(nodo_abb_t *raiz, 
-bool (*funcion)(void *, void *), void *aux, size_t *cantidad_invocaciones, 
-bool *seguir_recorriendo)
+void recorrer_preorden(nodo_abb_t *raiz, bool (*funcion)(void *, void *), 
+	void *aux, size_t *cantidad_invocaciones, bool *seguir_recorriendo)
 {
-	if (raiz == NULL || *status_recorrido == DEJAR_DE_RECORRER)
-		return raiz;
+	if (raiz == NULL || !*seguir_recorriendo)
+		return;
 
-	if (*status_recorrido == SEGUIR_RECORRIENDO) {
+	if (*seguir_recorriendo) {
 		(*cantidad_invocaciones)++;
 		if (!funcion(raiz->elemento, aux)) {
-			*status_recorrido = DEJAR_DE_RECORRER;
-			return raiz;
+			*seguir_recorriendo = false;
+			return;
 		}
 	}
 
-	raiz->izquierda = recorrer_preorden(raiz->izquierda, funcion, aux,
-			cantidad_invocaciones, status_recorrido);
-	raiz->derecha = recorrer_preorden(raiz->derecha, funcion, aux,
-			cantidad_invocaciones, status_recorrido);
-
-	return raiz;
+	recorrer_preorden(raiz->izquierda, funcion, aux,
+			cantidad_invocaciones, seguir_recorriendo);
+	recorrer_preorden(raiz->derecha, funcion, aux,
+			cantidad_invocaciones, seguir_recorriendo);
 }
 
 
@@ -361,90 +370,96 @@ size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 	bool seguir_recorriendo = true;
 
 	if (recorrido == POSTORDEN)
-		arbol->nodo_raiz = recorrer_postorden(arbol->nodo_raiz, 
-		funcion, aux, &cantidad_invocaciones, &seguir_recorriendo);
+		recorrer_postorden(arbol->nodo_raiz, funcion, aux, 
+				&cantidad_invocaciones, &seguir_recorriendo);
 	else if (recorrido == INORDEN)
-		arbol->nodo_raiz = recorrer_inorden(arbol->nodo_raiz, funcion,
-			aux, &cantidad_invocaciones, &seguir_recorriendo);
+		recorrer_inorden(arbol->nodo_raiz, funcion, aux, 
+				 &cantidad_invocaciones, &seguir_recorriendo);
 	else 
-		arbol->nodo_raiz = recorrer_preorden(arbol->nodo_raiz, funcion,
-			aux, &cantidad_invocaciones, &seguir_recorriendo);
+		recorrer_preorden(arbol->nodo_raiz, funcion, aux,
+				  &cantidad_invocaciones, &seguir_recorriendo);
 
 	return cantidad_invocaciones;
 }
 
-//////////////////////////////////////////////////////////////////////////// REVISAR
+
 /*
+ * Se recibe un puntero a un nodo raiz, el tamaño máximo del array, un puntero 
+ * a la cantidad de elementos que se almacenaron por el momento en el array, y
+ * el puntero al array de punteros.
  *
- *
+ * Se recorre el ABB en forma postorden, guardando cada elemento leido en el 
+ * array hasta superar la capacidad del arreglo o recorrer todo el ABB.
  */
-nodo_abb_t *guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
-				   size_t *cantidad_almacenados, void **array)
+void guardar_elementos_postorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
+				 size_t *cantidad_almacenados, void **array)
 {
 	if (raiz == NULL)
-		return raiz;
+		return;
 
-	raiz->izquierda = guardar_elementos_postorden(raiz->izquierda, 
-				tamanio_max_array, cantidad_almacenados, array);
-	raiz->derecha = guardar_elementos_postorden(raiz->derecha, 
-				tamanio_max_array, cantidad_almacenados, array);
+	guardar_elementos_postorden(raiz->izquierda, tamanio_max_array, 
+				    cantidad_almacenados, array);
+	guardar_elementos_postorden(raiz->derecha, tamanio_max_array, 
+				    cantidad_almacenados, array);
 
 	if (*cantidad_almacenados == tamanio_max_array)
-		return raiz;
-	array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
+		return;
+	array[*cantidad_almacenados] = raiz->elemento;
 	(*cantidad_almacenados)++;
-
-	return raiz;
 }
 
 
 /*
+ * Se recibe un puntero a un nodo raiz, el tamaño máximo del array, un puntero 
+ * a la cantidad de elementos que se almacenaron por el momento en el array, y
+ * el puntero al array de punteros.
  *
- *
+ * Se recorre el ABB en forma inorden, guardando cada elemento leido en el 
+ * array hasta superar la capacidad del arreglo o recorrer todo el ABB.
  */
-nodo_abb_t *guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
-				 size_t *cantidad_almacenados, void **array) // 1;
+void guardar_elementos_inorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
+			       size_t *cantidad_almacenados, void **array)
 {
 	if (raiz == NULL)
-		return raiz;
+		return;
 
-	raiz->izquierda = guardar_elementos_inorden(raiz->izquierda, 
-				tamanio_max_array, cantidad_almacenados, array); // 2; 3 (NULL); 5 (NULL)
+	guardar_elementos_inorden(raiz->izquierda, tamanio_max_array, 
+				  cantidad_almacenados, array);
 
 	if (*cantidad_almacenados == tamanio_max_array)
-		return raiz;
-	array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
+		return;
+	array[*cantidad_almacenados] = raiz->elemento;
 	(*cantidad_almacenados)++;
 
-	raiz->derecha = guardar_elementos_inorden(raiz->derecha, 
-				tamanio_max_array, cantidad_almacenados, array); // 4;
-
-	return raiz;
+	guardar_elementos_inorden(raiz->derecha, tamanio_max_array, 
+				  cantidad_almacenados, array);
 }
 
 
 /*
+ * Se recibe un puntero a un nodo raiz, el tamaño máximo del array, un puntero 
+ * a la cantidad de elementos que se almacenaron por el momento en el array, y
+ * el puntero al array de punteros.
  *
- *
+ * Se recorre el ABB en forma preorden, guardando cada elemento leido en el 
+ * array hasta superar la capacidad del arreglo o recorrer todo el ABB.
  */
-nodo_abb_t *guardar_elementos_preorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
-				  size_t *cantidad_almacenados, void **array)
+void guardar_elementos_preorden(nodo_abb_t *raiz, size_t tamanio_max_array, 
+				size_t *cantidad_almacenados, void **array)
 {
 	if (raiz == NULL)
-		return raiz;
+		return;
 
 	if (*cantidad_almacenados == tamanio_max_array)
-		return raiz;
-	array[*cantidad_almacenados] = raiz->elemento; // PROBLEMA EN LA DECLARACION DEL ARRAY
+		return;
+	array[*cantidad_almacenados] = raiz->elemento;
 	(*cantidad_almacenados)++;
 
-	raiz->izquierda = guardar_elementos_preorden(raiz->izquierda, 
-				tamanio_max_array, cantidad_almacenados, array);
+	guardar_elementos_preorden(raiz->izquierda, tamanio_max_array, 
+				   cantidad_almacenados, array);
 
-	raiz->derecha = guardar_elementos_preorden(raiz->derecha, 
-				tamanio_max_array, cantidad_almacenados, array);
-
-	return raiz;
+	guardar_elementos_preorden(raiz->derecha, tamanio_max_array, 
+				   cantidad_almacenados, array);
 }
 
 
@@ -457,15 +472,14 @@ size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 	size_t cantidad_almacenados = 0;
 
 	if (recorrido == POSTORDEN)
-		arbol->nodo_raiz = guardar_elementos_postorden(arbol->nodo_raiz, 
-				tamanio_array, &cantidad_almacenados, array);
+		guardar_elementos_postorden(arbol->nodo_raiz, tamanio_array, 
+					    &cantidad_almacenados, array);
 	else if (recorrido == INORDEN)
-		arbol->nodo_raiz = guardar_elementos_inorden(arbol->nodo_raiz, 
-				tamanio_array, &cantidad_almacenados, array);
+		guardar_elementos_inorden(arbol->nodo_raiz, tamanio_array, 
+					  &cantidad_almacenados, array);
 	else 
-		arbol->nodo_raiz = guardar_elementos_preorden(arbol->
-		nodo_raiz, tamanio_array, &cantidad_almacenados, array);
+		guardar_elementos_preorden(arbol->nodo_raiz, tamanio_array, 
+					   &cantidad_almacenados, array);
 
 	return cantidad_almacenados;
 }
-//////////////////////////////////////////////////////////////////////////// REVISAR
