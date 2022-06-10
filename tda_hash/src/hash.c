@@ -2,6 +2,9 @@
 #include "lista.h"
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+
+#define LIMITE_FACTOR_DE_CARGA 0.70
 
 typedef struct clave_valor {
 	char *clave;
@@ -38,6 +41,22 @@ hash_t *hash_crear(size_t capacidad)
 	return hash;
 }
 
+
+/*
+ * Se recibe una clave como un string
+ *
+ * Se devuelve una posicion en la tabla de hash
+ */
+int funcion_hash(const char *clave) {
+
+	int suma_valores_ascii = 0;
+	for (int i = 0; i < strlen(clave); i++)
+		suma_valores_ascii += clave[i];
+
+	return suma_valores_ascii
+}
+
+
 /*
 hash_t *rehashear()
 {
@@ -45,28 +64,23 @@ hash_t *rehashear()
 }
 */
 
-/*
- * Si la clave ya existía y se reemplaza el elemento, se almacena un puntero al
- * elemento reemplazado en *anterior, si anterior no es NULL.
- *
- * Si la clave no existía y anterior no es NULL, se almacena NULL en *anterior.
- *
- * La función almacena una copia de la clave provista por el usuario,
- *//*
+
 hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 		      void **anterior)
-{	
-	float factor_de_carga = hash->almacenados / hash->capacidad;
+{	/*
+	float factor_de_carga = lista_tamanio(hash->tabla[i]) / hash->capacidad;
+	hash->almacenados / hash->capacidad;
 
 	if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA)
 		hash = rehashear();
+	*/
 
-	int posicion_tabla = funcion_hash(clave);
+	int posicion_tabla = funcion_hash(clave) % hash->capacidad;
 
 	hash->tabla[posicion_tabla]->elemento = elemento;
 
 	return hash;
-}*/
+}
 
 /*
 void *hash_quitar(hash_t *hash, const char *clave)
@@ -74,6 +88,7 @@ void *hash_quitar(hash_t *hash, const char *clave)
 	if (hash == NULL)
 		return NULL;
 }
+*/
 
 
 void *hash_obtener(hash_t *hash, const char *clave)
@@ -87,9 +102,11 @@ bool hash_contiene(hash_t *hash, const char *clave)
 {
 	if (hash == NULL)
 		return false;
+
+	int posicion_tabla = funcion_hash(clave, hash->capacidad);
 }
 
-*/
+
 size_t hash_cantidad(hash_t *hash)
 {
 	if (hash == NULL)
@@ -111,8 +128,7 @@ void hash_destruir_todo(hash_t *hash, void (*destructor)(void *))
 		return;
 
 	for (int i = 0; i < hash_cantidad(hash); i++)
-		for (int j = 0; j < hash->tabla[i]->cantidad; j++)
-			lista_destruir_todo(hash->tabla[i], destructor);
+		lista_destruir_todo(hash->tabla[i], destructor); // VER SI ESTÁ BIEN
 
 	free(hash->tabla);
 	free(hash);
