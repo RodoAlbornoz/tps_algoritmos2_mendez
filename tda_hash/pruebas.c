@@ -2,7 +2,6 @@
 #include "pa2m.h"
 #include "src/lista.h"
 
-
 struct hash {
 	lista_t **tabla;
 	size_t capacidad;
@@ -81,6 +80,7 @@ void hash_probar_cantidad()
 	pa2m_nuevo_grupo("Pruebas de elementos almacenados en un hash");
 
 	dado_un_hash_null_se_retorna_cantidad_0();
+	// AGREGAR INSERCIONES EN ESTE
 	dado_un_hash_no_null_se_retorna_su_cantidad_de_elementos_almacenados();
 }
 

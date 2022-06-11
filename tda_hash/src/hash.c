@@ -4,19 +4,33 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define LIMITE_FACTOR_DE_CARGA 0.70
+// #define LIMITE_FACTOR_DE_CARGA 0.70
 
-typedef struct clave_valor {
+typedef struct par {
 	char *clave;
 	void *valor;
-} clave_valor_t;
-
+} par_t;
 
 struct hash {
 	lista_t **tabla;
 	size_t capacidad;
 	size_t almacenados;
 };
+
+
+/*
+ * Se recibe un puntero a un elemento del hash (Que contiene una clave y un
+ * valor) y un puntero a una clave
+ *
+ * Se retorna el resultado de la comparacion entre las 2 claves, donde ==0 
+ * significa que son iguales, y cualquier otro resultado significa que son
+ * distintos
+ */
+int comparar_claves(void *elemento_hash, void *clave)
+{
+	par_t *par = elemento_hash;
+	return strcmp(par->clave, clave);
+}
 
 
 hash_t *hash_crear(size_t capacidad)
@@ -45,7 +59,8 @@ hash_t *hash_crear(size_t capacidad)
 /*
  * Se recibe una clave como un string
  *
- * Se devuelve una posicion en la tabla de hash
+ * Se devuelve un entero igual a la suma de los valores en ascii
+ * de cada caracter del string
  */
 int funcion_hash(const char *clave) {
 
@@ -53,27 +68,19 @@ int funcion_hash(const char *clave) {
 	for (int i = 0; i < strlen(clave); i++)
 		suma_valores_ascii += clave[i];
 
-	return suma_valores_ascii
+	return suma_valores_ascii;
 }
-
 
 /*
-hash_t *rehashear()
-{
-	return hash;
-}
-*/
-
-
 hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 		      void **anterior)
-{	/*
+{	
 	float factor_de_carga = lista_tamanio(hash->tabla[i]) / hash->capacidad;
 	hash->almacenados / hash->capacidad;
 
 	if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA)
 		hash = rehashear();
-	*/
+	
 
 	int posicion_tabla = funcion_hash(clave) % hash->capacidad;
 
@@ -82,7 +89,7 @@ hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 	return hash;
 }
 
-/*
+
 void *hash_quitar(hash_t *hash, const char *clave)
 {
 	if (hash == NULL)
@@ -90,11 +97,15 @@ void *hash_quitar(hash_t *hash, const char *clave)
 }
 */
 
-
 void *hash_obtener(hash_t *hash, const char *clave)
 {
 	if (hash == NULL)
 		return NULL;
+
+	int posicion_tabla = funcion_hash(clave) % hash->capacidad;
+
+	return lista_buscar_elemento(hash->tabla[posicion_tabla], 
+	       comparar_claves, clave);
 }
 
 
@@ -103,7 +114,13 @@ bool hash_contiene(hash_t *hash, const char *clave)
 	if (hash == NULL)
 		return false;
 
-	int posicion_tabla = funcion_hash(clave, hash->capacidad);
+	int posicion_tabla = funcion_hash(clave) % hash->capacidad;
+
+	if (lista_buscar_elemento(hash->tabla[posicion_tabla], 
+	    comparar_claves, clave) != NULL)
+		return true;
+
+	return false;
 }
 
 

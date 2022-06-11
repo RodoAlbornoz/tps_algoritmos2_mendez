@@ -258,10 +258,8 @@ void *lista_elemento_en_posicion(lista_t *lista, size_t posicion)
 void *lista_buscar_elemento(lista_t *lista, int (*comparador)(void *, void *),
 			    void *contexto)
 {
-	if (lista == NULL) {
-		free(lista);
+	if (lista == NULL)
 		return NULL;
-	}
 
 	if (comparador == NULL)
 		return NULL;
