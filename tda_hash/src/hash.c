@@ -33,6 +33,20 @@ int comparar_claves(void *elemento_hash, void *clave)
 }
 
 
+/*
+ * Se recibe un puntero a un elemento del hash (Que contiene una clave y un
+ * valor) y un puntero a una clave
+ *
+ * Se retorna un booleano que dice si las claves no son iguales (!= 0) o si lo
+ * son (== 0)
+ */
+bool claves_no_iguales(void *elemento_hash, void *clave)
+{
+	par_t *par = elemento_hash;	
+	return strcmp(par->clave, clave) != 0;
+}
+
+
 hash_t *hash_crear(size_t capacidad)
 {
 	struct hash *hash = malloc(sizeof(struct hash));
@@ -71,31 +85,80 @@ size_t funcion_hash(const char *clave) {
 	return suma_valores_ascii;
 }
 
-/*
+
+nodo_t *nodo_en_posicion(lista_t *lista, size_t posicion_nodo)
+{
+	size_t posicion_lista = 0;
+
+	bool encontrado = false;
+	nodo_t *nodo_aux = lista->nodo_inicio;
+
+	while (!encontrado) {
+		if (posicion_lista == posicion_nodo)
+			encontrado = true;
+		else
+			nodo_aux = nodo_aux->siguiente;
+	}
+
+	return nodo_aux;
+}
+
+
 hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 		      void **anterior)
 {	
+	if (hash == NULL)
+		return NULL;
+	/*
 	float factor_de_carga = lista_tamanio(hash->tabla[i]) / hash->capacidad;
 	hash->almacenados / hash->capacidad;
 
 	if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA)
 		hash = rehashear();
-	
+	*/
 
 	int posicion_tabla = funcion_hash(clave) % hash->capacidad;
+	size_t posicion_en_lista = lista_con_cada_elemento(
+	hash->tabla[posicion_tabla], claves_no_iguales, &clave) - 1;
 
-	hash->tabla[posicion_tabla]->elemento = elemento;
+	par_t *par;
+	par->clave = clave;
+	par->valor = elemento;
+
+	if (posicion_en_lista == lista_tamanio(hash->tabla[posicion_tabla])) {
+		if (anterior != NULL)
+			*anterior = NULL;
+		return lista_insertar(hash->tabla[posicion_tabla], par);
+	}
+
+	if (anterior != NULL)
+		*anterior = lista_elemento_en_posicion(
+			    hash->tabla[posicion_tabla], posicion_en_lista);
+
+	nodo_t *nodo_a_sobreescribir = nodo_en_posicion(
+			hash->tabla[posicion_tabla], posicion_en_lista);
+	nodo_a_sobreescribir->elemento = par;
 
 	return hash;
 }
-*/
-/*
+
+
 void *hash_quitar(hash_t *hash, const char *clave)
 {
 	if (hash == NULL)
 		return NULL;
+
+	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
+	size_t posicion_en_lista = lista_con_cada_elemento(
+	hash->tabla[posicion_tabla], claves_no_iguales, &clave) - 1;
+
+	if (posicion_en_lista == lista_tamanio(hash->tabla[posicion_tabla]))
+		return NULL;
+
+	return lista_quitar_de_posicion(hash->tabla[posicion_tabla], 
+					posicion_en_lista);
 }
-*/
+
 
 void *hash_obtener(hash_t *hash, const char *clave)
 {
@@ -152,6 +215,20 @@ void hash_destruir_todo(hash_t *hash, void (*destructor)(void *))
 }
 
 
+/*
+ * Recorre cada una de las claves almacenadas en la tabla de hash e invoca a la
+ * función f, pasandole como parámetros la clave, el valor asociado a la clave y
+ * el puntero auxiliar.
+ *
+ * Mientras que queden mas claves o la funcion retorne true, la
+ * iteración continúa. Cuando no quedan mas claves o la función
+ * devuelve false, la iteración se corta y la función principal
+ * retorna.
+ *
+ * Devuelve la cantidad de claves totales iteradas (la cantidad de
+ * veces que fue invocada la función) o 0 en caso de error.
+ *
+ */
 size_t hash_con_cada_clave(hash_t *hash,
 			   bool (*f)(const char *clave, void *valor, void *aux),
 			   void *aux)

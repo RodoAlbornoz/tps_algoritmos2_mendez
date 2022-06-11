@@ -55,6 +55,47 @@ void hash_probar_creacion()
 }
 
 
+void dado_un_hash_null_no_se_quita_elementos()
+{
+	pa2m_afirmar(hash_quitar(NULL, "Miedo") == NULL,
+	"En un hash NULL no hay elemento para quitar.");
+}
+
+/*
+void dado_un_hash_no_null_no_se_quita_un_elemento_inexistente()
+{
+	struct hash *hash = hash_crear(11);
+
+	pa2m_afirmar(hash_quitar(hash, "Miedo") == NULL,
+	"En un hash no NULL no existe el elemento a quitar.");
+
+	hash_destruir(hash);
+}
+
+
+void dado_un_hash_no_null_se_quita_un_elemento_existente()
+{
+	struct hash *hash = hash_crear(6);
+
+	pa2m_afirmar(hash_quitar(hash, "Miedo") != NULL,
+	"En un hash no NULL se quita el elemento indicado.");
+
+	hash_destruir(hash);
+}
+*/
+
+void hash_probar_quitar()
+{
+	pa2m_nuevo_grupo("Pruebas de quitado de elementos en un hash");
+
+	dado_un_hash_null_no_se_quita_elementos();
+	// ARREGLAR INSERCION
+	/*
+	dado_un_hash_no_null_no_se_quita_un_elemento_inexistente();
+	dado_un_hash_no_null_se_quita_un_elemento_existente();*/
+}
+
+
 void dado_un_hash_null_se_devuelve_elemento_null()
 {
 	pa2m_afirmar(hash_obtener(NULL, "Aloha") == NULL, 
@@ -205,13 +246,12 @@ void hash_probar_destruir_todo()
 int main()
 {
 	hash_probar_creacion();
-
+//	hash_probar_insercion();
+	hash_probar_quitar();
 	hash_probar_obtener();
 	hash_probar_contiene();
-	hash_probar_cantidad();
-/*
+	hash_probar_cantidad(); /*
 	hash_probar_destruir();
-	hash_probar_destruir_todo();
-*/
+	hash_probar_destruir_todo();*/
 	return pa2m_mostrar_reporte();
 }
