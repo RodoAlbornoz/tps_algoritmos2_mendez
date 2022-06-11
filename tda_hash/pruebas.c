@@ -55,6 +55,96 @@ void hash_probar_creacion()
 }
 
 
+void dado_un_hash_null_se_devuelve_elemento_null()
+{
+	pa2m_afirmar(hash_obtener(NULL, "Aloha") == NULL, 
+	"No hay elemento que obtener en un hash NULL.");
+}
+	
+/*
+void dado_un_hash_no_null_no_existe_el_elemento_y_se_devuelve_null()
+{
+	struct hash *hash = hash_crear(2);
+
+	pa2m_afirmar(hash_obtener(hash, CLAVE NO EXISTENTE) == NULL, 
+	"No se encuentra el elemento en un hash no NULL y se retorna NULL.");
+
+	hash_destruir(hash);
+}
+
+
+void dado_un_hash_no_null_existe_el_elemento_y_se_lo_devuelve()
+{
+	struct hash *hash = hash_crear(2);
+
+	pa2m_afirmar(hash_obtener(hash, CLAVE EXISTENTE) != NULL, 
+	"Se encuentra el elemento en un hash no NULL y se lo retorna.");
+
+	hash_destruir(hash);
+}
+*/
+
+/*
+ * Se realizan las pruebas sobre la funcion hash_obtener
+ */
+void hash_probar_obtener()
+{
+	pa2m_nuevo_grupo("Pruebas de obtencion de elemento en un hash");
+
+	dado_un_hash_null_se_devuelve_elemento_null();
+	// ARREGLAR INSERCION
+	/*
+	dado_un_hash_no_null_no_existe_el_elemento_y_se_devuelve_null();
+	dado_un_hash_no_null_existe_el_elemento_y_se_lo_devuelve();*/
+}
+
+
+void dado_un_hash_null_no_se_encuentra_el_elemento()
+{
+	pa2m_afirmar(!hash_contiene(NULL, "Hola"), 
+	"No hay elemento para buscar en un hash NULL.");
+}
+
+/*
+void dado_un_hash_no_null_se_encuentra_el_elemento()
+{
+	struct hash *hash = hash_crear(9);
+	hash = hash_insertar();
+
+	pa2m_afirmar(!hash_contiene(hash, CLAVE NO EXISTENTE),
+	"No se encuentra el elemento con la clave dada en un hash no NULL.");
+
+	hash_destruir(hash);
+}
+
+
+void dado_un_hash_no_null_no_se_encuentra_el_elemento()
+{
+	struct hash *hash = hash_crear(5);
+	hash = hash_insertar();
+	
+	pa2m_afirmar(hash_contiene(hash, CLAVE EXISTENTE),
+	"Se encuentra el elemento con la clave dada en un hash no NULL.");
+
+	hash_destruir(hash);
+}
+*/
+
+/*
+ * Se realizan las pruebas sobre la funcion hash_contiene
+ */	
+void hash_probar_contiene()
+{
+	pa2m_nuevo_grupo("Pruebas de existencia de elemento en un hash");
+
+	dado_un_hash_null_no_se_encuentra_el_elemento();
+	// ARREGLAR INSERCION
+	/*
+	dado_un_hash_no_null_se_encuentra_el_elemento();
+	dado_un_hash_no_null_no_se_encuentra_el_elemento();*/
+}
+
+
 void dado_un_hash_null_se_retorna_cantidad_0()
 {
 	pa2m_afirmar(hash_cantidad(NULL) == 0, 
@@ -116,6 +206,8 @@ int main()
 {
 	hash_probar_creacion();
 
+	hash_probar_obtener();
+	hash_probar_contiene();
 	hash_probar_cantidad();
 /*
 	hash_probar_destruir();

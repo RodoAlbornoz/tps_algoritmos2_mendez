@@ -62,11 +62,11 @@ hash_t *hash_crear(size_t capacidad)
  * Se devuelve un entero igual a la suma de los valores en ascii
  * de cada caracter del string
  */
-int funcion_hash(const char *clave) {
+size_t funcion_hash(const char *clave) {
 
-	int suma_valores_ascii = 0;
+	size_t suma_valores_ascii = 0;
 	for (int i = 0; i < strlen(clave); i++)
-		suma_valores_ascii += clave[i];
+		suma_valores_ascii += (size_t) clave[i];
 
 	return suma_valores_ascii;
 }
@@ -88,8 +88,8 @@ hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 
 	return hash;
 }
-
-
+*/
+/*
 void *hash_quitar(hash_t *hash, const char *clave)
 {
 	if (hash == NULL)
@@ -102,10 +102,10 @@ void *hash_obtener(hash_t *hash, const char *clave)
 	if (hash == NULL)
 		return NULL;
 
-	int posicion_tabla = funcion_hash(clave) % hash->capacidad;
+	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
 
 	return lista_buscar_elemento(hash->tabla[posicion_tabla], 
-	       comparar_claves, clave);
+	       comparar_claves, &clave);
 }
 
 
@@ -114,10 +114,10 @@ bool hash_contiene(hash_t *hash, const char *clave)
 	if (hash == NULL)
 		return false;
 
-	int posicion_tabla = funcion_hash(clave) % hash->capacidad;
+	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
 
 	if (lista_buscar_elemento(hash->tabla[posicion_tabla], 
-	    comparar_claves, clave) != NULL)
+	    comparar_claves, &clave) != NULL)
 		return true;
 
 	return false;
