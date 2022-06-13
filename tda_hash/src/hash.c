@@ -60,6 +60,21 @@ size_t funcion_hash(const char *clave) {
 /*
  * Se recibe un puntero a un par clave-valor y un puntero a una clave
  *
+ * Se retorna el resultado de la comparacion entre la clave del par y la clave
+ * del segundo parámetro, donde 0 significa que son iguales, y cualquier otra 
+ * cosa significa que son distintas
+ */
+int comparar_claves(void *par_clave_valor, void *clave)
+{
+	par_t *par = par_clave_valor;
+	char **clave_hash = clave;
+	return strcmp(par->clave, *clave_hash);
+}
+
+
+/*
+ * Se recibe un puntero a un par clave-valor y un puntero a una clave
+ *
  * Se retorna un booleano que dice si la clave del par y la clave del segundo
  * parámetro no son iguales o si lo son
  */
@@ -71,7 +86,7 @@ bool claves_no_iguales(void *par_clave_valor, void *clave)
 }
 
 
-char *duplicar_string(const char *s)
+char *string_duplicado(const char *s)
 {
 	if (!s)
 		return NULL;
@@ -91,7 +106,7 @@ par_t *crear_par(const char *clave, void *elemento)
 	if (par == NULL)
 		return NULL;
 
- 	par->clave = duplicar_string(clave);
+ 	par->clave = string_duplicado(clave);
 	par->valor = elemento;
 
 	return par;
@@ -102,20 +117,18 @@ hash_t *rehashear(hash_t *hash)
 {
 	hash_t *nuevo_hash = hash_crear(hash->capacidad * 2);
 	
-	//Recorro hash y reinserto las claves en nuevo_hash
 	nodo_t *nodo_aux = NULL;
 	for (int i = 0; i < hash->capacidad; i++) {
 		if (hash->tabla[i] != NULL)
 			nodo_aux = hash->tabla[i]->nodo_inicio;
 		for (int j = 0; j < lista_tamanio(hash->tabla[i]); j++) {
 			par_t *par = nodo_aux->elemento;
-			hash_insertar(nuevo_hash, par->clave, par->valor, NULL);
+			nuevo_hash = hash_insertar(nuevo_hash, par->clave, par->valor, NULL);
 			nodo_aux = nodo_aux->siguiente;
 		}
 	}
 	
-	hash_t temporal;
-	temporal = *hash;
+	hash_t temporal = *hash;
 	*hash = *nuevo_hash;
 	*nuevo_hash = temporal;
 	hash_destruir(nuevo_hash);
@@ -131,21 +144,28 @@ hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 		return NULL;
 
 	float factor_de_carga = 0;
-	for (int i = 0; i < hash->capacidad; i++) {
+	int i = 0;
+	bool rehasheado = false;
+	
+	while (i < hash->capacidad && !rehasheado) {
 		factor_de_carga = ((float) lista_tamanio(hash->tabla[i])) / ((float) hash->capacidad);
-		if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA)
+		if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA) {
 			hash = rehashear(hash);
+			rehasheado = true;
+		}
+		i++;
 	}
-
-	par_t *par = crear_par(clave, elemento);
 
 	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
 	if (hash->tabla[posicion_tabla] == NULL)
 		hash->tabla[posicion_tabla] = lista_crear();
 
 	if (!hash_contiene(hash, clave)) {
+		par_t *par = crear_par(clave, elemento);
+
 		if (anterior != NULL)
-			*anterior = NULL;
+			if (*anterior != NULL)
+				*anterior = NULL;
 
 		hash->tabla[posicion_tabla] = lista_insertar(
 					hash->tabla[posicion_tabla], par);
@@ -156,19 +176,8 @@ hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 	if (anterior != NULL)
 		*anterior = hash_obtener(hash, clave);
 
-	nodo_t *nodo_actual = hash->tabla[posicion_tabla]->nodo_inicio;
-	int i = 0;
-	bool nodo_encontrado = false;
-	
-	while (i < lista_tamanio(hash->tabla[posicion_tabla]) && !nodo_encontrado) {
-		if (!claves_no_iguales(nodo_actual->elemento, &clave))
-			nodo_encontrado = true;
-		else 
-			nodo_actual = nodo_actual->siguiente;
-		i++;
-	};
-
-	nodo_actual->elemento = par;
+	par_t *par_anterior = lista_buscar_elemento(hash->tabla[posicion_tabla], comparar_claves, &clave);
+	par_anterior->valor = elemento;
 
 	return hash;
 }
@@ -188,25 +197,11 @@ void *hash_quitar(hash_t *hash, const char *clave)
 	size_t posicion_a_eliminar = lista_con_cada_elemento(hash->tabla[posicion_tabla], claves_no_iguales, &clave) - 1;
 	
 	par_t *par_a_eliminar = lista_quitar_de_posicion(hash->tabla[posicion_tabla], posicion_a_eliminar);
+	free(par_a_eliminar->clave);
 	free(par_a_eliminar);
 
 	hash->almacenados--;
 	return elemento_a_eliminar;
-}
-
-
-/*
- * Se recibe un puntero a un par clave-valor y un puntero a una clave
- *
- * Se retorna el resultado de la comparacion entre la clave del par y la clave
- * del segundo parámetro, donde 0 significa que son iguales, y cualquier otra 
- * cosa significa que son distintas
- */
-int comparar_claves(void *par_clave_valor, void *clave)
-{
-	par_t *par = par_clave_valor;
-	char **clave_hash = clave;
-	return strcmp(par->clave, *clave_hash);
 }
 
 
@@ -258,28 +253,27 @@ void hash_destruir_todo(hash_t *hash, void (*destructor)(void *))
 	if (hash == NULL)
 		return;
 
-	for (int i = 0; i < hash->capacidad; i++)
-		lista_destruir_todo(hash->tabla[i], destructor);
+	par_t *par;
+	nodo_t *nodo_aux = NULL;
+	for (int i = 0; i < hash->capacidad; i++) {
+		if (hash->tabla[i] != NULL)
+			nodo_aux = hash->tabla[i]->nodo_inicio;
+		for (int j = 0; j < lista_tamanio(hash->tabla[i]); j++) {
+			par = nodo_aux->elemento;
+			if (destructor != NULL)
+				destructor(par->valor);
+			free(par->clave);
+			free(par);
+			nodo_aux = nodo_aux->siguiente;
+		}
 
+		lista_destruir(hash->tabla[i]);
+	}
+				
 	free(hash->tabla);
 	free(hash);
 }
 
-
-/*
- * Recorre cada una de las claves almacenadas en la tabla de hash e invoca a la
- * función f, pasandole como parámetros la clave, el valor asociado a la clave y
- * el puntero auxiliar.
- *
- * Mientras que queden mas claves o la funcion retorne true, la
- * iteración continúa. Cuando no quedan mas claves o la función
- * devuelve false, la iteración se corta y la función principal
- * retorna.
- *
- * Devuelve la cantidad de claves totales iteradas (la cantidad de
- * veces que fue invocada la función) o 0 en caso de error.
- *
- */
 
 size_t hash_con_cada_clave(hash_t *hash,
 			   bool (*f)(const char *clave, void *valor, void *aux),

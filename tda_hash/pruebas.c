@@ -351,7 +351,7 @@ int main()
 	/*hash_probar_obtener();
 	hash_probar_contiene();	
 	hash_probar_cantidad();*/	     // PENDIENTE INSERTAR ELEMENTOS EN HASH
-	hash_probar_destruir();      // PENDIENTE INSERTAR ELEMENTOS EN HASH
+//	hash_probar_destruir();      // PENDIENTE INSERTAR ELEMENTOS EN HASH
 //	hash_probar_destruir_todo(); // PENDIENTE INSERTAR ELEMENTOS EN HASH
 
 	return pa2m_mostrar_reporte();
