@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #define LIMITE_FACTOR_DE_CARGA 0.75
 
@@ -44,16 +45,11 @@ hash_t *hash_crear(size_t capacidad)
 /*
  * Se recibe una clave como un string
  *
- * Se devuelve un entero igual a la suma de los valores en ascii
- * de cada caracter del string
+ * Se devuelve un entero
  */
-size_t funcion_hash(const char *clave) {
-
-	size_t suma_valores_ascii = 0;
-	for (int i = 0; i < strlen(clave); i++)
-		suma_valores_ascii += (size_t) clave[i];
-
-	return suma_valores_ascii;
+size_t funcion_hash(const char *clave) 
+{
+	return (size_t) (clave[0] * clave[1]);
 }
 
 
@@ -86,6 +82,11 @@ bool claves_no_iguales(void *par_clave_valor, void *clave)
 }
 
 
+/*
+ * Se recibe un string
+ *
+ * Se retorna una copia del mismo
+ */
 char *string_duplicado(const char *s)
 {
 	if (!s)
@@ -100,14 +101,20 @@ char *string_duplicado(const char *s)
 }
 
 
-par_t *crear_par(const char *clave, void *elemento)
+/*
+ * Se recibe un string y un puntero a un valor
+ *
+ * Se retorna un par clave-valor formado por la clave y valor
+ * enviados a la funcion
+ */
+par_t *crear_par(const char *clave, void *valor)
 {
 	par_t *par = malloc(sizeof(par_t));
 	if (par == NULL)
 		return NULL;
 
  	par->clave = string_duplicado(clave);
-	par->valor = elemento;
+	par->valor = valor;
 
 	return par;
 }
@@ -136,6 +143,62 @@ hash_t *rehashear(hash_t *hash)
 	return hash;
 }
 
+bool hay_que_rehashear(hash_t *hash)
+{
+	float factor_de_carga = 0;
+	int i = 0;
+	bool rehashear = false;
+	
+	while (i < hash->capacidad && !rehashear) {
+		factor_de_carga = (float) lista_tamanio(hash->tabla[i]) / 
+				  (float) hash->capacidad;
+		if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA)
+			rehashear = true;
+		i++;
+	}
+
+	return rehashear;
+}
+
+
+/*
+ *
+ *
+ */
+hash_t *almacenar_nuevo_elemento(hash_t *hash, const char *clave, 
+			void *elemento, void **anterior, size_t posicion_tabla)
+{
+	par_t *par = crear_par(clave, elemento);
+	if (par == NULL)
+		return NULL;
+
+	if (anterior != NULL)
+		*anterior = NULL;
+
+	hash->tabla[posicion_tabla] = lista_insertar(
+				hash->tabla[posicion_tabla], par);
+	hash->almacenados++;
+	return hash;
+}
+
+
+/*
+ *
+ *
+ */
+hash_t *actualizar_elemento(hash_t *hash, const char *clave, void *elemento, 
+			    void **anterior, size_t posicion_tabla)
+{
+	if (anterior != NULL)
+		*anterior = hash_obtener(hash, clave);
+
+	par_t *par_anterior = lista_buscar_elemento(
+			hash->tabla[posicion_tabla], comparar_claves, &clave);
+	par_anterior->valor = elemento;
+
+	return hash;
+}
+
 
 hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 		      void **anterior)
@@ -143,49 +206,27 @@ hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 	if (hash == NULL || clave == NULL)
 		return NULL;
 
-	float factor_de_carga = 0;
-	int i = 0;
-	bool rehasheado = false;
-	
-	while (i < hash->capacidad && !rehasheado) {
-		factor_de_carga = ((float) lista_tamanio(hash->tabla[i])) / ((float) hash->capacidad);
-		if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA) {
-			hash = rehashear(hash);
-			rehasheado = true;
-		}
-		i++;
-	}
+	if (hay_que_rehashear(hash))
+		hash = rehashear(hash);
 
 	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
 	if (hash->tabla[posicion_tabla] == NULL)
 		hash->tabla[posicion_tabla] = lista_crear();
 
 	if (!hash_contiene(hash, clave)) {
-		par_t *par = crear_par(clave, elemento);
-
-		if (anterior != NULL)
-			if (*anterior != NULL)
-				*anterior = NULL;
-
-		hash->tabla[posicion_tabla] = lista_insertar(
-					hash->tabla[posicion_tabla], par);
-		hash->almacenados++;
+		hash = almacenar_nuevo_elemento(hash, clave, elemento, 
+						anterior, posicion_tabla);
 		return hash;
 	}
 
-	if (anterior != NULL)
-		*anterior = hash_obtener(hash, clave);
-
-	par_t *par_anterior = lista_buscar_elemento(hash->tabla[posicion_tabla], comparar_claves, &clave);
-	par_anterior->valor = elemento;
-
+	hash = actualizar_elemento(hash, clave, elemento, anterior, posicion_tabla);
 	return hash;
 }
 
 
 void *hash_quitar(hash_t *hash, const char *clave)
 {	
-	if (hash == NULL)
+	if (hash == NULL || clave == NULL)
 		return NULL;
 
 	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
@@ -207,7 +248,7 @@ void *hash_quitar(hash_t *hash, const char *clave)
 
 void *hash_obtener(hash_t *hash, const char *clave)
 {
-	if (hash == NULL)
+	if (hash == NULL || clave == NULL)
 		return NULL;
 
 	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
@@ -223,7 +264,7 @@ void *hash_obtener(hash_t *hash, const char *clave)
 
 bool hash_contiene(hash_t *hash, const char *clave)
 {
-	if (hash == NULL)
+	if (hash == NULL || clave == NULL)
 		return false;
 
 	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
@@ -278,31 +319,28 @@ void hash_destruir_todo(hash_t *hash, void (*destructor)(void *))
 size_t hash_con_cada_clave(hash_t *hash,
 			   bool (*f)(const char *clave, void *valor, void *aux),
 			   void *aux)
-{
-	if (hash == NULL)
+{	
+	if (hash == NULL || f == NULL)
 		return 0;
 
-	par_t *par;
-	nodo_t *nodo_aux;
-	int j;
 	bool seguir_iterando = true;
 	size_t cantidad_iterados = 0;
+	nodo_t *nodo_aux = NULL;
 
 	for (int i = 0; i < hash->capacidad; i++) {
-		if (hash->tabla[i] != NULL) {
+		if (hash->tabla[i] != NULL)
 			nodo_aux = hash->tabla[i]->nodo_inicio;
 
-			j = 0;
-			while (j < lista_tamanio(hash->tabla[i]) && seguir_iterando) {
-				par = nodo_aux->elemento;
-				if (!f(par->clave, par->valor, aux))
-					seguir_iterando = false;
+		int j = 0;
+		while (j < lista_tamanio(hash->tabla[i]) && seguir_iterando && nodo_aux != NULL) {
+			par_t *par = nodo_aux->elemento;
+			if (!f(par->clave, par->valor, aux))
+				seguir_iterando = false;
 
-				cantidad_iterados++;
-			}
-			
-			seguir_iterando = true;
-		}
+			cantidad_iterados++;
+			nodo_aux = nodo_aux->siguiente;
+		}	
+		seguir_iterando = true;
 	}
 
 	return cantidad_iterados;
