@@ -4,9 +4,12 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
-// #include <time.h>
 
-#define LIMITE_FACTOR_DE_CARGA 0.75
+#include <stdint.h>
+#define FNV_PRIME_32 16777619
+#define FNV_OFFSET_32 2166136261U
+
+#define LIMITE_FACTOR_DE_CARGA 0.70
 
 typedef struct par {
 	char *clave;
@@ -43,21 +46,15 @@ hash_t *hash_crear(size_t capacidad)
 }
 
 
-/*
- * Se recibe una clave como un string
- *
- * Se devuelve un entero
- */
-size_t funcion_hash(const char *clave) 
+size_t funcion_hash(const char *s)
 {
-	size_t suma_caracteres_ascii = 0;
-
-	for (int i = 0; i < strlen(clave); i++)
-		suma_caracteres_ascii += (size_t) clave[i];
-	return suma_caracteres_ascii;
-
-//	srand((unsigned int) time(NULL));
-//	return (size_t) rand() % (strlen(clave) + 1);
+	size_t hash = FNV_OFFSET_32, i;
+	size_t len = strlen(s);
+	for (i = 0; i < len; i++) {
+		hash = hash^(size_t) (s[i]);
+		hash = hash * FNV_PRIME_32;
+	}
+	return hash;
 }
 
 
@@ -129,7 +126,7 @@ par_t *crear_par(const char *clave, void *valor)
 
 
 hash_t *rehashear(hash_t *hash)
-{
+{	
 	hash_t *nuevo_hash = hash_crear(hash->capacidad * 2);
 	
 	nodo_t *nodo_aux = NULL;
@@ -167,7 +164,7 @@ bool factor_de_carga_excedido(hash_t *hash)
 	
 	while (i < hash->capacidad && !factor_excedido) {
 		factor_de_carga = (float) lista_tamanio(hash->tabla[i]) / 
-				  (float) hash->capacidad;
+				(float) hash->capacidad;
 		if (factor_de_carga >= LIMITE_FACTOR_DE_CARGA)
 			factor_excedido = true;
 		i++;
@@ -178,9 +175,7 @@ bool factor_de_carga_excedido(hash_t *hash)
 
 
 /*
- *
- *
- */
+
 lista_t *almacenar_nuevo_elemento(lista_t *lista_hash, par_t *par)
 {
 	if (par == NULL)
@@ -191,10 +186,18 @@ lista_t *almacenar_nuevo_elemento(lista_t *lista_hash, par_t *par)
 }
 
 
-/*
- *
- *
- */
+lista_t *actualizar_elemento(lista_t *lista_hash, const char *clave, 
+			    void *elemento)
+{
+	par_t *par_anterior = lista_buscar_elemento(lista_hash, 
+						    comparar_claves, &clave);
+
+	par_anterior->valor = elemento;
+	return lista_hash;
+}
+*/
+
+
 lista_t *actualizar_elemento(lista_t *lista_hash, const char *clave, 
 			    void *elemento)
 {
@@ -206,7 +209,45 @@ lista_t *actualizar_elemento(lista_t *lista_hash, const char *clave,
 }
 
 
+hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
+		      void **anterior)
+{
+	if (hash == NULL || clave == NULL)
+		return NULL;
 
+	size_t posicion_tabla = funcion_hash(clave) % hash->capacidad;
+
+	if (hash_contiene(hash, clave)) {
+		if (anterior != NULL)
+			*anterior = hash_obtener(hash, clave);
+
+		par_t *par_anterior = lista_buscar_elemento(hash->tabla[posicion_tabla], 
+						    comparar_claves, &clave);
+		par_anterior->valor = elemento;
+		return hash;
+	}
+
+	if (anterior != NULL)
+		*anterior = NULL;
+
+	if (factor_de_carga_excedido(hash)) {
+		hash = rehashear(hash);
+		posicion_tabla = funcion_hash(clave) % hash->capacidad;
+	}
+
+	if (hash->tabla[posicion_tabla] == NULL)
+		hash->tabla[posicion_tabla] = lista_crear();
+
+	par_t *par = crear_par(clave, elemento);
+	if (par == NULL)
+		return NULL;
+
+	hash->tabla[posicion_tabla] = lista_insertar(hash->tabla[posicion_tabla], par);
+	hash->almacenados++;
+	return hash;
+}
+
+/*
 hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 		      void **anterior)
 {
@@ -233,9 +274,11 @@ hash_t *hash_insertar(hash_t *hash, const char *clave, void *elemento,
 				hash->tabla[posicion_tabla], clave, elemento);
 	}
 
+	if (hash->tabla[posicion_tabla] == NULL)
+		return NULL;
 	return hash;
 }
-
+*/
 
 void *hash_quitar(hash_t *hash, const char *clave)
 {	
@@ -343,7 +386,8 @@ size_t hash_con_cada_clave(hash_t *hash,
 	size_t cantidad_iterados = 0;
 	nodo_t *nodo_aux = NULL;
 
-	for (int i = 0; i < hash->capacidad; i++) {
+	int i = 0;
+	while (i < hash->capacidad && seguir_iterando) {
 		if (hash->tabla[i] != NULL)
 			nodo_aux = hash->tabla[i]->nodo_inicio;
 
@@ -355,8 +399,8 @@ size_t hash_con_cada_clave(hash_t *hash,
 
 			cantidad_iterados++;
 			nodo_aux = nodo_aux->siguiente;
-		}	
-		seguir_iterando = true;
+		}
+		i++;	
 	}
 
 	return cantidad_iterados;

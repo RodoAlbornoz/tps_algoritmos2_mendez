@@ -3,7 +3,6 @@
 #include "src/lista.h"
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 typedef struct par {
 	char *clave;
@@ -64,24 +63,126 @@ void hash_probar_creacion()
 }
 
 
+void dado_un_hash_null_no_se_puede_insertar_elementos()
+{
+	int elemento = 9;
+	pa2m_afirmar(hash_insertar(NULL, "Hola", &elemento, NULL) == NULL,
+	"En un hash NULL no es posible insertar un elemento");
+}
+
+
+void dada_una_clave_null_no_se_puede_insertar_elemento()
+{
+	int elemento = 2;
+	hash_t *hash = hash_crear(4);
+
+	pa2m_afirmar(hash_insertar(hash, NULL, &elemento, NULL) == NULL,
+	"No se puede insertar en el hash si la clave enviada es NULL.");
+
+	hash_destruir(hash);
+}
+
+
+void dado_un_hash_vacio_se_inserta_en_el()
+{
+	hash_t *hash = hash_crear(5);
+	int elemento = 5;
+
+	size_t cantidad_almacenados = hash_cantidad(hash);
+	hash = hash_insertar(hash, "Playa", &elemento, NULL);
+
+	pa2m_afirmar(hash != NULL && hash_contiene(hash, "Playa"), 
+	"Se inserta un elemento en un hash vacio.");
+	pa2m_afirmar(hash_cantidad(hash) == cantidad_almacenados + 1,
+	"La cantidad de elementos almacenados en el hash aumenta en 1.");
+
+	hash_destruir(hash);
+}
+
+
+void dado_un_hash_no_null_se_inserta_un_elemento_null()
+{
+	hash_t *hash = hash_crear(7);
+	
+	hash = hash_insertar(hash, "Agua", NULL, NULL);
+	pa2m_afirmar(hash != NULL && hash_obtener(hash, "Agua") == NULL,
+	"Se inserta un elemento NULL en el hash.");
+
+	hash_destruir(hash);
+}
+
+
+void dado_un_hash_no_null_se_inserta_un_elemento_con_clave_no_existente()
+{
+	hash_t *hash = hash_crear(3);
+	int elemento_1 = 19;
+	int elemento_2 = 21;
+
+	void *anterior = NULL;
+	bool existe_elemento = hash_contiene(hash, "Cerati");
+	hash = hash_insertar(hash, "Cerati", &elemento_1, &anterior);
+	hash = hash_insertar(hash, "Calamaro", &elemento_2, &anterior);
+	existe_elemento = hash_contiene(hash, "Cerati");
+
+	pa2m_afirmar(hash != NULL && existe_elemento, 
+	"Se inserta un elemento en el hash con clave que no existia.");
+	pa2m_afirmar(anterior == NULL, 
+	"El elemento anterior es NULL porque la clave no existia.");
+
+	hash_destruir(hash);
+}
+
+/*
+void dado_un_hash_no_null_se_actualiza_elemento_con_clave_existente()
+{	
+	hash_t *hash = hash_crear(7);
+	int elemento_1 = 19;
+	int elemento_2 = 21;
+	int elemento_3 = 3;
+
+	void *anterior = NULL;
+	hash = hash_insertar(hash, "Chupetin", &elemento_1, NULL);
+
+	hash = hash_insertar(hash, "Caramelo", &elemento_1, &anterior);
+	int *elemento_anterior = hash_obtener(hash, "Caramelo");
+	size_t cantidad_antes_de_actualizar = hash_cantidad(hash);
+
+	hash = hash_insertar(hash, "Gomitas", &elemento_2, NULL);
+	hash = hash_insertar(hash, "Caramelo", &elemento_3, &anterior);
+	size_t cantidad_despues_de_actualizar = hash_cantidad(hash);
+
+	hash = hash_insertar(hash, "Chocolate", &elemento_3, NULL);
+
+	int *elemento_actualizado = hash_obtener(hash, "Caramelo");
+	
+	pa2m_afirmar(hash != NULL && *elemento_actualizado == elemento_3, 
+	"Se actualiza un elemento del hash cuya clave ya existia.");
+	pa2m_afirmar(cantidad_despues_de_actualizar == 
+		     cantidad_antes_de_actualizar + 1, 
+	"La cantidad de elementos del hash no aumenta al actualizar un \n\
+	elemento.");
+
+	pa2m_afirmar(*elemento_anterior == anterior, 
+	"El elemento anterior es no NULL porque contiene el valor anterior \n\
+	correspondiente a la clave cuyo valor fue actualizado.");
+
+	hash_destruir(hash);
+}
+*/
+
 /*
  * Se realizan las pruebas sobre la funcion hash_insertar
  */
 void hash_probar_insercion()
 {
-	// Verificar elemento insertado si no existe clave o si se actualiza
+	pa2m_nuevo_grupo("Pruebas de insercion de elementos en un hash");
 
-	// Insertar en hash NULL
-	// Insertar con clave NULL
-	// Insertar en hash vacio
-	// Insertar clave no existente
-	// Insertar clave existente
-	// Insertar sin colision
-	// Insertar con colision
-	// Insertar un elemento null
-	// QUe la cantidad de elementos aumente en 1
-
-	// ANterior
+	dado_un_hash_null_no_se_puede_insertar_elementos();
+	dada_una_clave_null_no_se_puede_insertar_elemento();
+	dado_un_hash_vacio_se_inserta_en_el();
+	dado_un_hash_no_null_se_inserta_un_elemento_null();
+	dado_un_hash_no_null_se_inserta_un_elemento_con_clave_no_existente();
+//	dado_un_hash_no_null_se_actualiza_elemento_con_clave_existente();
 }
 
 
@@ -656,7 +757,7 @@ void pruebas_de_volumen()
 int main()
 {	
 	hash_probar_creacion();
-	//hash_probar_insercion();
+	hash_probar_insercion();
 	//hash_probar_rehash();
 	hash_probar_quitar();
 	hash_probar_obtener();
