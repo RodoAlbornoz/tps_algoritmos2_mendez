@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 typedef struct par {
 	char *clave;
 	void *valor;
 } par_t;
+
 
 struct hash {
 	lista_t **tabla;
@@ -21,7 +23,7 @@ void con_capacidad_menor_a_3_se_crea_el_hash_con_capacidad_3()
 	struct hash *hash = hash_crear(1);
 
 	pa2m_afirmar(hash->capacidad == 3, 
-	"Se crea un hash con capacidad 3 al crearlo con capacidad menor a 3.");
+	"Se crea un hash con capacidad 3 al crearlo con capacidad menor.");
 
 	hash_destruir(hash);
 }
@@ -44,7 +46,7 @@ void dado_un_hash_no_null_su_cantidad_empieza_en_0()
 	hash_t *hash = hash_crear(4);
 
 	pa2m_afirmar(hash_cantidad(hash) == 0, 
-	"La cantidad de elementos almacenados del hash empieza en 0.");
+	"La cantidad de elementos almacenados en el hash empieza en 0.");
 
 	hash_destruir(hash);
 }
@@ -63,7 +65,7 @@ void hash_probar_creacion()
 }
 
 
-void dado_un_hash_null_no_se_puede_insertar_elementos()
+void dado_un_hash_null_no_se_pueden_insertar_elementos()
 {
 	int elemento = 9;
 	pa2m_afirmar(hash_insertar(NULL, "Hola", &elemento, NULL) == NULL,
@@ -73,8 +75,8 @@ void dado_un_hash_null_no_se_puede_insertar_elementos()
 
 void dada_una_clave_null_no_se_puede_insertar_elemento()
 {
-	int elemento = 2;
 	hash_t *hash = hash_crear(4);
+	int elemento = 2;
 
 	pa2m_afirmar(hash_insertar(hash, NULL, &elemento, NULL) == NULL,
 	"No se puede insertar en el hash si la clave enviada es NULL.");
@@ -88,12 +90,11 @@ void dado_un_hash_vacio_se_inserta_en_el()
 	hash_t *hash = hash_crear(5);
 	int elemento = 5;
 
-	size_t cantidad_almacenados = hash_cantidad(hash);
 	hash = hash_insertar(hash, "Playa", &elemento, NULL);
 
 	pa2m_afirmar(hash != NULL && hash_contiene(hash, "Playa"), 
 	"Se inserta un elemento en un hash vacio.");
-	pa2m_afirmar(hash_cantidad(hash) == cantidad_almacenados + 1,
+	pa2m_afirmar(hash_cantidad(hash) == 1,
 	"La cantidad de elementos almacenados en el hash aumenta en 1.");
 
 	hash_destruir(hash);
@@ -119,56 +120,44 @@ void dado_un_hash_no_null_se_inserta_un_elemento_con_clave_no_existente()
 	int elemento_2 = 21;
 
 	void *anterior = NULL;
-	bool existe_elemento = hash_contiene(hash, "Cerati");
 	hash = hash_insertar(hash, "Cerati", &elemento_1, &anterior);
 	hash = hash_insertar(hash, "Calamaro", &elemento_2, &anterior);
-	existe_elemento = hash_contiene(hash, "Cerati");
 
-	pa2m_afirmar(hash != NULL && existe_elemento, 
-	"Se inserta un elemento en el hash con clave que no existia.");
+	pa2m_afirmar(hash != NULL && hash_contiene(hash, "Cerati"), 
+	"Se inserta un elemento en el hash con clave no existente.");
 	pa2m_afirmar(anterior == NULL, 
 	"El elemento anterior es NULL porque la clave no existia.");
 
 	hash_destruir(hash);
 }
 
-/*
-void dado_un_hash_no_null_se_actualiza_elemento_con_clave_existente()
+
+void dado_un_hash_no_null_se_actualiza_valor_con_clave_existente()
 {	
 	hash_t *hash = hash_crear(7);
 	int elemento_1 = 19;
-	int elemento_2 = 21;
-	int elemento_3 = 3;
+	int elemento_2 = 3;
 
 	void *anterior = NULL;
 	hash = hash_insertar(hash, "Chupetin", &elemento_1, NULL);
-
 	hash = hash_insertar(hash, "Caramelo", &elemento_1, &anterior);
-	int *elemento_anterior = hash_obtener(hash, "Caramelo");
-	size_t cantidad_antes_de_actualizar = hash_cantidad(hash);
-
-	hash = hash_insertar(hash, "Gomitas", &elemento_2, NULL);
-	hash = hash_insertar(hash, "Caramelo", &elemento_3, &anterior);
-	size_t cantidad_despues_de_actualizar = hash_cantidad(hash);
-
-	hash = hash_insertar(hash, "Chocolate", &elemento_3, NULL);
+	hash = hash_insertar(hash, "Caramelo", &elemento_2, &anterior);
 
 	int *elemento_actualizado = hash_obtener(hash, "Caramelo");
-	
-	pa2m_afirmar(hash != NULL && *elemento_actualizado == elemento_3, 
-	"Se actualiza un elemento del hash cuya clave ya existia.");
-	pa2m_afirmar(cantidad_despues_de_actualizar == 
-		     cantidad_antes_de_actualizar + 1, 
+	pa2m_afirmar(hash != NULL && *elemento_actualizado == elemento_2, 
+	"Se actualiza un valor del hash cuya clave ya existia.");
+	pa2m_afirmar(hash_cantidad(hash) == 2, 
 	"La cantidad de elementos del hash no aumenta al actualizar un \n\
-	elemento.");
+	valor.");
 
-	pa2m_afirmar(*elemento_anterior == anterior, 
+	int *elemento_anterior = anterior;
+	pa2m_afirmar(*elemento_anterior == elemento_1, 
 	"El elemento anterior es no NULL porque contiene el valor anterior \n\
 	correspondiente a la clave cuyo valor fue actualizado.");
 
 	hash_destruir(hash);
 }
-*/
+
 
 /*
  * Se realizan las pruebas sobre la funcion hash_insertar
@@ -177,12 +166,12 @@ void hash_probar_insercion()
 {
 	pa2m_nuevo_grupo("Pruebas de insercion de elementos en un hash");
 
-	dado_un_hash_null_no_se_puede_insertar_elementos();
+	dado_un_hash_null_no_se_pueden_insertar_elementos();
 	dada_una_clave_null_no_se_puede_insertar_elemento();
 	dado_un_hash_vacio_se_inserta_en_el();
 	dado_un_hash_no_null_se_inserta_un_elemento_null();
 	dado_un_hash_no_null_se_inserta_un_elemento_con_clave_no_existente();
-//	dado_un_hash_no_null_se_actualiza_elemento_con_clave_existente();
+	dado_un_hash_no_null_se_actualiza_valor_con_clave_existente();
 }
 
 
@@ -196,8 +185,10 @@ void dado_un_hash_null_no_se_quita_elemento()
 void dada_una_clave_null_no_se_puede_quitar_elemento()
 {
 	hash_t *hash = hash_crear(3);
+
 	pa2m_afirmar(hash_quitar(hash, NULL) == NULL,
 	"No se puede quitar un elemento si la clave enviada es NULL.");
+
 	hash_destruir(hash);	
 }
 
@@ -227,7 +218,7 @@ void dado_un_hash_no_null_no_se_quita_un_elemento_inexistente()
 	hash = hash_insertar(hash, "Hamburguesa", &elemento, NULL);
 
 	pa2m_afirmar(hash_quitar(hash, "Empanada") == NULL,
-	"No existe el elemento con la clave dada.");
+	"No existe el elemento con la clave dada y no se quita del hash.");
 
 	hash_destruir(hash);
 }
@@ -245,6 +236,7 @@ void dado_un_hash_no_null_se_quita_un_elemento_existente()
 
 	size_t cantidad_aux = hash_cantidad(hash);
 	int *elemento_a_quitar = hash_quitar(hash, "Half Life 2");
+
 	pa2m_afirmar(*elemento_a_quitar == elemento_2,
 	"Existe y se quita el elemento con la clave dada.");
 	pa2m_afirmar(hash_cantidad(hash) == cantidad_aux - 1, 
@@ -270,7 +262,7 @@ void dado_un_hash_con_valor_actualizado_se_quita_el_elemento_actual()
 	int *elemento_quitado = hash_quitar(hash, "Hielo");
 	pa2m_afirmar(*elemento_quitado != *elemento_anterior, 
 	"Dada una clave en un hash no NULL cuyo valor asociado fue \n\
-	actualizado, se quita el elemento actualizado.");
+	actualizado, se quita el valor actualizado y no el anterior.");
 
 	hash_destruir(hash);
 }
@@ -295,15 +287,17 @@ void hash_probar_quitar()
 void dado_un_hash_null_se_devuelve_elemento_null()
 {
 	pa2m_afirmar(hash_obtener(NULL, "Aloha") == NULL, 
-	"No hay elemento que obtener en un hash NULL.");
+	"No se puede obtener un elemento en un hash NULL.");
 }
 
 
 void dada_una_clave_null_no_se_puede_obtener_elemento()
 {
 	hash_t *hash = hash_crear(5);
+
 	pa2m_afirmar(hash_obtener(hash, NULL) == NULL,
 	"No se puede obtener el elemento si la clave enviada es NULL.");
+
 	hash_destruir(hash);
 }
 
@@ -317,7 +311,7 @@ void dado_un_hash_no_null_se_devuelve_elemento_null()
 	hash = hash_insertar(hash, "Amarillo", &elemento, NULL);
 
 	pa2m_afirmar(hash_obtener(hash, "Rojo") == NULL,
-	"La clave enviada devuelve como resultado un elemento NULL.");
+	"La clave enviada devuelve como resultado un valor NULL.");
 
 	hash_destruir(hash);
 }
@@ -377,7 +371,7 @@ void dado_un_hash_con_valor_actualizado_se_devuelve_el_elemento_actual()
 	int *elemento_obtenido = hash_obtener(hash, "Iron Man");
 	pa2m_afirmar(*elemento_obtenido != *elemento_anterior, 
 	"Dada una clave en un hash no NULL cuyo valor asociado fue \n\
-	actualizado, se devuelve el elemento actualizado.");
+	actualizado, se devuelve el valor actualizado y no el anterior.");
 
 	hash_destruir(hash);
 }
@@ -388,7 +382,7 @@ void dado_un_hash_con_valor_actualizado_se_devuelve_el_elemento_actual()
  */
 void hash_probar_obtener()
 {
-	pa2m_nuevo_grupo("Pruebas de obtencion de elemento en un hash");
+	pa2m_nuevo_grupo("Pruebas de obtencion de elemento de un hash");
 
 	dado_un_hash_null_se_devuelve_elemento_null();
 	dada_una_clave_null_no_se_puede_obtener_elemento();
@@ -409,8 +403,10 @@ void dado_un_hash_null_no_se_encuentra_el_elemento()
 void dada_una_clave_null_no_existe_el_elemento()
 {
 	hash_t *hash = hash_crear(2);
+
 	pa2m_afirmar(!hash_contiene(hash, NULL), 
 	"No existe el elemento si la clave enviada es NULL.");
+
 	hash_destruir(hash);
 }
 
@@ -487,34 +483,15 @@ void dado_un_hash_no_null_se_retorna_su_cantidad_de_elementos_almacenados()
 }
 
 
-void en_un_hash_no_null_su_cantidad_no_cambia_al_insertar_valor_duplicado()
-{
-	hash_t *hash = hash_crear(6);
-	int elemento_1 = 3;
-	int elemento_2 = 1;
-
-	void *anterior = NULL;
-	hash = hash_insertar(hash, "Argentina", &elemento_2, &anterior);
-	hash = hash_insertar(hash, "Argentina", &elemento_1, &anterior);
-	hash = hash_insertar(hash, "Jamaica", &elemento_2, NULL);
-
-	pa2m_afirmar(hash_cantidad(hash) == 2,
-	"La cantidad de elementos almacenados del hash no cambia al\n\
-	insertar un valor con clave duplicada.");
-
-	hash_destruir(hash);
-}
-
 /*
  * Se realizan las pruebas sobre la funcion hash_cantidad
  */
 void hash_probar_cantidad()
 {
-	pa2m_nuevo_grupo("Pruebas de elementos almacenados en un hash");
+	pa2m_nuevo_grupo("Pruebas de cantidad de elementos en un hash");
 
 	dado_un_hash_null_se_retorna_cantidad_0();
 	dado_un_hash_no_null_se_retorna_su_cantidad_de_elementos_almacenados();
-	en_un_hash_no_null_su_cantidad_no_cambia_al_insertar_valor_duplicado();
 }
 
 
@@ -577,7 +554,7 @@ void dado_un_hash_con_valor_actualizado_se_libera()
 	hash_destruido = true;
 
 	pa2m_afirmar(hash_destruido,
-	"Se libera un hash en el que se insertó un valor con clave duplicada");
+	"Se libera un hash en el que se actualizó uno de sus valores.");
 }
 
 
@@ -622,7 +599,7 @@ void con_destructor_null_se_libera_un_hash_no_null()
 	hash_destruido = true;
 
 	pa2m_afirmar(hash_destruido, 
-	"Se libera solo el hash con destructor NULL.");
+		     "Se libera solo el hash con destructor NULL.");
 }
 
 
@@ -664,8 +641,8 @@ void dado_un_hash_con_valor_actualizado_se_libera_con_destructor_no_null()
 	hash_destruido = true;
 
 	pa2m_afirmar(hash_destruido, 
-	"Se libera un hash en el que se insertó un valor con clave \n\
-	duplicada y sus elementos con destructor no NULL.");	
+	"Se libera un hash y sus elementos con destructor no NULL cuando en \n\
+	el hash se actualizó uno de sus valores.");	
 }
 
 
@@ -682,91 +659,113 @@ void hash_probar_destruir_todo()
 	dado_un_hash_con_valor_actualizado_se_libera_con_destructor_no_null();
 }
 
+
 /*
-void dado_un_hash_no_null_se_insertan_n_elementos(size_t cantidad, 
-						  char *mensaje)
-{	
-	hash_t *hash = hash_crear(15);
+ * Se recibe una clave como string, un puntero a un valor y un puntero a un
+ * auxiliar
+ *
+ * Se retorna si la clave asociada a ese valor empieza con la letra "j" o "J"
+ */
+bool empieza_con_j(const char *clave, void *valor, void *aux)
+{
+	if (clave == NULL)
+		return false;
 
-	char *caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv\n\
-	wxyz1234567890!@<>{}[]()'_*#!%$&/=+*-.:;|2U98HFUHFWE!rt#$#wefERFFHWI\n\
-	SH4ffr2453#!!dehUH12hZ_{2{d}[dw2}!GHFD97Yg8yfd97hsdff0923h94344##dsh\n\
-	dsj2183hHFDHGF!r#ufhuh4$!sdc{d{s}df{ds]]<Zwef>dsf2138FN3J32}2{<z!h5$\n\
-	dsfhu32#jsduihHUD2FBVHhfbhdi!334#[}{sd{-<_:4wfdf;:3h43434fdufdfh__u8\n\
-	fh3F{EW32}FOSDFHIgdfFFDS343t6tyFDSF:DFsDS:F;SDW;|2#$#wefERFFHWI48uU8\n\
-	SH4fAUfhyidHIDFSIFSD#!23_#hUH12hZ_{2{d}DSQRFsf_[]()'_*#!%$&/=+*-.:;|\n\
-	182U42RFDSf32123RF@fsfs";
-
-	size_t longitud_string = 2;
-	char string_hash[longitud_string];
-
-	int elemento = 5;
-	int i = 0, j = 0, k = 0;
-	bool error_en_insercion = false;
-	while (i < cantidad && !error_en_insercion) {
-		if (j == strlen(caracteres)) {
-			k++;
-			j = k;
-		}
-
-		if (k == strlen(caracteres)) {
-			longitud_string++;
-			j = 0;
-			k = 0;
-			char string_hash[longitud_string];
-		}
-		
-		strncpy(string_hash, &caracteres[j], longitud_string);
-		string_hash[longitud_string] = '\0';
-
-		hash = hash_insertar(hash, string_hash, &elemento, NULL);
+	return clave[0] == 'j' || clave[0] == 'J';
+}
 
 
-		if (hash == NULL)
-			error_en_insercion = true;
-		i++;
-		j += 2;
-	}
+void dado_un_hash_null_no_se_recorren_elementos()
+{
+	int elemento = 2;
+	pa2m_afirmar(hash_con_cada_clave(NULL, empieza_con_j, &elemento) == 0,
+	"No se recorren elementos en un hash NULL.");
+}
 
-	pa2m_afirmar(!error_en_insercion && hash_cantidad(hash) == cantidad, 
-		     mensaje);
+
+void dada_una_funcion_null_no_se_recorren_elementos()
+{
+	hash_t *hash = hash_crear(4);
+
+	pa2m_afirmar(hash_con_cada_clave(hash, NULL, NULL) == 0,
+	"No se recorren elementos si la funcion enviada es NULL.");
 
 	hash_destruir(hash);
 }
 
 
-void pruebas_de_volumen()
+void dado_un_hash_sin_elementos_se_recorren_0_elementos()
 {
-	pa2m_nuevo_grupo("Pruebas de volumen");
+	hash_t *hash = hash_crear(7);
 
-	dado_un_hash_no_null_se_insertan_n_elementos(5, 
-				"Se insertan 5 elementos en el hash");
-	dado_un_hash_no_null_se_insertan_n_elementos(10, 
-				"Se insertan 10 elementos en el hash");
-	dado_un_hash_no_null_se_insertan_n_elementos(20, 
-				"Se insertan 20 elementos en el hash");
-	dado_un_hash_no_null_se_insertan_n_elementos(30, 
-				"Se insertan 30 elementos en el hash");
-	dado_un_hash_no_null_se_insertan_n_elementos(50, 
-				"Se insertan 50 elementos en el hash");
-	dado_un_hash_no_null_se_insertan_n_elementos(100, 
-				"Se insertan 100 elementos en el hash");
+	pa2m_afirmar(hash_con_cada_clave(hash, empieza_con_j, NULL) == 0,
+	"Se recorren 0 elementos en un hash sin elementos.");
+
+	hash_destruir(hash);
 }
-*/
+
+
+void dado_un_hash_no_null_se_recorren_todos_sus_elementos()
+{
+	hash_t *hash = hash_crear(6);
+	int elemento_1 = 8;
+	int elemento_2 = 13;
+	int elemento_3 = 17;
+
+	hash = hash_insertar(hash, "Juan", &elemento_1, NULL);
+	hash = hash_insertar(hash, "Jaime", &elemento_1, NULL);
+	hash = hash_insertar(hash, "jeremias", &elemento_3, NULL);
+	hash = hash_insertar(hash, "Jacinto", &elemento_2, NULL);
+	hash = hash_insertar(hash, "Joaquin", &elemento_3, NULL);
+
+	pa2m_afirmar(hash_con_cada_clave(hash, empieza_con_j, NULL) == 5, 
+	"En un hash no NULL, se recorren todos sus elementos.");
+
+	hash_destruir(hash);
+}
+
+
+void dado_un_hash_no_null_se_recorren_algunos_elementos()
+{
+	hash_t *hash = hash_crear(8);
+	int elemento_1 = 44;
+	int elemento_2 = 20;
+
+	hash = hash_insertar(hash, "Jimena", &elemento_1, NULL);
+	hash = hash_insertar(hash, "jazmin", &elemento_2, NULL);
+	hash = hash_insertar(hash, "Marina", &elemento_1, NULL);
+	hash = hash_insertar(hash, "Julia", &elemento_2, NULL);
+
+	pa2m_afirmar(hash_con_cada_clave(hash, empieza_con_j, NULL) == 3, 
+	"En un hash no NULL, se recorren solo algunos de sus elementos.");
+
+	hash_destruir(hash);
+}
+
+
+void hash_probar_iterador_interno()
+{
+	pa2m_nuevo_grupo("Pruebas de iterador interno de un hash");
+
+	dado_un_hash_null_no_se_recorren_elementos();
+	dada_una_funcion_null_no_se_recorren_elementos();
+	dado_un_hash_sin_elementos_se_recorren_0_elementos();
+	dado_un_hash_no_null_se_recorren_todos_sus_elementos();
+	dado_un_hash_no_null_se_recorren_algunos_elementos();
+}
+
 
 int main()
 {	
 	hash_probar_creacion();
 	hash_probar_insercion();
-	//hash_probar_rehash();
 	hash_probar_quitar();
 	hash_probar_obtener();
 	hash_probar_contiene();
 	hash_probar_cantidad();
 	hash_probar_destruir();
 	hash_probar_destruir_todo();
-
-//	pruebas_de_volumen();
+	hash_probar_iterador_interno();
 
 	return pa2m_mostrar_reporte();
 }
