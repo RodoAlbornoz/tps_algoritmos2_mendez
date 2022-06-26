@@ -260,7 +260,15 @@ void llenar_vector_nombres(sala_t *sala, char **vector_nombres)
 }
 
 
-char **sala_obtener_nombre_objetos(sala_t *sala, int *cantidad)
+/*
+ * Se recine un puntero a sala y un puntero a la cantidad de objetos de
+ * cierto tipo (Totales, conocidos, poseidos)
+ * 
+ * Se devuelve un vector dinámico que contiene los nombres de los objetos
+ * de la sala, según sean los objetos totales de la sala, los conocidos o
+ * los poseidos
+ */
+char **obtener_nombres_objetos(sala_t *sala, int *cantidad)
 {
 	if (sala == NULL) {
 		if(cantidad != NULL)
@@ -287,33 +295,21 @@ char **sala_obtener_nombre_objetos(sala_t *sala, int *cantidad)
 }
 
 
+char **sala_obtener_nombre_objetos(sala_t *sala, int *cantidad)
+{
+	return obtener_nombres_objetos(sala, cantidad);
+}
+
+
 char **sala_obtener_nombre_objetos_conocidos(sala_t *sala, int *cantidad)
 {
-	if (sala == NULL)
-		return NULL;
-
-/*	Si se posee objeto o no existe objeto: 
-		No incluirlo
-
-	Guardar objeto
-*/
-
-	return NULL;
+	return obtener_nombres_objetos(sala, cantidad);
 }
 
 
 char **sala_obtener_nombre_objetos_poseidos(sala_t *sala, int *cantidad)
 {
-	if (sala == NULL)
-		return NULL;
-
-/*	Si no se conoce objeto o no existe: 
-		No incluirlo
-
-	Guardar objeto
-*/
-
-	return NULL;
+	return obtener_nombres_objetos(sala, cantidad);
 }
 
 
@@ -322,11 +318,18 @@ bool sala_agarrar_objeto(sala_t *sala, const char *nombre_objeto)
 	if (sala == NULL || nombre_objeto == NULL)
 		return false;
 
-/*	Si objeto no es conocido o no es asible o no existe o ya lo posee el jugador:
-		retorna falso
+	struct info_objeto *info_objeto = hash_obtener(sala->objetos_conocidos, 
+						       nombre_objeto);
 
-	Poseer objeto
-*/
+	if (info_objeto == NULL)
+		return false;
+
+	if (!info_objeto->es_asible)
+		return false;
+
+	char *nombre_duplicado = duplicar_string(nombre_objeto);
+	sala->objetos_poseidos = hash_insertar(sala->objetos_poseidos, 
+				 nombre_duplicado, info_objeto, NULL);
 
 	return true;
 }

@@ -149,30 +149,158 @@ void pruebas_nombre_objetos()
 }
 
 
+void pruebas_nombre_objetos_conocidos()
+{
+	int cantidad = 0;
+
+	pa2m_afirmar(
+		sala_obtener_nombre_objetos_conocidos(NULL, &cantidad) == NULL, 
+	"No se pueden obtener los nombres de objetos conocidos en una sala \n\
+	NULL.");
+	pa2m_afirmar(cantidad == -1, "La cantidad es -1 después de invocada \n\
+				      la función.");
+
+	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
+						 ARCHIVO_INTERACCIONES_1);
+
+	char **conocidos = sala_obtener_nombre_objetos_conocidos(sala, NULL);
+	pa2m_afirmar(conocidos != NULL, 
+	"Se obtiene un vector de nombres de objetos conocidos de la sala \n\
+	con cantidad NULL.");
+
+	char **conocidos2 = sala_obtener_nombre_objetos_conocidos(sala, &cantidad);
+	pa2m_afirmar(conocidos2 != NULL, 
+	"Se obtiene un vector de nombres de objetos conocidos de la sala \n\
+	con cantidad no NULL.");
+
+/*
+	pa2m_afirmar(cantidad == algo, "La cantidad de elementos conocidos es la correcta.");
+
+	const char *esperados[] = { "habitacion",    "mesa",  "interruptor", "pokebola", "cajon",
+				    "cajon-abierto", "llave", "anillo",	     "puerta" };
+
+	int comparaciones_exitosas = 0;
+
+	for (int i = 0; i < cantidad; i++)
+		if (strcmp(objetos2[i], esperados[i]) == 0)
+			comparaciones_exitosas++;
+
+	pa2m_afirmar(comparaciones_exitosas == cantidad,
+		     "Todos los nombres de objeto son los esperados");
+*/
+
+	free(conocidos);
+	free(conocidos2);
+	sala_destruir(sala);
+}
+
+
+void pruebas_nombre_objetos_poseidos()
+{
+	int cantidad = 0;
+
+	pa2m_afirmar(
+		sala_obtener_nombre_objetos_poseidos(NULL, &cantidad) == NULL, 
+	"No se pueden obtener los nombres de objetos poseidos en una sala \n\
+	NULL.");
+	pa2m_afirmar(cantidad == -1, "La cantidad es -1 después de invocada \n\
+				      la función.");
+
+	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
+						 ARCHIVO_INTERACCIONES_1);
+
+	char **poseidos = sala_obtener_nombre_objetos_poseidos(sala, NULL);
+	pa2m_afirmar(poseidos != NULL, 
+	"Se obtiene un vector de nombres de objetos poseidos de la sala con \n\
+	cantidad NULL.");
+
+	char **poseidos2 = sala_obtener_nombre_objetos_poseidos(sala, &cantidad);
+	pa2m_afirmar(poseidos2 != NULL, 
+	"Se obtiene un vector de nombres de objetos poseidos de la sala con \n\
+	cantidad no NULL.");
+
+/*
+	pa2m_afirmar(cantidad == algo, "La cantidad de elementos conocidos es la correcta.");
+
+	const char *esperados[] = { "habitacion",    "mesa",  "interruptor", "pokebola", "cajon",
+				    "cajon-abierto", "llave", "anillo",	     "puerta" };
+
+	int comparaciones_exitosas = 0;
+
+	for (int i = 0; i < cantidad; i++)
+		if (strcmp(objetos2[i], esperados[i]) == 0)
+			comparaciones_exitosas++;
+
+	pa2m_afirmar(comparaciones_exitosas == cantidad,
+		     "Todos los nombres de objeto son los esperados");
+*/
+
+	free(poseidos);
+	free(poseidos2);
+	sala_destruir(sala);
+}
+
+
+void pruebas_agarrar_objeto()
+{
+	const char *nombre = "llave";
+
+	pa2m_afirmar(sala_agarrar_objeto(NULL, nombre) == false, 
+	"No se puede agarrar un objeto en una sala NULL.");
+
+	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
+						 ARCHIVO_INTERACCIONES_1);
+
+	pa2m_afirmar(sala_agarrar_objeto(sala, NULL) == false, 
+	"No se puede agarrar un objeto con nombre NULL.");
+
+	/*
+	pa2m_afirmar(sala_agarrar_objeto() == true, 
+	"Se agarra un objeto conocido.");
+	*/
+
+	sala_agarrar_objeto(sala, "pokebola");
+	pa2m_afirmar(sala_agarrar_objeto(sala, "pokebola") == false, 
+	"No se puede volver a agarrar un objeto ya poseido.");
+
+	pa2m_afirmar(sala_agarrar_objeto(sala, "anillo") == false, 
+	"No se puede agarrar un objeto no conocido.");
+
+	pa2m_afirmar(sala_agarrar_objeto(sala, "interruptor") == false, 
+	"No se puede agarrar un objeto no asible.");
+
+	pa2m_afirmar(sala_agarrar_objeto(sala, "bomba") == false, 
+	"No se puede agarrar un objeto no existente.");
+
+	sala_destruir(sala);
+}
+
+
 void pruebas_describir_objeto()
 {
-	const char *nombre = "Habitación";
-
-	pa2m_afirmar(sala_describir_objeto(NULL, nombre) == NULL, 
+	pa2m_afirmar(sala_describir_objeto(NULL, "habitacion") == NULL, 
 	"No se puede obtener descripción de un objeto en una sala NULL.");
 
 	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
 						 ARCHIVO_INTERACCIONES_1);
 
 	pa2m_afirmar(sala_describir_objeto(sala, NULL) == NULL,
-	"No se puede obtener descripción de un objeto NULL.");
+	"No se puede obtener descripción de un objeto con nombre NULL.");
+
 	/*
 	pa2m_afirmar(sala_describir_objeto(sala, ) ==, 
 	"Se retorna la descripcion de un objeto conocido.");
-
-	pa2m_afirmar(sala_describir_objeto(sala, ) ==, 
+	
+	sala_agarrar_objeto(sala, "llave");
+	pa2m_afirmar(sala_describir_objeto(sala, "llave") ==, 
 	"Se retorna la descripcion de un objeto poseido.");
 	*/
+
 	pa2m_afirmar(sala_describir_objeto(sala, "Mechero") == NULL, 
 	"No se retorna la descripcion de un objeto que no existe.");
 
-//	pa2m_afirmar(sala_describir_objeto(sala, ) == NULL, 
-//	"No se retorna la descripcion de un objeto no conocido.");
+	pa2m_afirmar(sala_describir_objeto(sala, "puerta") == NULL, 
+	"No se retorna la descripcion de un objeto no conocido.");
 
 	sala_destruir(sala);
 }
@@ -237,9 +365,14 @@ int main()
 	pa2m_nuevo_grupo("Pruebas del vector de nombres");
 	pruebas_nombre_objetos();
 
+	pa2m_nuevo_grupo("Pruebas del vector de nombres conocidos");
+	pruebas_nombre_objetos_conocidos();
 
+	pa2m_nuevo_grupo("Pruebas del vector de nombres poseidos");
+	pruebas_nombre_objetos_poseidos();
 
-
+	pa2m_nuevo_grupo("Pruebas de agarrado de objetos");
+	pruebas_agarrar_objeto();
 
 	pa2m_nuevo_grupo("Pruebas de descripción de objetos");
 	pruebas_describir_objeto();
