@@ -7,6 +7,10 @@
 #include "string.h"
 #include <stdbool.h>
 
+#define ARCHIVO_OBJETOS_1 "ejemplo/objetos.txt"
+#define ARCHIVO_INTERACCIONES_1 "ejemplo/interacciones.txt"
+
+
 void pruebasCrearObjeto()
 {
 	pa2m_afirmar(objeto_crear_desde_string(NULL) == NULL,
@@ -43,6 +47,7 @@ void pruebasCrearObjeto()
 	free(objeto1);
 	free(objeto2);
 }
+
 
 void pruebasCrearInteracciones()
 {
@@ -86,6 +91,7 @@ void pruebasCrearInteracciones()
 	free(inter2);
 }
 
+
 void pruebas_crear_sala()
 {
 	pa2m_afirmar(sala_crear_desde_archivos("/ASD/ASD/", "dasD/sa2asdd") == NULL,
@@ -105,6 +111,7 @@ void pruebas_crear_sala()
 
 	sala_destruir(sala);
 }
+
 
 void pruebas_nombre_objetos()
 {
@@ -141,6 +148,42 @@ void pruebas_nombre_objetos()
 	sala_destruir(sala);
 }
 
+
+void pruebas_describir_objeto()
+{
+	const char *nombre = "Habitación";
+
+	pa2m_afirmar(sala_describir_objeto(NULL, nombre) == NULL, 
+	"No se puede obtener descripción de un objeto en una sala NULL.");
+
+	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
+						 ARCHIVO_INTERACCIONES_1);
+
+	pa2m_afirmar(sala_describir_objeto(sala, NULL) == NULL,
+	"No se puede obtener descripción de un objeto NULL.");
+	/*
+	pa2m_afirmar(sala_describir_objeto(sala, ) ==, 
+	"Se retorna la descripcion de un objeto conocido.");
+
+	pa2m_afirmar(sala_describir_objeto(sala, ) ==, 
+	"Se retorna la descripcion de un objeto poseido.");
+	*/
+	pa2m_afirmar(sala_describir_objeto(sala, "Mechero") == NULL, 
+	"No se retorna la descripcion de un objeto que no existe.");
+
+//	pa2m_afirmar(sala_describir_objeto(sala, ) == NULL, 
+//	"No se retorna la descripcion de un objeto no conocido.");
+
+	sala_destruir(sala);
+}
+
+
+void pruebas_ejecutar_interaccion()
+{
+
+}
+
+
 void pruebas_interacciones()
 {
 	pa2m_afirmar(sala_es_interaccion_valida(NULL, "hacer", NULL, NULL) == false,
@@ -162,7 +205,7 @@ void pruebas_interacciones()
 	sala_destruir(sala);
 }
 
-/*
+
 void pruebas_escape_sala()
 {
 	pa2m_afirmar(!sala_escape_exitoso(NULL), 
@@ -173,10 +216,12 @@ void pruebas_escape_sala()
 	pa2m_afirmar(!sala_escape_exitoso(sala), 
 		     "Aun no se pudo escapar de la sala.");
 
+	/* COMPLETAR
 	pa2m_afirmar(sala_escape_exitoso(sala), 
 		     "Se escapó exitosamente de la sala.");
+	*/
 }
-*/
+
 
 int main()
 {
@@ -192,14 +237,21 @@ int main()
 	pa2m_nuevo_grupo("Pruebas del vector de nombres");
 	pruebas_nombre_objetos();
 
+
+
+
+
+	pa2m_nuevo_grupo("Pruebas de descripción de objetos");
+	pruebas_describir_objeto();
+
+	pa2m_nuevo_grupo("Pruebas de ejecución de interacción");
+	pruebas_ejecutar_interaccion();
+
 	pa2m_nuevo_grupo("Pruebas de interacciones");
 	pruebas_interacciones();
 
-
-
-
-//	pa2m_nuevo_grupo("Pruebas de escape de sala");
-//	pruebas_escape_sala();
+	pa2m_nuevo_grupo("Pruebas de escape de sala");
+	pruebas_escape_sala();
 
 	return pa2m_mostrar_reporte();
 }
