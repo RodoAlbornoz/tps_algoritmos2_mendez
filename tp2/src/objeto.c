@@ -5,17 +5,17 @@
 #include <stdlib.h>
 
 #define MAX_ASIBLE 6
+#define FORMATO_LECTURA_OBJETOS "%[^;];%[^;];%[^\n]"
 
 /*
- * PRE: Se recibe un string que solo puede ser true o false, que dice si el objeto es asible o no.
- * POST: Se retorna un bolleano que dice si el objeto es asible (true) o no (false)
+ * Se recibe un string que solo puede ser true o false, que dice si el objeto 
+ * es asible o no.
+ *
+ * Se retorna un booleano que dice si el objeto es asible (true) o no (false)
  */
 bool objeto_es_asible(char asible[MAX_ASIBLE])
 {
-	if (strcmp(asible, "true") == 0)
-		return true;
-		
-	return false;
+	return strcmp(asible, "true") == 0;
 }
 
 
@@ -28,7 +28,8 @@ struct objeto *objeto_crear_desde_string(const char *string)
 	char descripcion[MAX_TEXTO];
 	char asible[MAX_ASIBLE];
 
-	int elementos_leidos = sscanf(string, "%[^;];%[^;];%[^\n]", nombre, descripcion, asible);
+	int elementos_leidos = sscanf(string, FORMATO_LECTURA_OBJETOS, nombre, 
+				      descripcion, asible);
 	if (elementos_leidos != 3)
 		return NULL;
 

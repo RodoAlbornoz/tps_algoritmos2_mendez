@@ -1,12 +1,17 @@
 #include "estructuras.h"
+#include "sala.h"
 #include "interaccion.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
+#define FORMATO_LECTURA_INTERACCIONES "%[^;];%[^;];%[^;];%c:%[^:]:%[^\n]"
+
 /*
- * PRE: Se recibe el caracter del tipo de accion leido de una linea del archivo
- * POST: Se devuelve un tipo de accion, del enum tipo_accion, que corresponde al caracter leido.
+ * Se recibe el caracter de un tipo de accion
+ *
+ * Se devuelve el tipo de accion que corresponde al caracter leido (Si el 
+ * caracter NO corresponde a ninguna accion, la accion es inválida)
  */
 enum tipo_accion accion_segun_caracter(char tipo_accion)
 {
@@ -25,6 +30,8 @@ enum tipo_accion accion_segun_caracter(char tipo_accion)
 	case 'm':
 		accion_objeto = MOSTRAR_MENSAJE;
 		break;
+	case 'g':
+		accion_objeto = ESCAPAR;
 	default:
 		accion_objeto = ACCION_INVALIDA;
 		break;
@@ -35,8 +42,10 @@ enum tipo_accion accion_segun_caracter(char tipo_accion)
 
 
 /*
- * PRE: Se recibe un string del nombre de algun objeto involucrado en una interaccion (Excepto el primero)
- * POST: Se devuelve el mismo string del nombre, si el nombre no es "_" (Nombre de objeto vacio). Si es "_", se devuelve un string vacio.
+ * Se recibe un string del nombre de algun objeto
+ * 
+ * Se devuelve un string vacio si el string del nombre es "_" (Nombre de objeto 
+ * vacio) y si no, se devuelve el mismo string del nombre.
  */
 const char *objeto_interaccion(char objeto[MAX_NOMBRE])
 {
@@ -59,7 +68,9 @@ struct interaccion *interaccion_crear_desde_string(const char *string)
 	char objeto_accion[MAX_NOMBRE];
 	char mensaje[MAX_TEXTO];
 
-	int elementos_leidos = sscanf(string, "%[^;];%[^;];%[^;];%c:%[^:]:%[^\n]", objeto, verbo, objeto_parametro, &tipo_de_accion, objeto_accion, mensaje);
+	int elementos_leidos = sscanf(string, FORMATO_LECTURA_INTERACCIONES, 
+				      objeto, verbo, objeto_parametro, 
+				      &tipo_de_accion, objeto_accion, mensaje);
 	if (elementos_leidos != 6)
 		return NULL;
 
@@ -69,7 +80,8 @@ struct interaccion *interaccion_crear_desde_string(const char *string)
 
 	strcpy(interaccion->objeto, objeto);
 	strcpy(interaccion->verbo, verbo);
-	strcpy(interaccion->objeto_parametro, objeto_interaccion(objeto_parametro));	
+	strcpy(interaccion->objeto_parametro, 
+	       objeto_interaccion(objeto_parametro));	
 
 	interaccion->accion.tipo = accion_segun_caracter(tipo_de_accion);
 	if (interaccion->accion.tipo == ACCION_INVALIDA) {

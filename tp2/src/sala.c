@@ -9,50 +9,62 @@
 #include "TDAs/lista.h"
 #include "TDAs/hash.h"
 
+#define CAPACIDAD_INICIAL_OBJETOS 5
 #define LARGO_MAX_LINEA 1024
 
 struct sala {
 	hash_t *objetos;
+	hash_t *objetos_conocidos;
 	lista_t *interacciones;
 	bool escapado;
 };
 
+struct info_objeto {
+	char descripcion[MAX_TEXTO];
+	bool es_asible;
+};
+
+
 /*
- * PRE: Se recibe el path al archivo de texto objetos, la referencia a objetos->sala, y la referencia a la cantidad de objetos
- * POST: Se devuelve un status sobre cómo se proceso la lectura del archivo (-1 es porque algo falló)
+ * Se recibe la ruta al archivo de objetos y un puntero a un puntero a hash que
+ * almacena la información de los objetos de la sala
+ * 
+ * Se lee el archivo de objetos, se guarda su información en el hash de 
+ * objetos, y se devuelve el status de leer el archivo y guardar su información
+ * (-1 si hubo error, cualquier otra cosa si no lo hubo)
  */
-int lectura_archivo_objetos(const char *objetos, struct objeto ***ref_vector_objetos, int* cantidad_objetos)
+int lectura_archivo_objetos(const char *objetos, hash_t *hash_objetos)
 {
 	FILE *archivo_objetos = fopen(objetos, "r");
 	if(!archivo_objetos)
 		return -1;
 
 	char linea_objetos[LARGO_MAX_LINEA];
-	char *leida_objetos = fgets(linea_objetos, LARGO_MAX_LINEA, archivo_objetos);
+	char *leida_objetos = fgets(linea_objetos, LARGO_MAX_LINEA, 
+				    archivo_objetos);
 
 	while (leida_objetos) {
-		// ARREGLAR DESDE ACA
-		struct objeto **bloque_objeto = realloc(*ref_vector_objetos, (unsigned) ((*cantidad_objetos)+1) * sizeof(struct objeto));
-		if (bloque_objeto == NULL) {
-			fclose(archivo_objetos);
-			return -1;
-		}
-		// HASTA ACA
-
-		struct objeto *objeto_sala = objeto_crear_desde_string(linea_objetos);
+		struct objeto *objeto_sala = 
+				objeto_crear_desde_string(linea_objetos);
 		if (objeto_sala == NULL) {
-			free(bloque_objeto);
+			hash_destruir(hash_objetos);
 			fclose(archivo_objetos);
 			return -1;
 		}
 
-		// ARREGLAR DESDE ACA
-		bloque_objeto[*cantidad_objetos] = objeto_sala;
-		(*cantidad_objetos)++;
-		*ref_vector_objetos = bloque_objeto;
-		// HASTA ACA
+		struct info_objeto *info_objeto = 
+					malloc(sizeof(struct info_objeto));
+		if (info_objeto == NULL)
+			return -1;
 
-		leida_objetos = fgets(linea_objetos, LARGO_MAX_LINEA, archivo_objetos);
+		strcpy(info_objeto->descripcion, objeto_sala->descripcion);
+		info_objeto->es_asible = objeto_sala->es_asible;
+
+		hash_objetos = hash_insertar(hash_objetos, 
+				objeto_sala->nombre, info_objeto, NULL);
+
+		leida_objetos = fgets(linea_objetos, LARGO_MAX_LINEA, 
+				      archivo_objetos);
 	}
 
 	fclose(archivo_objetos);
@@ -61,41 +73,39 @@ int lectura_archivo_objetos(const char *objetos, struct objeto ***ref_vector_obj
 
 
 /*
- * PRE: Se recibe el path al archivo de texto interacciones, la referencia a objetos->interacciones, y la referencia a la cantidad de interacciones
- * POST: Se devuelve un status sobre cómo se proceso la lectura del archivo (-1 es porque algo falló)
+ * Se recibe la ruta al archivo de interacciones y un puntero a un puntero a 
+ * lista que almacena la información de las interacciones posibles de los 
+ * objetos de la sala
+ * 
+ * Se lee el archivo de interacciones, se guarda su información en la lista de 
+ * interacciones, y se devuelve el status de leer el archivo y guardar su 
+ * información (-1 si hubo error, cualquier otra cosa si no lo hubo)
  */
-int lectura_archivo_interacciones(const char *interacciones, struct interaccion ***ref_vector_interacciones, int* cantidad_interacciones)
+int lectura_archivo_interacciones(const char *interacciones, 
+				  lista_t *lista_interacciones)
 {
 	FILE *archivo_interacciones = fopen(interacciones, "r");
 	if(!archivo_interacciones)
 		return -1;
 
 	char linea_interacciones[LARGO_MAX_LINEA];
-	char *leida_interacciones = fgets(linea_interacciones, LARGO_MAX_LINEA, archivo_interacciones);
+	char *leida_interacciones = fgets(linea_interacciones, LARGO_MAX_LINEA, 
+					  archivo_interacciones);
 
 	while (leida_interacciones) {
-		// ARREGLAR DESDE ACA
-		struct interaccion **bloque_interaccion = realloc(*ref_vector_interacciones, (unsigned) ((*cantidad_interacciones)+1) * sizeof(struct interaccion));
-		if (bloque_interaccion == NULL) {
-			fclose(archivo_interacciones);
-			return -1;
-		}
-		// HASTA ACA
-
-		struct interaccion *interaccion_sala = interaccion_crear_desde_string(linea_interacciones);
+		struct interaccion *interaccion_sala = 
+			interaccion_crear_desde_string(linea_interacciones);
 		if (interaccion_sala == NULL) {
-			free(bloque_interaccion);
+			lista_destruir(lista_interacciones);
 			fclose(archivo_interacciones);
 			return -1;
 		}
 
-		// ARREGLAR DESDE ACA
-		bloque_interaccion[*cantidad_interacciones] = interaccion_sala;
-		(*cantidad_interacciones)++;
-		*ref_vector_interacciones = bloque_interaccion;
-		// HASTA ACA
+		lista_interacciones = lista_insertar(lista_interacciones, 
+						      interaccion_sala);
 
-		leida_interacciones = fgets(linea_interacciones, LARGO_MAX_LINEA, archivo_interacciones);
+		leida_interacciones = fgets(linea_interacciones, 
+				LARGO_MAX_LINEA, archivo_interacciones);
 	}
 
 	fclose(archivo_interacciones);
@@ -103,24 +113,44 @@ int lectura_archivo_interacciones(const char *interacciones, struct interaccion 
 }
 
 
-sala_t *sala_crear_desde_archivos(const char *objetos, const char *interacciones)
+/*
+ * Se reserva memoria para la sala y se inicializan sus campos (Creando las
+ * estructuras correspondientes para almacenar objetos e interacciones)
+ */
+sala_t *inicializar_sala()
 {
 	sala_t *sala = malloc(sizeof(struct sala));
 	if (sala == NULL)
 		return NULL;
 
 	sala->escapado = false;
-	sala->objetos = hash_crear(10); // POR QUÉ 10?
+	sala->objetos = hash_crear(CAPACIDAD_INICIAL_OBJETOS);
+	sala->objetos_conocidos = hash_crear(CAPACIDAD_INICIAL_OBJETOS);
 	sala->interacciones = lista_crear();
-	if (sala->objetos == NULL || sala->interacciones == NULL) {
+	if (sala->objetos == NULL || sala->interacciones == NULL || 
+	    sala->objetos_conocidos == NULL) {
 		sala_destruir(sala);
 		return NULL;
 	}
 
+	return sala;
+}
+
+
+sala_t *sala_crear_desde_archivos(const char *objetos, 
+				  const char *interacciones)
+{
+	if (objetos == NULL || interacciones == NULL)
+		return NULL;
+
+	sala_t *sala = inicializar_sala();
+	if (sala == NULL)
+		return NULL;
+
 	int status_objetos = lectura_archivo_objetos(objetos, 
-						     &(sala->objetos));
+						     sala->objetos);
 	int status_interacciones = lectura_archivo_interacciones(interacciones, 
-						&(sala->interacciones));
+						sala->interacciones);
 	size_t cantidad_objetos = hash_cantidad(sala->objetos);
 	size_t cantidad_interacciones = lista_tamanio(sala->interacciones);
 
@@ -142,8 +172,9 @@ char **sala_obtener_nombre_objetos(sala_t *sala, int *cantidad)
 		return NULL;
 	}
 
-	// ARREGLAR DESDE ACA
-	char **vector_nombres = malloc((unsigned) sala->cantidad_objetos * sizeof(char *));
+	return NULL;
+
+	char **vector_nombres = malloc((unsigned) lista_tamanio(sala->objetos) * sizeof(char *));
 	if (vector_nombres == NULL) {
 		free(sala);
 		if (cantidad != NULL)
@@ -151,12 +182,13 @@ char **sala_obtener_nombre_objetos(sala_t *sala, int *cantidad)
 		return NULL;
 	}
 
-	for (int i = 0; i < sala->cantidad_objetos; i++)
-		vector_nombres[i] = sala->objetos[i]->nombre;
+	for (int i = 0; i < hash_cantidad(sala->objetos); i++)
+		vector_nombres[i] = hash_obtener(sala->objetos, )
+		sala->objetos;
+		//sala->objetos[i]->nombre;
 
 	if (cantidad != NULL)
-		*cantidad = sala->cantidad_objetos;
-	// HASTA ACA
+		*cantidad = hash_cantidad(sala->objetos);
 
 	return vector_nombres;
 }
@@ -176,7 +208,10 @@ char **sala_obtener_nombre_objetos(sala_t *sala, int *cantidad)
  */
 char **sala_obtener_nombre_objetos_conocidos(sala_t *sala, int *cantidad)
 {
+	if (sala == NULL)
+		return NULL;
 
+	return NULL;
 }
 
 
@@ -193,7 +228,10 @@ char **sala_obtener_nombre_objetos_conocidos(sala_t *sala, int *cantidad)
  */
 char **sala_obtener_nombre_objetos_poseidos(sala_t *sala, int *cantidad)
 {
+	if (sala == NULL)
+		return NULL;
 
+	return NULL;
 }
 
 
@@ -206,7 +244,10 @@ char **sala_obtener_nombre_objetos_poseidos(sala_t *sala, int *cantidad)
  */
 bool sala_agarrar_objeto(sala_t *sala, const char *nombre_objeto)
 {
+	if (sala == NULL)
+		return false;
 
+	return true;
 }
 
 
@@ -217,7 +258,10 @@ bool sala_agarrar_objeto(sala_t *sala, const char *nombre_objeto)
  */
 char* sala_describir_objeto(sala_t* sala, const char *nombre_objeto)
 {
+	if (sala == NULL)	
+		return NULL;
 
+	return NULL;
 }
 
 
@@ -235,9 +279,12 @@ int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 			      void (*mostrar_mensaje)(const char *mensaje,
 						      enum tipo_accion accion,
 						      void *aux),
-			      void *aux);
+			      void *aux)
 {
+	if (sala == NULL || mostrar_mensaje == NULL)
+		return 0;
 
+	return 0;
 }
 
 
@@ -246,15 +293,13 @@ bool sala_es_interaccion_valida(sala_t *sala, const char *verbo, const char *obj
 {
 	if (sala == NULL || verbo == NULL || objeto1 == NULL || objeto2 == NULL)
 		return false;
-
-	// ARREGLAR DESDE ACA
-	for (int i = 0; i < sala->cantidad_interacciones; i++) {
+		
+	for (int i = 0; i < lista_tamanio(sala->interacciones); i++) {
 		if ((strcmp(objeto1, sala->interacciones[i]->objeto) == 0) && 
 		   (strcmp(objeto2, sala->interacciones[i]->objeto_parametro) == 0) && 
 		   (strcmp(verbo, sala->interacciones[i]->verbo) == 0))
 			return true;
 	}
-	// HASTA ACA
 
 	return false;
 }
@@ -277,19 +322,8 @@ void sala_destruir(sala_t *sala)
 	if (sala == NULL)
 		return;
 
-	// ARREGLAR DESDE ACA
-	for (int i = 0; i < sala->cantidad_objetos; i++)
-		free(sala->objetos[i]); 
-
-	for (int j = 0; j < sala->cantidad_interacciones; j++)
-		free(sala->interacciones[j]);
-
-	if (sala->objetos != NULL)
-		free(sala->objetos);
-
-	if (sala->interacciones != NULL)
-		free(sala->interacciones);
-	// HASTA ACA
+	hash_destruir(sala->objetos);
+	lista_destruir(sala->interacciones);
 
 	free(sala);
 }
