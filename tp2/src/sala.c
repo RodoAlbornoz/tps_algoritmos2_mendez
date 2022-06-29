@@ -1,0 +1,431 @@
+#include "estructuras.h"
+#include "sala.h"
+#include "interaccion.h"
+#include "objeto.h"
+#include "lista.h"
+#include "hash.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_LINEA 1024
+
+struct sala {
+	hash_t *objetos;
+	hash_t *objetos_conocidos;
+	hash_t *objetos_poseidos;
+	lista_t *interacciones;
+	bool escapado;
+};
+
+struct nombres {
+	char **vector_nombres;
+	size_t cantidad;
+};
+
+struct elementos_interaccion {
+	const char *verbo;
+	const char *objeto1;
+	const char *objeto2;
+	bool es_valida;
+};
+
+
+/*
+ * Se recibe la linea actual leida del archivo, el archivo con los objetos
+ * y un puntero a hash que almacena la información de los objetos de la sala
+ *
+ * Se guarda cada objeto leido del archivo dentro del hash y se retorna el
+ * hash de los objetos
+ */
+hash_t *guardar_objeto(char linea[MAX_LINEA], FILE *archivo_objetos, 
+		    hash_t *hash_objetos)
+{
+	struct objeto *objeto = objeto_crear_desde_string(linea);
+	if (objeto == NULL) {
+		hash_destruir_todo(hash_objetos, free);
+		fclose(archivo_objetos);
+		return NULL;
+	}
+
+	hash_objetos = hash_insertar(hash_objetos, objeto->nombre, objeto,
+				     NULL);
+	if (hash_objetos == NULL) {
+		hash_destruir_todo(hash_objetos, free);
+		fclose(archivo_objetos);
+		return NULL;
+	}
+	return hash_objetos;
+}
+
+
+/*
+ * Se recibe la ruta al archivo de objetos y un puntero a hash que almacena la
+ * información de los objetos de la sala
+ * 
+ * Se lee el archivo de objetos, se guarda su información en el hash y se
+ * retorna el hash con la información de los objetos de la sala
+ */
+hash_t *leer_objetos(const char *objetos, hash_t *hash_objetos)
+{
+	FILE *archivo_objetos = fopen(objetos, "r");
+	if(!archivo_objetos) {
+		hash_destruir_todo(hash_objetos, free);
+		return NULL;
+	}
+
+	char linea[MAX_LINEA];
+	char *lectura = fgets(linea, MAX_LINEA, archivo_objetos);
+	while (lectura) {
+		hash_objetos = guardar_objeto(linea, archivo_objetos, 
+					       hash_objetos);
+		if (hash_objetos == NULL)
+			return NULL;
+
+		lectura = fgets(linea, MAX_LINEA, archivo_objetos);
+	}
+
+	fclose(archivo_objetos);
+	return hash_objetos;
+}
+
+
+/*
+ * Se recibe la linea actual leida del archivo, el archivo con las 
+ * interacciones y un puntero a lista que almacena la información de las
+ * interacciones de la sala
+ *
+ * Se guarda cada interaccion leida del archivo dentro de la lista y se retorna
+ * la lista con las interacciones
+ */
+lista_t *guardar_interaccion(char linea[MAX_LINEA], FILE *archivo_interacciones,
+		    	 lista_t *lista_interacciones)
+{
+	struct interaccion *interaccion = interaccion_crear_desde_string(linea);
+	if (interaccion == NULL) {
+		lista_destruir_todo(lista_interacciones, free);
+		fclose(archivo_interacciones);
+		return NULL;
+	}
+
+	lista_interacciones = lista_insertar(lista_interacciones, interaccion);
+	if (lista_interacciones == NULL) {
+		lista_destruir_todo(lista_interacciones, free);
+		fclose(archivo_interacciones);
+		return NULL;
+	}
+
+	return lista_interacciones;
+}
+
+
+/*
+ * Se recibe la ruta al archivo de interacciones y un puntero a lista que 
+ * almacena la información de las interacciones de la sala
+ * 
+ * Se lee el archivo de interacciones, se guarda su información en la lista y
+ * se retorna la lista con la información de las interacciones de la sala
+ */
+lista_t *leer_interacciones(const char *interacciones, 
+			    lista_t *lista_interacciones)
+{
+	FILE *archivo_interacciones = fopen(interacciones, "r");
+	if(!archivo_interacciones) {
+		lista_destruir_todo(lista_interacciones, free);
+		return NULL;
+	}
+
+	char linea[MAX_LINEA];
+	char *lectura = fgets(linea, MAX_LINEA, archivo_interacciones);
+	while (lectura) {
+		lista_interacciones = guardar_interaccion(linea, 
+				archivo_interacciones, lista_interacciones);
+		if (lista_interacciones == NULL)
+			return NULL;
+
+		lectura = fgets(linea, MAX_LINEA, archivo_interacciones);
+	}
+
+	fclose(archivo_interacciones);
+	return lista_interacciones;
+}
+
+
+/*
+ * Se reserva memoria para la sala y se inicializan sus campos (Creando las
+ * estructuras correspondientes para almacenar objetos e interacciones), 
+ * retornando la sala
+ */
+sala_t *inicializar_sala()
+{
+	sala_t *sala = malloc(sizeof(struct sala));
+	if (sala == NULL)
+		return NULL;
+
+	sala->escapado = false;
+	sala->objetos = hash_crear(10);
+	sala->objetos_conocidos = hash_crear(5);
+	sala->objetos_poseidos = hash_crear(5);
+	sala->interacciones = lista_crear();
+
+	if (sala->objetos == NULL || sala->interacciones == NULL || 
+	    sala->objetos_conocidos == NULL ||
+	    sala->objetos_poseidos == NULL) {
+		sala_destruir(sala);
+		return NULL;
+	}
+
+	return sala;
+}
+
+
+sala_t *sala_crear_desde_archivos(const char *objetos, 
+				  const char *interacciones)
+{
+	if (objetos == NULL || interacciones == NULL)
+		return NULL;
+
+	sala_t *sala = inicializar_sala();
+	if (sala == NULL)
+		return NULL;
+
+	sala->objetos = leer_objetos(objetos, sala->objetos);
+	sala->interacciones = leer_interacciones(interacciones, 
+						sala->interacciones);
+
+	size_t cantidad_objetos = hash_cantidad(sala->objetos);
+	size_t cantidad_interacciones = lista_tamanio(sala->interacciones);
+
+	if (sala->objetos == NULL || sala->interacciones == NULL ||
+	    cantidad_objetos == 0 || cantidad_interacciones == 0) {
+		sala_destruir(sala);
+		return NULL;
+	}
+	return sala;
+}
+
+
+/*
+ * Se recibe el nombre del objeto, el objeto y la estructura que contiene el 
+ * vector de nombres junto a su cantidad
+ * 
+ * Se guarda el nombre del objeto dentro del vector de nombres y se actualiza
+ * la cantidad de nombres guardados
+ */
+bool guardar_nombre(const char *nombre, void *objeto, 
+		    void *estructura_nombres)
+{
+	struct nombres *nombres = estructura_nombres;
+	char *nombre_objeto = (char *) nombre;
+
+	nombres->vector_nombres[nombres->cantidad] = nombre_objeto;
+	(nombres->cantidad)++;
+
+	return true;
+}
+
+
+/*
+ * Se recibe un puntero a un hash de objetos (Ya sean totales, conocidos o
+ * poseidos) y un puntero a la cantidad de objetos de ese tipo
+ * 
+ * Se devuelve un vector dinámico que contiene los nombres de los objetos
+ * de la sala, según sean los objetos totales de la sala, los conocidos o
+ * los poseidos
+ */
+char **obtener_nombres_objetos(hash_t *objetos, int *cantidad)
+{
+	if (objetos == NULL) {
+		if (cantidad != NULL)
+			*cantidad = -1;
+		return NULL;
+	}
+
+	size_t cantidad_nombres = hash_cantidad(objetos);
+	char **vector_nombres = malloc((unsigned int) cantidad_nombres *
+					sizeof(char *));
+	if (vector_nombres == NULL) {
+		if (cantidad != NULL)
+			*cantidad = -1; 
+		return NULL;
+	}
+
+	struct nombres nombres; 
+	nombres.cantidad = 0;
+	nombres.vector_nombres = vector_nombres;
+
+	hash_con_cada_clave(objetos, guardar_nombre, &nombres);
+
+	if (cantidad != NULL)
+		*cantidad = (int) cantidad_nombres;
+
+	return vector_nombres;
+}
+
+
+char **sala_obtener_nombre_objetos(sala_t *sala, int *cantidad)
+{
+	if (sala == NULL) {
+		if (cantidad != NULL)
+			*cantidad = -1;
+		return NULL;
+	}
+
+	return obtener_nombres_objetos(sala->objetos, cantidad);
+}
+
+
+char **sala_obtener_nombre_objetos_conocidos(sala_t *sala, int *cantidad)
+{
+	if (sala == NULL) {
+		if (cantidad != NULL)
+			*cantidad = -1;
+		return NULL;
+	}
+
+	return obtener_nombres_objetos(sala->objetos_conocidos, cantidad);
+}
+
+
+char **sala_obtener_nombre_objetos_poseidos(sala_t *sala, int *cantidad)
+{
+	if (sala == NULL) {
+		if (cantidad != NULL)
+			*cantidad = -1;
+		return NULL;
+	}
+
+	return obtener_nombres_objetos(sala->objetos_poseidos, cantidad);
+}
+
+
+bool sala_agarrar_objeto(sala_t *sala, const char *nombre_objeto)
+{
+	if (sala == NULL || nombre_objeto == NULL)
+		return false;
+
+	struct objeto *objeto = hash_obtener(sala->objetos_conocidos, 
+					     nombre_objeto);
+
+	if (objeto == NULL)
+		return false;
+
+	if (!objeto->es_asible)
+		return false;
+
+	sala->objetos_poseidos = hash_insertar(sala->objetos_poseidos, 
+					nombre_objeto, objeto, NULL);
+
+	return true;
+}
+
+
+char* sala_describir_objeto(sala_t* sala, const char *nombre_objeto)
+{
+	if (sala == NULL || nombre_objeto == NULL)	
+		return NULL;
+
+	struct objeto *objeto = hash_obtener(sala->objetos_conocidos, 
+					     nombre_objeto);
+
+	if (objeto == NULL) {
+		objeto = hash_obtener(sala->objetos_poseidos, nombre_objeto);
+		if (objeto == NULL)
+			return NULL;
+	}
+
+	return objeto->descripcion;
+}
+
+//SEGUIR ACA
+int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
+			      const char *objeto1, const char *objeto2,
+			      void (*mostrar_mensaje)(const char *mensaje,
+						      enum tipo_accion accion,
+						      void *aux),
+			      void *aux)
+{
+	if (sala == NULL || mostrar_mensaje == NULL || verbo == NULL || 
+	   objeto1 == NULL || objeto2 == NULL)
+		return 0;
+
+	
+
+	return 0;
+}
+
+
+/*
+ *
+ *
+ */
+bool verificar_interaccion(void *interaccion_actual, 
+			   void *elementos_interaccion)
+{
+	struct interaccion *interaccion = interaccion_actual;
+	struct elementos_interaccion *interaccion_a_verificar = 
+						elementos_interaccion;
+
+	if (strcmp(interaccion->objeto, interaccion_a_verificar->objeto1) == 0 &&
+	    (strcmp(interaccion->objeto_parametro, interaccion_a_verificar->objeto2) == 0) &&
+	    (strcmp(interaccion->verbo, interaccion_a_verificar->verbo) == 0)) {
+		interaccion_a_verificar->es_valida = true;
+		return false;
+	    }
+
+	return true;
+}
+
+
+bool sala_es_interaccion_valida(sala_t *sala, const char *verbo, 
+				const char *objeto1, const char *objeto2)
+{
+	if (sala == NULL || verbo == NULL || objeto1 == NULL || 
+	    objeto2 == NULL)
+		return false;
+
+	bool interaccion_valida = false;
+
+	struct elementos_interaccion *elementos_interaccion = 
+				malloc(sizeof(struct elementos_interaccion));
+	if (elementos_interaccion == NULL)
+		return false;
+	elementos_interaccion->objeto1 = objeto1;
+	elementos_interaccion->objeto2 = objeto2;
+	elementos_interaccion->verbo = verbo;
+	elementos_interaccion->es_valida = false;
+
+	lista_con_cada_elemento(sala->interacciones, verificar_interaccion, 
+				elementos_interaccion);
+	
+	if (elementos_interaccion->es_valida)
+		interaccion_valida = true;
+
+	free(elementos_interaccion);
+
+	return interaccion_valida;
+}
+
+
+bool sala_escape_exitoso(sala_t *sala)
+{
+	if (sala == NULL)
+		return false;
+
+	return sala->escapado;
+}
+
+
+void sala_destruir(sala_t *sala)
+{
+	if (sala == NULL)
+		return;
+
+	hash_destruir_todo(sala->objetos, free);
+	hash_destruir_todo(sala->objetos_conocidos, free);
+	hash_destruir_todo(sala->objetos_poseidos, free);
+	lista_destruir_todo(sala->interacciones, free);
+
+	free(sala);
+}
