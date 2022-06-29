@@ -28,7 +28,7 @@ struct elementos_interaccion {
 	const char *verbo;
 	const char *objeto1;
 	const char *objeto2;
-	bool es_valida;
+	bool existe;
 };
 
 
@@ -338,7 +338,89 @@ char* sala_describir_objeto(sala_t* sala, const char *nombre_objeto)
 	return objeto->descripcion;
 }
 
-//SEGUIR ACA
+
+/*
+ * Se recibe un puntero a una interaccion, y strings de los objetos y el verbo
+ * de otra interacción.
+ *
+ * Se retorna si la interacción corresponde con la de los objetos y verbo 
+ * enviados
+ */
+bool interaccion_coincide(struct interaccion *interaccion, const char *verbo,
+			  const char *objeto1, const char *objeto2)
+{
+	return ((strcmp(interaccion->objeto, objeto1) == 0) &&
+	(strcmp(interaccion->objeto_parametro, objeto2) == 0) &&
+	(strcmp(interaccion->verbo, verbo) == 0) );
+}
+
+
+// /*
+//  *
+//  *
+//  */
+// bool objeto_es_conocido(hash_t *objetos_conocidos, const char *nombre)
+// {
+// 	if (strcpy(nombre, "_") == 0)
+// 		return true;
+
+// 	return hash_contiene(objetos_conocidos, nombre);
+// }
+
+
+// /*
+//  *
+//  *
+//  */
+// bool objeto_se_posee(hash_t *objetos_poseidos, const char *nombre)
+// {
+// 	return hash_contiene(objetos_poseidos, nombre);
+// }
+
+
+// /*
+//  *
+//  *
+//  */
+// int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion, 
+// 			 void (*mostrar_mensaje)(const char *mensaje,
+// 						 enum tipo_accion accion,
+// 						 void *aux),
+// 			 void *aux)
+// {
+// 	switch (interaccion->accion.tipo) {
+// 	case MOSTRAR_MENSAJE:
+// 		mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
+// 				aux);		
+// 		break;
+
+// 	case DESCUBRIR_OBJETO:
+// 		mostrar_mensaje(interaccion->accion.mensaje, DESCUBRIR_OBJETO, 
+// 				aux);
+// 		break;
+
+// 	case REEMPLAZAR_OBJETO:
+// 		mostrar_mensaje(interaccion->accion.mensaje, REEMPLAZAR_OBJETO, 
+// 				aux);
+// 		break;
+
+// 	case ELIMINAR_OBJETO:
+// 		mostrar_mensaje(interaccion->accion.mensaje, ELIMINAR_OBJETO, 
+// 				aux);
+// 		break;
+
+// 	case ESCAPAR:
+// 		sala->escapado = true;
+// 		mostrar_mensaje(interaccion->accion.mensaje, ESCAPAR, aux);
+// 		break; 
+
+// 	default:
+// 		mostrar_mensaje(interaccion->accion.mensaje, ACCION_INVALIDA, aux)
+// 		return 0;
+// 	}
+// }
+
+
 int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 			      const char *objeto1, const char *objeto2,
 			      void (*mostrar_mensaje)(const char *mensaje,
@@ -347,32 +429,51 @@ int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 			      void *aux)
 {
 	if (sala == NULL || mostrar_mensaje == NULL || verbo == NULL || 
-	   objeto1 == NULL || objeto2 == NULL)
+	    objeto1 == NULL || objeto2 == NULL)
 		return 0;
 
-	
-
 	return 0;
+
+	// int ejecuciones = 0;
+	// lista_iterador_t *iterador = lista_iterador_crear(sala->interaccion);
+	// if (iterador == NULL)
+	// 	return 0;
+
+	// struct interaccion *interaccion;
+	// for (iterador; lista_iterador_tiene_siguiente(iterador);
+	//      lista_iterador_avanzar(iterador)) {
+	// 	interaccion = lista_iterador_elemento_actual(iterador);
+
+	// 	if (interaccion_coincide(interaccion, verbo, objeto1, objeto2))
+	// 		ejecuciones += ejecutar_interaccion(sala, interaccion, 
+	// 						mostrar_mensaje, aux);
+	// }
+
+	// lista_iterador_destruir(iterador);
+
+	// return ejecuciones;
 }
 
 
 /*
+ * Se recibe un puntero a una interaccion leida de la lista de interacciones,
+ * y un puntero a una estructura con los objetos y verbo de la interaccion a
+ * verificar si existe o es válida
  *
- *
+ * Se retorna un booleano que dice si la interacción existe en la lista (false) 
+ * o si aun no se encontró (true)
  */
-bool verificar_interaccion(void *interaccion_actual, 
-			   void *elementos_interaccion)
+bool verificar_interaccion(void *interaccion1, 
+			   void *interaccion2)
 {
-	struct interaccion *interaccion = interaccion_actual;
-	struct elementos_interaccion *interaccion_a_verificar = 
-						elementos_interaccion;
+	struct interaccion *interaccion_actual = interaccion1;
+	struct elementos_interaccion *interaccion = interaccion2;
 
-	if (strcmp(interaccion->objeto, interaccion_a_verificar->objeto1) == 0 &&
-	    (strcmp(interaccion->objeto_parametro, interaccion_a_verificar->objeto2) == 0) &&
-	    (strcmp(interaccion->verbo, interaccion_a_verificar->verbo) == 0)) {
-		interaccion_a_verificar->es_valida = true;
+	if (interaccion_coincide(interaccion_actual, interaccion->verbo, 
+	    interaccion->objeto1, interaccion->objeto2)) {
+		interaccion->existe = true;
 		return false;
-	    }
+	}
 
 	return true;
 }
@@ -387,22 +488,23 @@ bool sala_es_interaccion_valida(sala_t *sala, const char *verbo,
 
 	bool interaccion_valida = false;
 
-	struct elementos_interaccion *elementos_interaccion = 
+	struct elementos_interaccion *interaccion = 
 				malloc(sizeof(struct elementos_interaccion));
-	if (elementos_interaccion == NULL)
+	if (interaccion == NULL)
 		return false;
-	elementos_interaccion->objeto1 = objeto1;
-	elementos_interaccion->objeto2 = objeto2;
-	elementos_interaccion->verbo = verbo;
-	elementos_interaccion->es_valida = false;
+
+	interaccion->objeto1 = objeto1;
+	interaccion->objeto2 = objeto2;
+	interaccion->verbo = verbo;
+	interaccion->existe = false;
 
 	lista_con_cada_elemento(sala->interacciones, verificar_interaccion, 
-				elementos_interaccion);
-	
-	if (elementos_interaccion->es_valida)
+				interaccion);
+
+	if (interaccion->existe)
 		interaccion_valida = true;
 
-	free(elementos_interaccion);
+	free(interaccion);
 
 	return interaccion_valida;
 }

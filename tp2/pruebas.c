@@ -3,6 +3,7 @@
 #include "src/sala.h"
 #include "src/objeto.h"
 #include "src/interaccion.h"
+#include "src/auxiliar.h"
 
 #include "string.h"
 #include <stdbool.h>
@@ -106,8 +107,8 @@ void pruebas_crear_sala()
 	sala_t *sala = sala_crear_desde_archivos("chanu/obj.dat", "chanu/int.csv");
 
 	pa2m_afirmar(sala != NULL, "Puedo crear la sala a partir de archivos no vacíos");
-//	pa2m_afirmar(sala->cantidad_objetos == 9, "Se leyeron 9 objetos");
-//	pa2m_afirmar(sala->cantidad_interacciones == 9, "Se leyeron 9 interacciones");
+//	pa2m_afirmar(cantidad_objetos(sala) == 9, "Se leyeron 9 objetos");
+//	pa2m_afirmar(cantidad_interacciones(sala) == 9, "Se leyeron 9 interacciones");
 
 	sala_destruir(sala);
 }
