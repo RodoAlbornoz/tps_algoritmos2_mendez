@@ -119,7 +119,8 @@ void pruebas_nombre_objetos()
 	int cantidad = 0;
 	pa2m_afirmar(sala_obtener_nombre_objetos(NULL, &cantidad) == NULL,
 		     "No puedo obtener los nombres de objetos de una sala NULL");
-	pa2m_afirmar(cantidad == -1, "La cantidad es -1 luego de invocar a la función");
+	pa2m_afirmar(cantidad == -1, 
+		     "La cantidad es -1 luego de invocar a la función");
 
 	sala_t *sala = sala_crear_desde_archivos("chanu/obj.dat", "chanu/int.csv");
 
@@ -154,12 +155,11 @@ void pruebas_nombre_objetos_conocidos()
 {
 	int cantidad = 0;
 
-	pa2m_afirmar(
-		sala_obtener_nombre_objetos_conocidos(NULL, &cantidad) == NULL, 
+	pa2m_afirmar(sala_obtener_nombre_objetos_conocidos(NULL, &cantidad) == NULL, 
 	"No se pueden obtener los nombres de objetos conocidos en una sala \n\
 	NULL.");
-	pa2m_afirmar(cantidad == -1, "La cantidad es -1 después de invocada \n\
-				      la función.");
+	pa2m_afirmar(cantidad == -1, 
+		     "La cantidad es -1 después de invocada la función.");
 
 	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
 						 ARCHIVO_INTERACCIONES_1);
@@ -204,8 +204,8 @@ void pruebas_nombre_objetos_poseidos()
 		sala_obtener_nombre_objetos_poseidos(NULL, &cantidad) == NULL, 
 	"No se pueden obtener los nombres de objetos poseidos en una sala \n\
 	NULL.");
-	pa2m_afirmar(cantidad == -1, "La cantidad es -1 después de invocada \n\
-				      la función.");
+	pa2m_afirmar(cantidad == -1, 
+		     "La cantidad es -1 después de invocada la función.");
 
 	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
 						 ARCHIVO_INTERACCIONES_1);
@@ -307,9 +307,68 @@ void pruebas_describir_objeto()
 }
 
 
+void imprimir_mensaje(const char *mensaje, enum tipo_accion accion, void *aux)
+{
+	printf("%s", mensaje);
+}
+
+
 void pruebas_ejecutar_interaccion()
 {
+	int aux;
 
+	pa2m_afirmar(sala_ejecutar_interaccion(NULL, "abrir", "llave", "puerta", 
+	imprimir_mensaje, &aux) == 0, 
+	"No se puede ejecutar una interacción en una sala NULL.");
+
+	sala_t *sala = sala_crear_desde_archivos(ARCHIVO_OBJETOS_1, 
+						 ARCHIVO_INTERACCIONES_1);
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, NULL, "llave", "puerta", 
+	imprimir_mensaje, &aux) == 0, 
+	"No se puede ejecutar una interacción con verbo NULL.");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, "abrir", NULL, "puerta", 
+	imprimir_mensaje, &aux) == 0, 
+	"No se puede ejecutar una interacción con primer objeto NULL.");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, "abrir", "llave", NULL, 
+	imprimir_mensaje, &aux) == 0, 
+	"No se puede ejecutar una interacción con segundo objeto NULL.");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, "romper", "habitacion", "_", 
+	imprimir_mensaje, &aux) == 0, 
+	"No se ejecuta una interaccion inexistente.");	
+
+//	pa2m_afirmar(strcmp(conocidos[1], "pokebola") == 0 && strcmp(conocidos[2], "puerta") == 0,
+//	"Se ejecuta una interacción con accion DESCUBRIR OBJETO");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, "examinar", "habitacion", "_", NULL, NULL) == 2, 
+	"Se ejecuta una accion mas de una vez.");
+	
+
+
+	/*
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
+	"Se ejecuta una interacción con accion MOSTRAR MENSAJE");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
+	"Se ejecuta una interacción con accion REEMPLAZAR OBJETO");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
+	"Se ejecuta una interacción con accion ELIMINAR OBJETO");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
+	"Se ejecuta una interacción con accion ESCAPAR");
+
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
+	"Se ejecuta una interacción con accion ACCION INVALIDA");	
+
+//	Se realiza una accion sin imprimir mensajes
+//	Se realiza una accion imprimiendo mensaje
+	*/
+
+	sala_destruir(sala);
 }
 
 
@@ -378,7 +437,7 @@ int main()
 	pa2m_nuevo_grupo("Pruebas de descripción de objetos");
 	pruebas_describir_objeto();
 
-	pa2m_nuevo_grupo("Pruebas de ejecución de interacción");
+	pa2m_nuevo_grupo("Pruebas de ejecución de interacciones");
 	pruebas_ejecutar_interaccion();
 
 	pa2m_nuevo_grupo("Pruebas de interacciones");

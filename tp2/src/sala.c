@@ -33,20 +33,33 @@ struct elementos_interaccion {
 
 
 /*
- * Se recibe la linea actual leida del archivo, el archivo con los objetos
- * y un puntero a hash que almacena la información de los objetos de la sala
+ * Se recibe la linea actual leida del archivo, el archivo con los objetos,
+ * un puntero a hash que almacena la información de los objetos de la sala
+ * y otro puntero a hash con la informacion de los objetos conocidos.
  *
  * Se guarda cada objeto leido del archivo dentro del hash y se retorna el
- * hash de los objetos
+ * hash de los objetos. Tambien se hace que se conozca el primer objeto de la 
+ * sala. También se hace conocido el primer objeto
  */
 hash_t *guardar_objeto(char linea[MAX_LINEA], FILE *archivo_objetos, 
-		    hash_t *hash_objetos)
+		       hash_t *hash_objetos, hash_t *hash_objetos_conocidos)
 {
 	struct objeto *objeto = objeto_crear_desde_string(linea);
 	if (objeto == NULL) {
 		hash_destruir_todo(hash_objetos, free);
 		fclose(archivo_objetos);
 		return NULL;
+	}
+
+	if (hash_cantidad(hash_objetos) == 0) {
+		hash_objetos_conocidos = hash_insertar(hash_objetos_conocidos, 
+						objeto->nombre, objeto, NULL);
+
+		if (hash_objetos_conocidos == NULL) {
+			hash_destruir_todo(hash_objetos_conocidos, free);
+			hash_destruir_todo(hash_objetos, free);
+			return NULL;
+		}
 	}
 
 	hash_objetos = hash_insertar(hash_objetos, objeto->nombre, objeto,
@@ -56,18 +69,22 @@ hash_t *guardar_objeto(char linea[MAX_LINEA], FILE *archivo_objetos,
 		fclose(archivo_objetos);
 		return NULL;
 	}
+
 	return hash_objetos;
 }
 
 
 /*
- * Se recibe la ruta al archivo de objetos y un puntero a hash que almacena la
- * información de los objetos de la sala
+ * Se recibe la ruta al archivo de objetos, un puntero a hash que almacena la
+ * información de los objetos de la sala y otro puntero a hash que almacena la
+ * informacion de los objetos conocidos
  * 
  * Se lee el archivo de objetos, se guarda su información en el hash y se
- * retorna el hash con la información de los objetos de la sala
+ * retorna el hash con la información de los objetos de la sala.
+ *
  */
-hash_t *leer_objetos(const char *objetos, hash_t *hash_objetos)
+hash_t *leer_objetos(const char *objetos, hash_t *hash_objetos, 
+		     hash_t *hash_objetos_conocidos)
 {
 	FILE *archivo_objetos = fopen(objetos, "r");
 	if(!archivo_objetos) {
@@ -79,8 +96,8 @@ hash_t *leer_objetos(const char *objetos, hash_t *hash_objetos)
 	char *lectura = fgets(linea, MAX_LINEA, archivo_objetos);
 	while (lectura) {
 		hash_objetos = guardar_objeto(linea, archivo_objetos, 
-					       hash_objetos);
-		if (hash_objetos == NULL)
+					hash_objetos, hash_objetos_conocidos);
+		if (hash_objetos == NULL || hash_objetos_conocidos == NULL)
 			return NULL;
 
 		lectura = fgets(linea, MAX_LINEA, archivo_objetos);
@@ -190,7 +207,8 @@ sala_t *sala_crear_desde_archivos(const char *objetos,
 	if (sala == NULL)
 		return NULL;
 
-	sala->objetos = leer_objetos(objetos, sala->objetos);
+	sala->objetos = leer_objetos(objetos, sala->objetos, 
+				     sala->objetos_conocidos);
 	sala->interacciones = leer_interacciones(interacciones, 
 						sala->interacciones);
 
@@ -202,6 +220,7 @@ sala_t *sala_crear_desde_archivos(const char *objetos,
 		sala_destruir(sala);
 		return NULL;
 	}
+
 	return sala;
 }
 
@@ -355,70 +374,132 @@ bool interaccion_coincide(struct interaccion *interaccion, const char *verbo,
 }
 
 
-// /*
-//  *
-//  *
-//  */
-// bool objeto_es_conocido(hash_t *objetos_conocidos, const char *nombre)
-// {
-// 	if (strcpy(nombre, "_") == 0)
-// 		return true;
+/*
+ *
+ *
+ */
+bool objeto_es_conocido(hash_t *objetos_conocidos, char *nombre)
+{
+	if (strcpy(nombre, "_") == 0)
+		return true;
 
-// 	return hash_contiene(objetos_conocidos, nombre);
-// }
-
-
-// /*
-//  *
-//  *
-//  */
-// bool objeto_se_posee(hash_t *objetos_poseidos, const char *nombre)
-// {
-// 	return hash_contiene(objetos_poseidos, nombre);
-// }
+	return hash_contiene(objetos_conocidos, nombre);
+}
 
 
-// /*
-//  *
-//  *
-//  */
-// int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion, 
-// 			 void (*mostrar_mensaje)(const char *mensaje,
-// 						 enum tipo_accion accion,
-// 						 void *aux),
-// 			 void *aux)
-// {
-// 	switch (interaccion->accion.tipo) {
-// 	case MOSTRAR_MENSAJE:
-// 		mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
-// 				aux);		
-// 		break;
+/*
+ *
+ *
+ */
+bool objeto_se_posee(hash_t *objetos_poseidos, const char *nombre)
+{
+	return hash_contiene(objetos_poseidos, nombre);
+}
 
-// 	case DESCUBRIR_OBJETO:
-// 		mostrar_mensaje(interaccion->accion.mensaje, DESCUBRIR_OBJETO, 
-// 				aux);
-// 		break;
 
-// 	case REEMPLAZAR_OBJETO:
-// 		mostrar_mensaje(interaccion->accion.mensaje, REEMPLAZAR_OBJETO, 
-// 				aux);
-// 		break;
+/*
+ *
+ *
+ */
+void descubrir_objeto(sala_t *sala, struct interaccion *interaccion)
+{
+	if (objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto) &&
+	    objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto_parametro) &&
+	    !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto) && 
+	    !objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto)) {
+		
+		sala->objetos_conocidos = hash_insertar(sala->objetos_conocidos, 
+		interaccion->accion.objeto, hash_obtener(sala->objetos, interaccion->accion.objeto), NULL);
 
-// 	case ELIMINAR_OBJETO:
-// 		mostrar_mensaje(interaccion->accion.mensaje, ELIMINAR_OBJETO, 
-// 				aux);
-// 		break;
+		if (sala->objetos_conocidos == NULL) {
+			sala_destruir(sala);
+			return;
+		}
+	}
+}
 
-// 	case ESCAPAR:
-// 		sala->escapado = true;
-// 		mostrar_mensaje(interaccion->accion.mensaje, ESCAPAR, aux);
-// 		break; 
 
-// 	default:
-// 		mostrar_mensaje(interaccion->accion.mensaje, ACCION_INVALIDA, aux)
-// 		return 0;
-// 	}
-// }
+/*
+ *
+ *
+ */
+void eliminar_objeto(sala_t *sala, struct interaccion *interaccion)
+{
+	hash_quitar(sala->objetos, interaccion->objeto);
+	hash_quitar(sala->objetos_conocidos, interaccion->objeto);
+	hash_quitar(sala->objetos_poseidos, interaccion->objeto);
+}
+
+
+/*
+ *
+ *
+ */
+void reemplazar_objeto(sala_t *sala, struct interaccion *interaccion)
+{
+	if (objeto_se_posee(sala->objetos_poseidos, interaccion->objeto) &&
+	    objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto_parametro) &&
+	    !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto)) {
+		
+		sala->objetos_conocidos = hash_insertar(sala->objetos_conocidos, 
+		interaccion->accion.objeto, hash_obtener(sala->objetos, interaccion->accion.objeto), NULL);
+
+		if (sala->objetos_conocidos == NULL) {
+			sala_destruir(sala);
+			return;
+		}
+
+		hash_quitar(sala->objetos_conocidos, interaccion->objeto_parametro);
+	}
+}
+
+
+/*
+ *
+ *
+ */
+int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion, 
+			 void (*mostrar_mensaje)(const char *mensaje,
+						 enum tipo_accion accion,
+						 void *aux),
+			 void *aux)
+{
+	switch (interaccion->accion.tipo) {
+	case MOSTRAR_MENSAJE:
+		mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
+				aux);		
+		break;
+
+	case DESCUBRIR_OBJETO:
+		descubrir_objeto(sala, interaccion);
+		mostrar_mensaje(interaccion->accion.mensaje, DESCUBRIR_OBJETO, 
+				aux);
+		break;
+
+	case REEMPLAZAR_OBJETO:
+		reemplazar_objeto(sala, interaccion);
+		mostrar_mensaje(interaccion->accion.mensaje, REEMPLAZAR_OBJETO, 
+				aux);
+		break;
+
+	case ELIMINAR_OBJETO:
+		eliminar_objeto(sala, interaccion);
+		mostrar_mensaje(interaccion->accion.mensaje, ELIMINAR_OBJETO, 
+				aux);
+		break;
+	
+	case ESCAPAR:
+		sala->escapado = true;
+		mostrar_mensaje(interaccion->accion.mensaje, ESCAPAR, aux);
+		break; 
+
+	default:
+		mostrar_mensaje(interaccion->accion.mensaje, ACCION_INVALIDA, aux);
+		return 0;
+	}
+
+	return 1;
+}
 
 
 int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
@@ -432,26 +513,24 @@ int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 	    objeto1 == NULL || objeto2 == NULL)
 		return 0;
 
-	return 0;
+	int ejecuciones = 0;
+	lista_iterador_t *iterador = lista_iterador_crear(sala->interacciones);
+	if (iterador == NULL)
+		return 0;
 
-	// int ejecuciones = 0;
-	// lista_iterador_t *iterador = lista_iterador_crear(sala->interaccion);
-	// if (iterador == NULL)
-	// 	return 0;
+	struct interaccion *interaccion;
+	for (; lista_iterador_tiene_siguiente(iterador);
+	     lista_iterador_avanzar(iterador)) {
+		interaccion = lista_iterador_elemento_actual(iterador);
 
-	// struct interaccion *interaccion;
-	// for (iterador; lista_iterador_tiene_siguiente(iterador);
-	//      lista_iterador_avanzar(iterador)) {
-	// 	interaccion = lista_iterador_elemento_actual(iterador);
+		if (interaccion_coincide(interaccion, verbo, objeto1, objeto2))
+			ejecuciones += ejecutar_interaccion(sala, interaccion, 
+							mostrar_mensaje, aux);
+	}
 
-	// 	if (interaccion_coincide(interaccion, verbo, objeto1, objeto2))
-	// 		ejecuciones += ejecutar_interaccion(sala, interaccion, 
-	// 						mostrar_mensaje, aux);
-	// }
+	lista_iterador_destruir(iterador);
 
-	// lista_iterador_destruir(iterador);
-
-	// return ejecuciones;
+	return ejecuciones;
 }
 
 
@@ -525,8 +604,8 @@ void sala_destruir(sala_t *sala)
 		return;
 
 	hash_destruir_todo(sala->objetos, free);
-	hash_destruir_todo(sala->objetos_conocidos, free);
-	hash_destruir_todo(sala->objetos_poseidos, free);
+	hash_destruir(sala->objetos_conocidos);
+	hash_destruir(sala->objetos_poseidos);
 	lista_destruir_todo(sala->interacciones, free);
 
 	free(sala);
