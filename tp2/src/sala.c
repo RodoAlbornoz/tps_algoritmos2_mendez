@@ -38,8 +38,7 @@ struct elementos_interaccion {
  * y otro puntero a hash con la informacion de los objetos conocidos.
  *
  * Se guarda cada objeto leido del archivo dentro del hash y se retorna el
- * hash de los objetos. Tambien se hace que se conozca el primer objeto de la 
- * sala. También se hace conocido el primer objeto
+ * hash de los objetos. También se hace conocido el primer objeto.
  */
 hash_t *guardar_objeto(char linea[MAX_LINEA], FILE *archivo_objetos, 
 		       hash_t *hash_objetos, hash_t *hash_objetos_conocidos)
@@ -51,23 +50,23 @@ hash_t *guardar_objeto(char linea[MAX_LINEA], FILE *archivo_objetos,
 		return NULL;
 	}
 
-	if (hash_cantidad(hash_objetos) == 0) {
-		hash_objetos_conocidos = hash_insertar(hash_objetos_conocidos, 
-						objeto->nombre, objeto, NULL);
-
-		if (hash_objetos_conocidos == NULL) {
-			hash_destruir_todo(hash_objetos_conocidos, free);
-			hash_destruir_todo(hash_objetos, free);
-			return NULL;
-		}
-	}
-
 	hash_objetos = hash_insertar(hash_objetos, objeto->nombre, objeto,
 				     NULL);
 	if (hash_objetos == NULL) {
 		hash_destruir_todo(hash_objetos, free);
 		fclose(archivo_objetos);
 		return NULL;
+	}
+
+	if (hash_cantidad(hash_objetos) == 1) {
+		hash_objetos_conocidos = hash_insertar(hash_objetos_conocidos, 
+						objeto->nombre, objeto, NULL);
+
+		if (hash_objetos_conocidos == NULL) {
+			hash_destruir(hash_objetos_conocidos);
+			hash_destruir_todo(hash_objetos, free);
+			return NULL;
+		}
 	}
 
 	return hash_objetos;
@@ -81,7 +80,6 @@ hash_t *guardar_objeto(char linea[MAX_LINEA], FILE *archivo_objetos,
  * 
  * Se lee el archivo de objetos, se guarda su información en el hash y se
  * retorna el hash con la información de los objetos de la sala.
- *
  */
 hash_t *leer_objetos(const char *objetos, hash_t *hash_objetos, 
 		     hash_t *hash_objetos_conocidos)
@@ -181,9 +179,9 @@ sala_t *inicializar_sala()
 		return NULL;
 
 	sala->escapado = false;
-	sala->objetos = hash_crear(10);
-	sala->objetos_conocidos = hash_crear(5);
-	sala->objetos_poseidos = hash_crear(5);
+	sala->objetos = hash_crear(10); //
+	sala->objetos_conocidos = hash_crear(5); //
+	sala->objetos_poseidos = hash_crear(5); //
 	sala->interacciones = lista_crear();
 
 	if (sala->objetos == NULL || sala->interacciones == NULL || 
@@ -279,7 +277,7 @@ char **obtener_nombres_objetos(hash_t *objetos, int *cantidad)
 	if (cantidad != NULL)
 		*cantidad = (int) cantidad_nombres;
 
-	return vector_nombres;
+	return nombres.vector_nombres;
 }
 
 
@@ -449,7 +447,11 @@ void reemplazar_objeto(sala_t *sala, struct interaccion *interaccion)
 			return;
 		}
 
-		hash_quitar(sala->objetos_conocidos, interaccion->objeto_parametro);
+		sala->objetos_conocidos = hash_quitar(sala->objetos_conocidos, interaccion->objeto_parametro);
+		if (sala->objetos_conocidos == NULL) {
+			sala_destruir(sala);
+			return;
+		}
 	}
 }
 
@@ -466,35 +468,43 @@ int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion,
 {
 	switch (interaccion->accion.tipo) {
 	case MOSTRAR_MENSAJE:
-		mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
-				aux);		
+		if (mostrar_mensaje != NULL)
+			mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
+					aux);		
 		break;
 
 	case DESCUBRIR_OBJETO:
 		descubrir_objeto(sala, interaccion);
-		mostrar_mensaje(interaccion->accion.mensaje, DESCUBRIR_OBJETO, 
-				aux);
+		if (mostrar_mensaje != NULL)
+			mostrar_mensaje(interaccion->accion.mensaje, 
+					DESCUBRIR_OBJETO, aux);
 		break;
 
 	case REEMPLAZAR_OBJETO:
 		reemplazar_objeto(sala, interaccion);
-		mostrar_mensaje(interaccion->accion.mensaje, REEMPLAZAR_OBJETO, 
-				aux);
+		if (mostrar_mensaje != NULL)
+			mostrar_mensaje(interaccion->accion.mensaje, 
+					REEMPLAZAR_OBJETO, aux);
 		break;
 
 	case ELIMINAR_OBJETO:
 		eliminar_objeto(sala, interaccion);
-		mostrar_mensaje(interaccion->accion.mensaje, ELIMINAR_OBJETO, 
-				aux);
+		if (mostrar_mensaje != NULL)
+			mostrar_mensaje(interaccion->accion.mensaje, 
+					ELIMINAR_OBJETO, aux);
 		break;
 	
 	case ESCAPAR:
 		sala->escapado = true;
-		mostrar_mensaje(interaccion->accion.mensaje, ESCAPAR, aux);
+		if (mostrar_mensaje != NULL)
+			mostrar_mensaje(interaccion->accion.mensaje, 
+					ESCAPAR, aux);
 		break; 
 
 	default:
-		mostrar_mensaje(interaccion->accion.mensaje, ACCION_INVALIDA, aux);
+		if (mostrar_mensaje != NULL)
+			mostrar_mensaje(interaccion->accion.mensaje, 
+					ACCION_INVALIDA, aux);
 		return 0;
 	}
 
@@ -509,8 +519,7 @@ int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 						      void *aux),
 			      void *aux)
 {
-	if (sala == NULL || mostrar_mensaje == NULL || verbo == NULL || 
-	    objeto1 == NULL || objeto2 == NULL)
+	if (sala == NULL || verbo == NULL || objeto1 == NULL || objeto2 == NULL)
 		return 0;
 
 	int ejecuciones = 0;
@@ -537,10 +546,10 @@ int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 /*
  * Se recibe un puntero a una interaccion leida de la lista de interacciones,
  * y un puntero a una estructura con los objetos y verbo de la interaccion a
- * verificar si existe o es válida
+ * verificar si es válida
  *
- * Se retorna un booleano que dice si la interacción existe en la lista (false) 
- * o si aun no se encontró (true)
+ * Se retorna un booleano que dice si la interacción es válida (false) 
+ * o si aun no lo es (true)
  */
 bool verificar_interaccion(void *interaccion1, 
 			   void *interaccion2)
@@ -584,7 +593,6 @@ bool sala_es_interaccion_valida(sala_t *sala, const char *verbo,
 		interaccion_valida = true;
 
 	free(interaccion);
-
 	return interaccion_valida;
 }
 
