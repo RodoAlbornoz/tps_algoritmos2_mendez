@@ -32,6 +32,7 @@ enum tipo_accion accion_segun_caracter(char tipo_accion)
 		break;
 	case 'g':
 		accion_objeto = ESCAPAR;
+		break;
 	default:
 		accion_objeto = ACCION_INVALIDA;
 		break;

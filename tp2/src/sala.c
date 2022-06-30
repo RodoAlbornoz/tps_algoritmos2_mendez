@@ -376,9 +376,9 @@ bool interaccion_coincide(struct interaccion *interaccion, const char *verbo,
  *
  *
  */
-bool objeto_es_conocido(hash_t *objetos_conocidos, char *nombre)
+bool objeto_es_conocido(hash_t *objetos_conocidos, const char *nombre)
 {
-	if (strcpy(nombre, "_") == 0)
+	if (strcmp(nombre, "") == 0)
 		return true;
 
 	return hash_contiene(objetos_conocidos, nombre);
@@ -470,7 +470,9 @@ int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion,
 	case MOSTRAR_MENSAJE:
 		if (mostrar_mensaje != NULL)
 			mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
-					aux);		
+					aux);	
+		else
+			return 0;	
 		break;
 
 	case DESCUBRIR_OBJETO:
@@ -508,7 +510,7 @@ int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion,
 		return 0;
 	}
 
-	return 1;
+	return 1; // CAMBIAR
 }
 
 
@@ -527,10 +529,9 @@ int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 	if (iterador == NULL)
 		return 0;
 
-	struct interaccion *interaccion;
 	for (; lista_iterador_tiene_siguiente(iterador);
 	     lista_iterador_avanzar(iterador)) {
-		interaccion = lista_iterador_elemento_actual(iterador);
+		struct interaccion *interaccion = lista_iterador_elemento_actual(iterador);
 
 		if (interaccion_coincide(interaccion, verbo, objeto1, objeto2))
 			ejecuciones += ejecutar_interaccion(sala, interaccion, 
