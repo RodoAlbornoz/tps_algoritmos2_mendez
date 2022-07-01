@@ -241,6 +241,39 @@ void contar_acciones(const char *mensaje, enum tipo_accion accion,
 	}
 }
 
+
+void imprimir(sala_t *sala)
+{
+	int cant = 0;
+	char **totales= sala_obtener_nombre_objetos(sala, &cant);
+	printf("Totales:\n");
+	for (int i = 0; i < cant; i++)
+	{
+		printf("%s\n",totales[i]);
+	}
+
+	int cantidad_conocidos = 0;
+	char **conocidos = sala_obtener_nombre_objetos_conocidos(sala, &cantidad_conocidos);
+	printf("Conocidos:\n");
+	for (int i = 0; i < cantidad_conocidos; i++)
+	{
+		printf("%s\n",conocidos[i]);
+	}
+
+	int cantidad_poseidos = 0;
+	char **poseidos = sala_obtener_nombre_objetos_poseidos(sala, &cantidad_poseidos);
+	printf("Poseidos:\n");
+	for (int i = 0; i < cantidad_poseidos; i++)
+	{
+		printf("%s\n",poseidos[i]);
+	}
+
+	free(totales);
+	free(conocidos);
+	free(poseidos);
+}
+
+
 void pruebas_escenario_basico()
 {
 	sala_t *sala = NULL;
@@ -389,16 +422,11 @@ void pruebas_escenario_basico()
 	pa2m_afirmar(contadores.totales == 2 && contadores.descubrir == 2,
 		     "La cantidad de objetos descubiertos sigue siendo 2");
 
-
 	pa2m_afirmar(
 		(vector = sala_obtener_nombre_objetos_conocidos(sala,
 								&cantidad)),
 		"Puedo obtener los nombres de los objetos conocidos oooootra vez");
-	printf("%i\n", cantidad );
-	for (int i = 0; i < cantidad; i++)
-	{
-		printf("%s\n",vector[i] );
-	}
+	
 	pa2m_afirmar(cantidad == 2, "Ahora conozco 2 objetos");
 
 	pa2m_afirmar(vector_contiene_elementos(vector, vector_hpu, cantidad) ==
@@ -411,6 +439,8 @@ void pruebas_escenario_basico()
 					       "", contar_acciones,
 					       &contadores) == 2,
 		     "Abrir la pokebola ejecuta 2 acciones");
+
+	imprimir(sala);
 
 	pa2m_afirmar(contadores.totales == 4 && contadores.descubrir == 3 && contadores.eliminar==1,
 		     "Hasta ahora, los objetos descubiertos son 3 y los eliminados 1");

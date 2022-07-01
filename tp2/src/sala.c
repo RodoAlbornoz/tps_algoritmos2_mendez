@@ -384,7 +384,7 @@ bool sala_agarrar_objeto(sala_t *sala, const char *nombre_objeto)
 	sala->objetos_poseidos = hash_insertar(sala->objetos_poseidos, 
 					nombre_objeto, objeto, NULL);
 
-//	hash_quitar(sala->objetos_conocidos, nombre_objeto);
+	hash_quitar(sala->objetos_conocidos, nombre_objeto);
 
 	return true;
 }
@@ -432,7 +432,7 @@ bool interaccion_coincide(struct interaccion *interaccion, const char *verbo,
  */
 bool se_puede_descubrir(sala_t *sala, struct interaccion *interaccion)
 {
-	if (objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto) &&
+	if ((objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto) || objeto_se_posee(sala->objetos_poseidos, interaccion->objeto)) &&
 	    objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto_parametro) &&
 	    !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto) && 
 	    !objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto) &&
@@ -460,13 +460,16 @@ bool se_puede_descubrir(sala_t *sala, struct interaccion *interaccion)
  */
 bool se_puede_eliminar(sala_t *sala, struct interaccion *interaccion)
 {
-	if (!objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto) || !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto))
+	if (objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto))
+		hash_quitar(sala->objetos_conocidos, interaccion->objeto);
+
+	if (objeto_se_posee(sala->objetos_poseidos, interaccion->objeto))
+		hash_quitar(sala->objetos_poseidos, interaccion->objeto);
+
+	struct objeto *objeto = hash_quitar(sala->objetos, interaccion->objeto);
+	if (objeto == NULL)
 		return false;
-	
-	struct objeto *objeto = hash_quitar(sala->objetos, interaccion->accion.objeto);
-	hash_quitar(sala->objetos_conocidos, interaccion->accion.objeto);
-	hash_quitar(sala->objetos_poseidos, interaccion->accion.objeto);
-	
+
 	free(objeto);
 
 	return true;
