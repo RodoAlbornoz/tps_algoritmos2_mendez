@@ -212,8 +212,10 @@ sala_t *sala_crear_desde_archivos(const char *objetos,
 
 	size_t cantidad_objetos = hash_cantidad(sala->objetos);
 	size_t cantidad_interacciones = lista_tamanio(sala->interacciones);
+	size_t cantidad_conocidos = hash_cantidad(sala->objetos_conocidos);
 
 	if (sala->objetos == NULL || sala->interacciones == NULL ||
+	    sala->objetos_conocidos == NULL || cantidad_conocidos == 0 ||
 	    cantidad_objetos == 0 || cantidad_interacciones == 0) {
 		sala_destruir(sala);
 		return NULL;
@@ -260,8 +262,15 @@ char **obtener_nombres_objetos(hash_t *objetos, int *cantidad)
 	}
 
 	size_t cantidad_nombres = hash_cantidad(objetos);
+
 	char **vector_nombres = malloc((unsigned int) cantidad_nombres *
 					sizeof(char *));
+	if (cantidad_nombres == 0) {
+		if (cantidad != NULL)
+			*cantidad = 0;
+		return vector_nombres;
+	}
+
 	if (vector_nombres == NULL) {
 		if (cantidad != NULL)
 			*cantidad = -1; 
@@ -317,14 +326,55 @@ char **sala_obtener_nombre_objetos_poseidos(sala_t *sala, int *cantidad)
 }
 
 
+/*
+ * Se recibe un puntero a hash con los objetos conocidos, y el nombre de un
+ * objeto
+ *
+ * Se retorna si ese conoce ese objeto o no
+ */
+bool objeto_es_conocido(hash_t *objetos_conocidos, const char *nombre)
+{
+	if (strcmp(nombre, "") == 0)
+		return true;
+
+	return hash_contiene(objetos_conocidos, nombre);
+}
+
+
+/*
+ * Se recibe un puntero a hash con los objetos poseidos, y el nombre de un
+ * objeto
+ *
+ * Se retorna si ese posee ese objeto o no
+ */
+bool objeto_se_posee(hash_t *objetos_poseidos, const char *nombre)
+{
+	return hash_contiene(objetos_poseidos, nombre);
+}
+
+
+/*
+ * Se recibe un puntero a hash con los objetos de la sala, y el nombre de un
+ * objeto
+ *
+ * Se retorna si ese elemento fue eliminado o no
+ */
+bool objeto_fue_eliminado(hash_t *objetos, const char *nombre)
+{
+	return !hash_contiene(objetos, nombre);
+}
+
+
 bool sala_agarrar_objeto(sala_t *sala, const char *nombre_objeto)
 {
 	if (sala == NULL || nombre_objeto == NULL)
 		return false;
 
-	struct objeto *objeto = hash_obtener(sala->objetos_conocidos, 
-					     nombre_objeto);
+	struct objeto *objeto = hash_obtener(sala->objetos_poseidos, nombre_objeto);
+	if (objeto != NULL)
+		return false;
 
+	objeto = hash_obtener(sala->objetos_conocidos, nombre_objeto);
 	if (objeto == NULL)
 		return false;
 
@@ -333,6 +383,8 @@ bool sala_agarrar_objeto(sala_t *sala, const char *nombre_objeto)
 
 	sala->objetos_poseidos = hash_insertar(sala->objetos_poseidos, 
 					nombre_objeto, objeto, NULL);
+
+//	hash_quitar(sala->objetos_conocidos, nombre_objeto);
 
 	return true;
 }
@@ -343,13 +395,14 @@ char* sala_describir_objeto(sala_t* sala, const char *nombre_objeto)
 	if (sala == NULL || nombre_objeto == NULL)	
 		return NULL;
 
-	struct objeto *objeto = hash_obtener(sala->objetos_conocidos, 
-					     nombre_objeto);
+	struct objeto *objeto = hash_obtener(sala->objetos_conocidos, nombre_objeto);
 
 	if (objeto == NULL) {
-		objeto = hash_obtener(sala->objetos_poseidos, nombre_objeto);
-		if (objeto == NULL)
+		struct objeto *objeto_aux = hash_obtener(sala->objetos_poseidos, nombre_objeto);
+		if (objeto_aux == NULL)
 			return NULL;
+
+		return objeto_aux->descripcion;
 	}
 
 	return objeto->descripcion;
@@ -368,97 +421,98 @@ bool interaccion_coincide(struct interaccion *interaccion, const char *verbo,
 {
 	return ((strcmp(interaccion->objeto, objeto1) == 0) &&
 	(strcmp(interaccion->objeto_parametro, objeto2) == 0) &&
-	(strcmp(interaccion->verbo, verbo) == 0) );
+	(strcmp(interaccion->verbo, verbo) == 0));
 }
 
 
 /*
+ * Se recibe un puntero a una sala y un puntero a una interaccion
  *
- *
+ * Se retorna si a partir de la interaccion, se puede descubrir un objeto
  */
-bool objeto_es_conocido(hash_t *objetos_conocidos, const char *nombre)
-{
-	if (strcmp(nombre, "") == 0)
-		return true;
-
-	return hash_contiene(objetos_conocidos, nombre);
-}
-
-
-/*
- *
- *
- */
-bool objeto_se_posee(hash_t *objetos_poseidos, const char *nombre)
-{
-	return hash_contiene(objetos_poseidos, nombre);
-}
-
-
-/*
- *
- *
- */
-void descubrir_objeto(sala_t *sala, struct interaccion *interaccion)
+bool se_puede_descubrir(sala_t *sala, struct interaccion *interaccion)
 {
 	if (objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto) &&
 	    objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto_parametro) &&
 	    !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto) && 
-	    !objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto)) {
+	    !objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto) &&
+	    !objeto_fue_eliminado(sala->objetos, interaccion->accion.objeto)) {
 		
+		struct objeto *objeto = hash_obtener(sala->objetos, interaccion->accion.objeto);
+
 		sala->objetos_conocidos = hash_insertar(sala->objetos_conocidos, 
-		interaccion->accion.objeto, hash_obtener(sala->objetos, interaccion->accion.objeto), NULL);
+		interaccion->accion.objeto, objeto, NULL);
 
-		if (sala->objetos_conocidos == NULL) {
-			sala_destruir(sala);
-			return;
-		}
+		if (sala->objetos_conocidos == NULL)
+			return false;
+
+		return true;
 	}
+
+	return false;
 }
 
 
 /*
+ * Se recibe un puntero a una sala y un puntero a una interaccion
  *
- *
+ * Se retorna si a partir de la interaccion, se puede eliminar un objeto
  */
-void eliminar_objeto(sala_t *sala, struct interaccion *interaccion)
+bool se_puede_eliminar(sala_t *sala, struct interaccion *interaccion)
 {
-	hash_quitar(sala->objetos, interaccion->objeto);
-	hash_quitar(sala->objetos_conocidos, interaccion->objeto);
-	hash_quitar(sala->objetos_poseidos, interaccion->objeto);
+	if (!objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto) || !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto))
+		return false;
+	
+	struct objeto *objeto = hash_quitar(sala->objetos, interaccion->accion.objeto);
+	hash_quitar(sala->objetos_conocidos, interaccion->accion.objeto);
+	hash_quitar(sala->objetos_poseidos, interaccion->accion.objeto);
+	
+	free(objeto);
+
+	return true;
 }
 
 
 /*
+ * Se recibe un puntero a una sala y un puntero a una interaccion
  *
- *
+ * Se retorna si a partir de la interaccion, se puede reemplazar un objeto
+ * por otro
  */
-void reemplazar_objeto(sala_t *sala, struct interaccion *interaccion)
+bool se_puede_reemplazar(sala_t *sala, struct interaccion *interaccion)
 {
 	if (objeto_se_posee(sala->objetos_poseidos, interaccion->objeto) &&
 	    objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto_parametro) &&
 	    !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto)) {
-		
+
+		struct objeto *objeto = hash_obtener(sala->objetos, interaccion->accion.objeto);
+		if (objeto == NULL)
+			return false;
+
 		sala->objetos_conocidos = hash_insertar(sala->objetos_conocidos, 
-		interaccion->accion.objeto, hash_obtener(sala->objetos, interaccion->accion.objeto), NULL);
+		interaccion->accion.objeto, objeto, NULL);
 
-		if (sala->objetos_conocidos == NULL) {
-			sala_destruir(sala);
-			return;
-		}
+		if (sala->objetos_conocidos == NULL)
+			return false;
 
-		sala->objetos_conocidos = hash_quitar(sala->objetos_conocidos, interaccion->objeto_parametro);
-		if (sala->objetos_conocidos == NULL) {
-			sala_destruir(sala);
-			return;
-		}
+		struct objeto *objeto_aux = hash_quitar(sala->objetos_conocidos, interaccion->objeto_parametro);
+		if (objeto_aux == NULL)
+			return false;
+
+		objeto_aux = hash_quitar(sala->objetos, interaccion->objeto_parametro);
+		free(objeto_aux);
 	}
+
+	return true;
 }
 
 
 /*
+ * Se recibe un puntero a una sala, un puntero a una interaccion un puntero a
+ * una funcion y un auxiliar
  *
- *
+ * Se ejecuta cierta interaccion, y se retorna 1 si se pudo realizarla o 0 si
+ * no se pudo
  */
 int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion, 
 			 void (*mostrar_mensaje)(const char *mensaje,
@@ -468,49 +522,56 @@ int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion,
 {
 	switch (interaccion->accion.tipo) {
 	case MOSTRAR_MENSAJE:
-		if (mostrar_mensaje != NULL)
-			mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
-					aux);	
-		else
-			return 0;	
+		if (objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto)) {
+			if (mostrar_mensaje != NULL)
+				mostrar_mensaje(interaccion->accion.mensaje, MOSTRAR_MENSAJE, 
+						aux);
+			return 1;
+		}	
 		break;
 
 	case DESCUBRIR_OBJETO:
-		descubrir_objeto(sala, interaccion);
-		if (mostrar_mensaje != NULL)
-			mostrar_mensaje(interaccion->accion.mensaje, 
-					DESCUBRIR_OBJETO, aux);
+		if (se_puede_descubrir(sala, interaccion)) {
+			if (mostrar_mensaje != NULL)
+				mostrar_mensaje(interaccion->accion.mensaje, 
+						DESCUBRIR_OBJETO, aux);
+			return 1;
+		}
 		break;
 
 	case REEMPLAZAR_OBJETO:
-		reemplazar_objeto(sala, interaccion);
-		if (mostrar_mensaje != NULL)
-			mostrar_mensaje(interaccion->accion.mensaje, 
-					REEMPLAZAR_OBJETO, aux);
+		if (se_puede_reemplazar(sala, interaccion)) {
+			if (mostrar_mensaje != NULL)
+				mostrar_mensaje(interaccion->accion.mensaje, 
+						REEMPLAZAR_OBJETO, aux);
+			return 1;
+		}
 		break;
 
 	case ELIMINAR_OBJETO:
-		eliminar_objeto(sala, interaccion);
-		if (mostrar_mensaje != NULL)
-			mostrar_mensaje(interaccion->accion.mensaje, 
-					ELIMINAR_OBJETO, aux);
+		if (se_puede_eliminar(sala, interaccion)) {
+			if (mostrar_mensaje != NULL)
+				mostrar_mensaje(interaccion->accion.mensaje, 
+						ELIMINAR_OBJETO, aux);
+			return 1;
+		}
 		break;
 	
 	case ESCAPAR:
-		sala->escapado = true;
-		if (mostrar_mensaje != NULL)
-			mostrar_mensaje(interaccion->accion.mensaje, 
-					ESCAPAR, aux);
+		if (objeto_es_conocido(sala->objetos_conocidos, interaccion->objeto)) {
+			sala->escapado = true;
+			if (mostrar_mensaje != NULL)
+				mostrar_mensaje(interaccion->accion.mensaje, 
+						ESCAPAR, aux);
+			return 1;
+		}
 		break; 
 
 	default:
-		if (mostrar_mensaje != NULL)
-			mostrar_mensaje(interaccion->accion.mensaje, 
-					ACCION_INVALIDA, aux);
 		return 0;
 	}
 
-	return 1; // CAMBIAR
+	return 0;
 }
 
 
@@ -523,6 +584,9 @@ int sala_ejecutar_interaccion(sala_t *sala, const char *verbo,
 {
 	if (sala == NULL || verbo == NULL || objeto1 == NULL || objeto2 == NULL)
 		return 0;
+
+//	if (!sala_es_interaccion_valida(sala, verbo, objeto1, objeto2) && (!objeto_es_conocido(sala->objetos_conocidos, objeto1) || !objeto_se_posee(sala->objetos_poseidos, objeto1)))
+//		return 0;
 
 	int ejecuciones = 0;
 	lista_iterador_t *iterador = lista_iterador_crear(sala->interacciones);

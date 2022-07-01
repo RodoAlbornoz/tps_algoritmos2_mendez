@@ -310,7 +310,7 @@ void pruebas_describir_objeto()
 
 void imprimir_mensaje(const char *mensaje, enum tipo_accion accion, void *aux)
 {
-	printf("%s", mensaje);
+	printf("%s\n", mensaje);
 }
 
 
@@ -344,39 +344,66 @@ void pruebas_ejecutar_interaccion()
 	pa2m_afirmar(sala_ejecutar_interaccion(sala, "examinar", "habitacion", "", NULL, NULL) == 2,
 	"Se ejecuta mas de una interaccion sobre un objeto.");
 
+	// ARREGLAR
+	int cantidad_conocidos = 0;
 	bool es_conocido = false;
-	char **conocidos = sala_obtener_nombre_objetos_conocidos(sala, &cantidad);
-	for (int i = 0; i < cantidad; i++)
+	char **conocidos = sala_obtener_nombre_objetos_conocidos(sala, &cantidad_conocidos);
+	for (int i = 0; i < cantidad_conocidos; i++)
 		if (strcmp(conocidos[i], "puerta") == 0)
 			es_conocido = true;
+	pa2m_afirmar(es_conocido, "Se ejecuta una interacción con accion DESCUBRIR OBJETO. Ahora conozco la puerta. ");
 
-	pa2m_afirmar(es_conocido, 
-		     "Se ejecuta una interacción con accion DESCUBRIR OBJETO");
-	pa2m_afirmar(es_conocido, 
-	"Ahora conozco los objetos \"pokebola\" y \"puerta\" en la sala");	
+	for (int i = 0; i < cantidad_conocidos; i++)
+		if (strcmp(conocidos[i], "pokebola") == 0)
+			es_conocido = true;
+	pa2m_afirmar(es_conocido, "Se ejecuta una interacción con accion DESCUBRIR OBJETO. Ahora conozco la pokebola.");
+	// HASTA ACA
 
+	pa2m_afirmar(sala_ejecutar_interaccion(sala, "abrir", "puerta", "", imprimir_mensaje, NULL) == 1,
+	"Se ejecuta una interacción con accion MOSTRAR MENSAJE");
+
+	sala_agarrar_objeto(sala, "pokebola");
+	sala_ejecutar_interaccion(sala, "abrir", "pokebola", "", NULL, NULL);
+	int cantidad_poseidos = 0;
+	char **poseidos = sala_obtener_nombre_objetos_poseidos(sala, &cantidad_poseidos);
+	bool ya_no_se_posee = true;
+
+	for (int i = 0; i < cantidad_poseidos; i++)
+		if (strcmp(poseidos[i], "pokebola") == 0)
+			ya_no_se_posee = false;
+
+	pa2m_afirmar(ya_no_se_posee,
+	"Se ejecuta una interacción con accion ELIMINAR OBJETO. Ya no poseo la pokebola");
+
+
+	sala_agarrar_objeto(sala, "llave");
+	sala_ejecutar_interaccion(sala, "abrir", "llave", "puerta", NULL, NULL);
+
+	cantidad_conocidos = 0;
+	free(conocidos);
+	char **conocidos2 = sala_obtener_nombre_objetos_conocidos(sala, &cantidad_conocidos);
+
+	bool ya_no_la_conozco = true;
+	for (int i = 0; i < cantidad_conocidos; i++)
+		if (strcmp(conocidos2[i], "puerta") == 0)
+			ya_no_la_conozco = false;
+	pa2m_afirmar(ya_no_la_conozco, 
+	"Se ejecuta una interaccion con accion REEMPLAZAR OBJETO. Ya no conozco la puerta.");
+
+	es_conocido = false;
+	for (int i = 0; i < cantidad_conocidos; i++)
+		if (strcmp(conocidos2[i], "puerta-abierta") == 0)
+			es_conocido = true;
+	pa2m_afirmar(es_conocido, 
+	"Se ejecuta una interaccion con accion REEMPLAZAR OBJETO. Ahora conozco la puerta abierta.");
 
 	/*
 	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
-	"Se ejecuta una interacción con accion MOSTRAR MENSAJE");
-
-	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
-	"Se ejecuta una interacción con accion REEMPLAZAR OBJETO");
-
-	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
-	"Se ejecuta una interacción con accion ELIMINAR OBJETO");
-
-	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
-	"Se ejecuta una interacción con accion ESCAPAR");
-
-	pa2m_afirmar(sala_ejecutar_interaccion(sala, , , , , , ) == 1,
-	"Se ejecuta una interacción con accion ACCION INVALIDA");	
-
-//	Se realiza una accion sin imprimir mensajes
-//	Se realiza una accion imprimiendo mensaje
+	"Se ejecuta una interacción con accion ESCAPAR");	
 	*/
 
-	free(conocidos);
+	free(conocidos2);
+	free(poseidos);
 	sala_destruir(sala);
 }
 
