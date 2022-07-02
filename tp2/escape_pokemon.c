@@ -3,14 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_COMANDO 50
+
 void imprimir_pantalla_de_inicio()
 {
 	printf("¡Bienvenido al juego de Escape Pokemon jugador! :D\n");
 	printf("Te despertas en una sala desconocida y no sabes qué hacer.\n");
-	printf("Tu objetivo es escapar de esta sala interactuando con los \n\
-		objetos de la misma\n");
-	printf("Empezas con un primer objeto y a partir de él tenes que \n\
-		buscar la forma de abrir la puerta.\n");
+	printf("Tu objetivo es escapar de esta sala interactuando con los objetos de la misma\n");
+	printf("Empezas con un primer objeto y a partir de él tenes que buscar la forma de abrir la puerta y salir.\n");
 }
 
 
@@ -21,87 +21,88 @@ void imprimir_comandos()
 	printf("3. Describir <objeto>.\n");
 	printf("4. Información conocida (Imprime la información conocida de la sala).");
 	printf("5. Salir.\n");
-	system("clear");
 }
 
 
 void imprimir_ayuda()
 {
-	printf("INTERACCIONES \n"); 
+	printf("a. Recordá que, para agarrar un objeto, debes al menos conocerlo, y no podees poseerlo ya.\n");
+	printf("b. Para describir un objeto, necesitas conocerlo o poseerlo.\n\n");
+
+	printf("INTERACCIONES\n");
 	printf("Acciones posibles:\n"); // Imprimir segundo campo de archivo de interacciones
-	printf("Para interacciones de 1 objeto, deben tener el formato: \n"); // Formato de interacciones
-	printf("Para interacciones de 2 objetos, las interacciones deben tener el formato: \n"); // Formato de interacciones
+	printf("Si tiene un objeto, deben tener el formato: accion objeto_1.\n");
+	printf("Ejemplo: Examinar habitación.");
+	printf("Si tiene 2, deben tener el formato: \n"); // COMPLETAR
+	printf("Ejemplo: Usar ");
 }
 
 
-void imprimir_informacion_conocida()
+void imprimir_informacion_conocida(sala_t *sala)
 {
-	printf("\n");
-	printf("\n");
-	printf("\n");
-}
-
-
-void verificar_accion()
-{
-	// if (2 objetos y no se posee el primero)
-	// printf("Accion inválida.");
-	// Mostrar accion mensaje luego de completada
-	switch (cuarto campo de archivo de interacciones) {
-		case 'm':
-			//mostrar mensaje
-		break;
-
-		case 'e':
-			// eliminar objeto
-		break;
-
-		case 'd':
-			// descubrir objeto
-		break;
-
-		case 'g':
-			// descubrir objeto
-		break;
-
-		case 'r':
-			// reemplazar objeto
-		break;
+	int cantidad_conocidos = 0;
+	char **conocidos = sala_obtener_nombre_objetos_conocidos(sala, &cantidad_conocidos);
+	if (conocidos == NULL) {
+		printf("Error al obtener los nombres de los objetos conocidos.");
+		return;
 	}
+
+	int cantidad_poseidos = 0;
+	char **poseidos = sala_obtener_nombre_objetos_poseidos(sala, &cantidad_poseidos);
+	if (poseidos == NULL) {
+		printf("Error al obtener los nombres de los objetos poseidos.");
+		return;
+	}
+
+	printf("Los objetos que conoces son: \n");
+	for (int i = 0; i < cantidad_conocidos; i++)
+		printf("%i. %s", i, conocidos[i]);
+
+	printf("Los objetos que posees son: \n");
+	for (int i = 0; i < cantidad_poseidos; i++)
+		printf("%i. %s", i, poseidos[i]);
+
+	free(conocidos);
+	free(poseidos);
 }
 
 
-void agarrar_objeto(sala_t *sala)
+void imprimir_mensaje(const char *mensaje, enum tipo_accion accion, void *aux)
 {
-
-}
-
-
-void describir_objeto(sala_t *sala)
-{
-
+	printf("%s\n", mensaje);
 }
 
 
 void evaluar_comando(bool *salir, sala_t *sala)
 {
 	char *comando;
-	char *accion;
-	char *aux;
-	scanf("Ingrese comando: %s", comando);
+	printf("Ingrese comando:");
+	fgets(comando, MAX_COMANDO, stdin); 
 
-	sscanf(comando, "%s %s", accion, aux);
+	int cant_palabras = 0;
+	char caracter = comando[0];
+	if (caracter != ' ')
+		cant_palabras++;
 
-	if (strcmp(accion, "ayuda") == 0 || strcmp(accion, "Ayuda") == 0) {
+	int i = 0;
+	while (caracter != '\0') {
+		if (comando[i] == ' ')
+			cant_palabras++;
+
+		i++;
+		caracter = comando[i];
+	}
+
+	if (strcmp(accion, "ayuda") == 0 || strcmp(accion, "Ayuda") == 0 || strcmp(accion, "1") == 0) {
 		imprimir_ayuda();
 
 	} else if (strcmp(accion, "agarrar") == 0 || 
 		   strcmp(accion, "Agarrar") == 0) {
-		agarrar_objeto(sala);
+		sala_agarrar_objeto(sala, nombre);
 
 	} else if (strcmp(accion, "describir") == 0 || 
 		   strcmp(accion, "Describir") == 0) {
-		describir_objeto(sala);
+		sala_describir_objeto(sala, nombre);
 
 	} else if ((strcmp(accion, "Informacion") == 0 || 
 		    strcmp(accion, "informacion") == 0) &&
@@ -110,7 +111,7 @@ void evaluar_comando(bool *salir, sala_t *sala)
 		imprimir_informacion_conocida();
 
 	} else if (/*Es algun comando del archivo de interacciones*/) {
-		verificar_accion();
+		sala_ejecutar_interaccion();
 
 	} else if (strcmp(accion, "salir") == 0 || 
 		   strcmp(accion, "Salir") == 0){
@@ -127,7 +128,8 @@ bool argumentos_invalidos(int argc)
 {
 	if (argc != 3) {
 		printf("Cantidad de argumentos incorrecta.\n");
-		printf("Tip: Ingresá \"./ejecutable <archivo_objetos> <archivo_interacciones>\"\n");
+		printf("Tip: Ingresá \"make escape\"\n");
+		printf("Y luego \"./escape_pokemon <archivo_objetos> <archivo_interacciones>.\"\n")
 		return true;
 	}
 
@@ -146,9 +148,11 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	int cantidad_acciones = 0;
 	imprimir_pantalla_de_inicio();
 	bool salir = false;
-	while (!sala_escape_exitoso(sala) && !salir) {
+	while (!sala_escape_exitoso(sala)) {
+		cantidad_acciones++;
 		imprimir_comandos();
 		evaluar_comando(&salir, sala);
 
@@ -158,8 +162,7 @@ int main(int argc, char *argv[])
 		}	
 	}
 
-	// Destruir vectores y otras cosas
+	printf("¡Pudiste escapar! Y te tomó %i acciones", cantidad_acciones);
 	sala_destruir(sala);
-
 	return 0;
 }
