@@ -1,0 +1,10 @@
+habitacion;examinar;_;d:llave:Hay una llave en el piso
+habitacion;examinar;_;d:cajon:Hay un cajon a un costado
+habitacion;examinar;_;d:puerta:Hay una puerta blindada
+puerta;abrir;_;m:_:Una puerta cerrada sin manija
+puerta;examinar;_;d:bomba:Hay una bomba al lado de la puerta
+llave;abrir;puerta;m:_:No hay forma de insertar la llave
+llave;abrir;cajon;d:mechero:Hay un mechero dentro del cajon
+mechero;encender;bomba;m:_:Encendes la bomba con el mechero y te alejas
+mechero;encender;bomba;d:puerta-abierta:Abris la puerta
+puerta-abierta;salir;_;g:_:Ganaste, pudiste escapar

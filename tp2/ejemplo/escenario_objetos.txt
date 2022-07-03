@@ -1,0 +1,7 @@
+habitacion;Una habitación de la que no podes escapar;false
+llave;Una llave dorada;true
+cajon;Un cajon con una ranura;false
+mechero;Un mechero plateado;true
+bomba;Una bomba al lado de la puerta;false
+puerta;Una puerta blindada;false
+puerta-abierta;La puerta explotada;false

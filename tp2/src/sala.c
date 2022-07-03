@@ -557,8 +557,12 @@ int ejecutar_interaccion(sala_t *sala, struct interaccion *interaccion,
 
 	switch (interaccion->accion.tipo) {
 	case MOSTRAR_MENSAJE:
-		if (objeto_es_conocido(sala->objetos_conocidos, 
-				       interaccion->objeto))
+		if ((objeto_es_conocido(sala->objetos_conocidos, 
+					interaccion->objeto) ||
+		     objeto_se_posee(sala->objetos_conocidos, 
+		     		     interaccion->objeto)) && 
+		     (objeto_es_conocido(sala->objetos_conocidos, 
+		     			 interaccion->objeto_parametro)))
 			accion_valida = true;
 		break;
 

@@ -135,9 +135,8 @@ void pruebas_nombre_objetos()
 
 	int comparaciones_exitosas = 0;
 	for (int i = 0; i < cantidad; i++)
-		for (int j = 0; j < cantidad; j++)
-			if (strcmp(objetos2[j], esperados[i]) == 0)
-				comparaciones_exitosas++;
+		if (sala_contiene_objeto(sala, esperados[i]))
+			comparaciones_exitosas++;
 
 	pa2m_afirmar(comparaciones_exitosas == cantidad,
 		     "Todos los nombres de objeto son los esperados");
