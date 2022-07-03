@@ -453,18 +453,23 @@ bool se_pudo_eliminar(sala_t *sala, struct interaccion *interaccion)
 {
 	struct objeto *objeto;
 
-	if (objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto)) {
+	if (objeto_es_conocido(sala->objetos_conocidos, 
+	                       interaccion->accion.objeto)) {
 		objeto = hash_quitar(sala->objetos_conocidos, 
 				     interaccion->objeto);
 		if (objeto == NULL)
 			return false;
-		
-	} else if (objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto)) {
+	} else if (objeto_se_posee(sala->objetos_poseidos, 
+				   interaccion->accion.objeto)) {
 		objeto = hash_quitar(sala->objetos_poseidos, 
 				     interaccion->objeto);
 		if (objeto == NULL)
 			return false;
-	} else if (hash_contiene(sala->objetos, interaccion->accion.objeto) && !objeto_es_conocido(sala->objetos_conocidos, interaccion->accion.objeto) && !objeto_se_posee(sala->objetos_poseidos, interaccion->accion.objeto)) {
+	} else if (hash_contiene(sala->objetos, interaccion->accion.objeto) && 
+	           !objeto_es_conocido(sala->objetos_conocidos, 
+		   		       interaccion->accion.objeto) && 
+		   !objeto_se_posee(sala->objetos_poseidos, 
+		   		    interaccion->accion.objeto)) {
 		return false;
 	}
 
